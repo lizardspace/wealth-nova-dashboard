@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import NotFound from "./pages/NotFound";
+import "./App.css";
 
 // Import des pages
 import PortfolioPage from "./pages/portfolio/PortfolioPage";
