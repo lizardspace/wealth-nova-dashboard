@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Card, 
@@ -58,9 +57,9 @@ const clientsEncoursData = [
 const VueGlobalePage = () => {
   const [periode, setPeriode] = useState("6mois");
 
-  const totalReels = clientsEncoursData.reduce((sum, client) => sum + client.encoursReel, 0);
-  const totalTheoriques = clientsEncoursData.reduce((sum, client) => sum + client.encoursTheorique, 0);
-  const tauxConversionGlobal = (totalReels / totalTheoriques * 100).toFixed(1);
+  const totalReels = clientsEncoursData.reduce((sum, client) => sum + (client.encoursReel || 0), 0);
+  const totalTheoriques = clientsEncoursData.reduce((sum, client) => sum + (client.encoursTheorique || 0), 0);
+  const tauxConversionGlobal = totalTheoriques > 0 ? ((totalReels / totalTheoriques) * 100).toFixed(1) : "0.0";
 
   return (
     <div className="space-y-6">
@@ -154,7 +153,7 @@ const VueGlobalePage = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip formatter={(value) => `${(value / 1000000).toFixed(2)} M€`} />
+                  <Tooltip formatter={(value) => `${(Number(value) / 1000000).toFixed(2)} M€`} />
                   <Legend />
                   <Line type="monotone" dataKey="reels" name="Encours réels" stroke="#8B5CF6" strokeWidth={2} />
                   <Line type="monotone" dataKey="theoriques" name="Encours théoriques" stroke="#64748B" strokeWidth={2} strokeDasharray="5 5" />

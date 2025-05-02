@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Card, 
@@ -44,20 +43,50 @@ const ExportDonneesPage = () => {
   };
 
   const handleSelectAll = () => {
-    const allSelected = Object.keys(selectedFields).reduce((acc, key) => {
-      acc[key] = true;
-      return acc;
-    }, {} as Record<string, boolean>);
-    
+    const allSelected = {
+      nomPrenom: true,
+      dateNaissance: true,
+      email: true,
+      telephone: true,
+      patrimoineEstime: true,
+      abonne: true,
+      encoursReel: true,
+      encoursTheorique: true,
+      scoreIA: true,
+      objetPatrimoniaux: true,
+      produitsSouscrits: true,
+      adresse: true,
+      situationFamiliale: true,
+      enfants: true,
+      profession: true,
+      revenuAnnuel: true,
+      derniereActivite: true
+    };
+
     setSelectedFields(allSelected);
   };
 
   const handleUnselectAll = () => {
-    const allUnselected = Object.keys(selectedFields).reduce((acc, key) => {
-      acc[key] = false;
-      return acc;
-    }, {} as Record<string, boolean>);
-    
+    const allUnselected = {
+      nomPrenom: false,
+      dateNaissance: false,
+      email: false,
+      telephone: false,
+      patrimoineEstime: false,
+      abonne: false,
+      encoursReel: false,
+      encoursTheorique: false,
+      scoreIA: false,
+      objetPatrimoniaux: false,
+      produitsSouscrits: false,
+      adresse: false,
+      situationFamiliale: false,
+      enfants: false,
+      profession: false,
+      revenuAnnuel: false,
+      derniereActivite: false
+    };
+
     setSelectedFields(allUnselected);
   };
 
