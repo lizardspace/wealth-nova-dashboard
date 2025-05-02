@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -30,6 +31,16 @@ import EncoursPage from "./pages/admin/dashboard/EncoursPage";
 import StatsClientsPage from "./pages/admin/dashboard/StatsClientsPage";
 import AlertesPage from "./pages/admin/dashboard/AlertesPage";
 import PerformancePage from "./pages/admin/dashboard/PerformancePage";
+
+// Import des nouvelles pages clients
+import ListeClientsPage from "./pages/admin/clients/ListeClientsPage";
+import ExportDonneesPage from "./pages/admin/clients/ExportDonneesPage";
+import NouveauClientPage from "./pages/admin/clients/NouveauClientPage";
+
+// Import des nouvelles pages portefeuilles
+import VueGlobalePage from "./pages/admin/portfolios/VueGlobalePage";
+import EncoursReelsPage from "./pages/admin/portfolios/EncoursReelsPage";
+import EncoursTheoriquesPage from "./pages/admin/portfolios/EncoursTheoriquesPage";
 
 // Admin placeholder component - Will need to be implemented properly
 const AdminPlaceholder = ({ title }: { title: string }) => (
@@ -116,9 +127,9 @@ const App = () => (
             <Route path="/admin/dashboard/performance" element={<PerformancePage />} />
 
             {/* Admin Clients Routes */}
-            <Route path="/admin/clients" element={<AdminPlaceholder title="Liste des clients" />} />
-            <Route path="/admin/clients/export" element={<AdminPlaceholder title="Export clients" />} />
-            <Route path="/admin/clients/new" element={<AdminPlaceholder title="Nouveau client" />} />
+            <Route path="/admin/clients" element={<ListeClientsPage />} />
+            <Route path="/admin/clients/export" element={<ExportDonneesPage />} />
+            <Route path="/admin/clients/new" element={<NouveauClientPage />} />
             <Route path="/admin/clients/:clientId" element={<AdminPlaceholder title="Détail client" />} />
             <Route path="/admin/clients/:clientId/edit" element={<AdminPlaceholder title="Édition client" />} />
             <Route path="/admin/clients/:clientId/simulations" element={<AdminPlaceholder title="Simulations client" />} />
@@ -127,9 +138,9 @@ const App = () => (
             <Route path="/admin/clients/:clientId/chat-history" element={<AdminPlaceholder title="Historique chat" />} />
 
             {/* Admin Portfolios Routes */}
-            <Route path="/admin/portfolios" element={<AdminPlaceholder title="Vue globale encours" />} />
-            <Route path="/admin/portfolios/reels" element={<AdminPlaceholder title="Encours réels" />} />
-            <Route path="/admin/portfolios/theoriques" element={<AdminPlaceholder title="Encours théoriques" />} />
+            <Route path="/admin/portfolios" element={<VueGlobalePage />} />
+            <Route path="/admin/portfolios/reels" element={<EncoursReelsPage />} />
+            <Route path="/admin/portfolios/theoriques" element={<EncoursTheoriquesPage />} />
             <Route path="/admin/portfolios/analyse" element={<AnalysePage />} />
             <Route path="/admin/portfolios/classe-actif" element={<AdminPlaceholder title="Classes d'actifs" />} />
             <Route path="/admin/portfolios/evolution" element={<AdminPlaceholder title="Évolution portefeuilles" />} />
