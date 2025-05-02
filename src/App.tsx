@@ -42,6 +42,16 @@ import VueGlobalePage from "./pages/admin/portfolios/VueGlobalePage";
 import EncoursReelsPage from "./pages/admin/portfolios/EncoursReelsPage";
 import EncoursTheoriquesPage from "./pages/admin/portfolios/EncoursTheoriquesPage";
 
+// Dans App.tsx
+import ToolsListPage from "./pages/admin/tools/ToolsListPage";
+import SimulatorsListPage from "./pages/admin/tools/SimulatorsListPage";
+import SimulatorDetailPage from "./pages/admin/tools/SimulatorDetailPage";
+import NewSimulatorPage from "./pages/admin/tools/NewSimulatorPage";
+import ProductsListPage from "./pages/admin/tools/ProductsListPage";
+import ProductDetailPage from "./pages/admin/tools/ProductDetailPage";
+import NewProductPage from "./pages/admin/tools/NewProductPage";
+import ConditionalRulesPage from "./pages/admin/tools/ConditionalRulesPage";
+
 // Admin placeholder component - Will need to be implemented properly
 const AdminPlaceholder = ({ title }: { title: string }) => (
   <div className="p-6">
@@ -55,21 +65,21 @@ const queryClient = new QueryClient();
 // Simple auth check
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  
+
   return <>{children}</>;
 };
 
 const PublicOnlyRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-  
+
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
-  
+
   return <>{children}</>;
 };
 
@@ -91,7 +101,7 @@ const App = () => (
               <Register />
             </PublicOnlyRoute>
           } />
-          
+
           {/* Protected Routes */}
           <Route element={
             <PrivateRoute>
@@ -99,19 +109,19 @@ const App = () => (
             </PrivateRoute>
           }>
             <Route path="/" element={<Index />} />
-            
+
             {/* Portfolio routes */}
             <Route path="/portfolio" element={<PortfolioPage />} />
             <Route path="/portfolio/add" element={<AddAssetPage />} />
-            
+
             {/* Statement route */}
             <Route path="/statement" element={<StatementPage />} />
-            
+
             {/* Tools routes */}
             <Route path="/simulators" element={<SimulatorsPage />} />
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
-            
+
             {/* Contact routes */}
             <Route path="/appointments" element={<AppointmentsPage />} />
             <Route path="/chat" element={<ChatPage />} />
@@ -146,14 +156,14 @@ const App = () => (
             <Route path="/admin/portfolios/evolution" element={<AdminPlaceholder title="Évolution portefeuilles" />} />
 
             {/* Admin Outils Routes */}
-            <Route path="/admin/outils" element={<AdminPlaceholder title="Liste des outils" />} />
-            <Route path="/admin/outils/simulateurs" element={<AdminPlaceholder title="Gestion simulateurs" />} />
-            <Route path="/admin/outils/simulateurs/:id" element={<AdminPlaceholder title="Détail simulateur" />} />
-            <Route path="/admin/outils/simulateurs/new" element={<AdminPlaceholder title="Nouveau simulateur" />} />
-            <Route path="/admin/outils/produits" element={<AdminPlaceholder title="Catalogue produits" />} />
-            <Route path="/admin/outils/produits/:id" element={<AdminPlaceholder title="Fiche produit" />} />
-            <Route path="/admin/outils/produits/new" element={<AdminPlaceholder title="Nouveau produit" />} />
-            <Route path="/admin/outils/regles-affichage" element={<AdminPlaceholder title="Règles conditionnelles" />} />
+            <Route path="/admin/outils" element={<ToolsListPage />} />
+            <Route path="/admin/outils/simulateurs" element={<SimulatorsListPage />} />
+            <Route path="/admin/outils/simulateurs/:id" element={<SimulatorDetailPage />} />
+            <Route path="/admin/outils/simulateurs/new" element={<NewSimulatorPage />} />
+            <Route path="/admin/outils/produits" element={<ProductsListPage />} />
+            <Route path="/admin/outils/produits/:id" element={<ProductDetailPage />} />
+            <Route path="/admin/outils/produits/new" element={<NewProductPage />} />
+            <Route path="/admin/outils/regles-affichage" element={<ConditionalRulesPage />} />
 
             {/* Admin IA Routes */}
             <Route path="/admin/ia/scores" element={<AdminPlaceholder title="Scores patrimoniaux" />} />
@@ -189,7 +199,7 @@ const App = () => (
             <Route path="/admin/rendez-vous/creneau/:id/edit" element={<AdminPlaceholder title="Modifier créneau" />} />
             <Route path="/admin/rendez-vous/historique" element={<AdminPlaceholder title="Archives rendez-vous" />} />
           </Route>
-          
+
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
