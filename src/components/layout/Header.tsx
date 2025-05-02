@@ -50,8 +50,10 @@ const Header = () => {
 
   return (
     <header className="bg-white shadow-sm border-b z-10">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/" className="text-2xl font-bold text-eparnova-blue flex items-center">
+      <div className="h-16 flex items-center justify-between px-4">
+        <div className="md:hidden w-8"></div> {/* Spacer for menu button */}
+        
+        <Link to="/" className="text-xl md:text-2xl font-bold text-eparnova-blue flex items-center mx-auto md:mx-0">
           <span className="text-eparnova-gold">EPAR</span>NOVA
         </Link>
         
