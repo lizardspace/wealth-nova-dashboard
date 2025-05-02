@@ -23,6 +23,9 @@ import ChatPage from "./pages/chat/ChatPage";
 import ProfilePage from "./pages/profile/ProfilePage";
 import ContactPage from "./pages/contact/ContactPage";
 
+// Import de la nouvelle page d'analyse des portefeuilles
+import AnalysePage from "./pages/admin/portfolios/AnalysePage";
+
 // Admin placeholder component - Will need to be implemented properly
 const AdminPlaceholder = ({ title }: { title: string }) => (
   <div className="p-6">
@@ -122,7 +125,7 @@ const App = () => (
             <Route path="/admin/portfolios" element={<AdminPlaceholder title="Vue globale encours" />} />
             <Route path="/admin/portfolios/reels" element={<AdminPlaceholder title="Encours réels" />} />
             <Route path="/admin/portfolios/theoriques" element={<AdminPlaceholder title="Encours théoriques" />} />
-            <Route path="/admin/portfolios/analyse" element={<AdminPlaceholder title="Analyse portefeuilles" />} />
+            <Route path="/admin/portfolios/analyse" element={<AnalysePage />} />
             <Route path="/admin/portfolios/classe-actif" element={<AdminPlaceholder title="Classes d'actifs" />} />
             <Route path="/admin/portfolios/evolution" element={<AdminPlaceholder title="Évolution portefeuilles" />} />
 
