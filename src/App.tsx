@@ -52,6 +52,12 @@ import ProductDetailPage from "./pages/admin/tools/ProductDetailPage";
 import NewProductPage from "./pages/admin/tools/NewProductPage";
 import ConditionalRulesPage from "./pages/admin/tools/ConditionalRulesPage";
 
+// Import des pages IA
+import ScoresPage from "./pages/admin/ai/ScoresPage";
+import ClientScorePage from "./pages/admin/ai/ClientScorePage";
+import RecommendationsPage from "./pages/admin/ai/RecommendationsPage";
+import InteractionTrackingPage from "./pages/admin/ai/InteractionTrackingPage";
+
 // Admin placeholder component - Will need to be implemented properly
 const AdminPlaceholder = ({ title }: { title: string }) => (
   <div className="p-6">
@@ -166,11 +172,13 @@ const App = () => (
             <Route path="/admin/outils/regles-affichage" element={<ConditionalRulesPage />} />
 
             {/* Admin IA Routes */}
-            <Route path="/admin/ia/scores" element={<AdminPlaceholder title="Scores patrimoniaux" />} />
-            <Route path="/admin/ia/scores/:clientId" element={<AdminPlaceholder title="Score client" />} />
-            <Route path="/admin/ia/recommandations" element={<AdminPlaceholder title="Recommandations" />} />
-            <Route path="/admin/ia/recommandations/:clientId" element={<AdminPlaceholder title="Recommandations client" />} />
-            <Route path="/admin/ia/suivi-interactions" element={<AdminPlaceholder title="Suivi IA-client" />} />
+            <Route path="/admin/ia" element={<Navigate to="/admin/ia/scores" replace />} />
+            <Route path="/admin/ia/scores" element={<ScoresPage />} />
+            <Route path="/admin/ia/scores/:clientId" element={<ClientScorePage />} />
+            <Route path="/admin/ia/recommandations" element={<RecommendationsPage />} />
+            <Route path="/admin/ia/recommandations/:id" element={<AdminPlaceholder title="Détail recommandation" />} />
+            <Route path="/admin/ia/suivi-interactions" element={<InteractionTrackingPage />} />
+            <Route path="/admin/ia/suivi-interactions/:id" element={<AdminPlaceholder title="Détail interaction" />} />
 
             {/* Admin Documents Routes */}
             <Route path="/admin/documents/en-attente" element={<AdminPlaceholder title="Documents à signer" />} />
