@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,6 +24,12 @@ import ContactPage from "./pages/contact/ContactPage";
 
 // Import de la nouvelle page d'analyse des portefeuilles
 import AnalysePage from "./pages/admin/portfolios/AnalysePage";
+
+// Import des nouvelles pages dashboard
+import EncoursPage from "./pages/admin/dashboard/EncoursPage";
+import StatsClientsPage from "./pages/admin/dashboard/StatsClientsPage";
+import AlertesPage from "./pages/admin/dashboard/AlertesPage";
+import PerformancePage from "./pages/admin/dashboard/PerformancePage";
 
 // Admin placeholder component - Will need to be implemented properly
 const AdminPlaceholder = ({ title }: { title: string }) => (
@@ -105,10 +110,10 @@ const App = () => (
             {/* Admin Dashboard Routes */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="/admin/dashboard" element={<AdminPlaceholder title="Tableau de bord" />} />
-            <Route path="/admin/dashboard/encours" element={<AdminPlaceholder title="Encours réel/théorique" />} />
-            <Route path="/admin/dashboard/stats-clients" element={<AdminPlaceholder title="Statistiques clients" />} />
-            <Route path="/admin/dashboard/alertes" element={<AdminPlaceholder title="Liste des alertes" />} />
-            <Route path="/admin/dashboard/performance" element={<AdminPlaceholder title="Performance" />} />
+            <Route path="/admin/dashboard/encours" element={<EncoursPage />} />
+            <Route path="/admin/dashboard/stats-clients" element={<StatsClientsPage />} />
+            <Route path="/admin/dashboard/alertes" element={<AlertesPage />} />
+            <Route path="/admin/dashboard/performance" element={<PerformancePage />} />
 
             {/* Admin Clients Routes */}
             <Route path="/admin/clients" element={<AdminPlaceholder title="Liste des clients" />} />
