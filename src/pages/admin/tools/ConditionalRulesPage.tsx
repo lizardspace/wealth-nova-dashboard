@@ -173,7 +173,7 @@ export default function ConditionalRulesPage() {
                 <h3 className="text-lg font-medium">Comment fonctionnent les règles?</h3>
                 <p className="text-sm text-muted-foreground">
                   Les règles conditionnelles permettent d'afficher ou masquer des produits, simulateurs ou sections selon le profil du client.
-                  Utilisez des expressions comme <code>client.age > 50</code> ou <code>client.patrimoine > 100000</code>.
+                  Utilisez des expressions comme <code>{"client.age > 50"}</code> ou <code>{"client.patrimoine > 100000"}</code>.
                 </p>
               </div>
             </div>

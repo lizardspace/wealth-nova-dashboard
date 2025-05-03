@@ -64,6 +64,16 @@ import RolesPage from "./pages/admin/settings/RolesPage";
 import PlatformPage from "./pages/admin/settings/PlatformPage";
 import SecurityPage from "./pages/admin/settings/SecurityPage";
 
+// Import des pages de Documents
+import DocumentsToSignPage from "./pages/admin/documents/DocumentsToSignPage";
+import DocumentsSignedPage from "./pages/admin/documents/DocumentsSignedPage";
+import DocumentsArchivePage from "./pages/admin/documents/DocumentsArchivePage";
+
+// Import des pages d'Alertes
+import AlertesDashboardPage from "./pages/admin/alertes/AlertesDashboardPage";
+import InactiveClientsPage from "./pages/admin/alertes/InactiveClientsPage";
+import IncompleteProfilesPage from "./pages/admin/alertes/IncompleteProfilesPage";
+
 // Admin placeholder component - Will need to be implemented properly
 const AdminPlaceholder = ({ title }: { title: string }) => (
   <div className="p-6">
@@ -187,15 +197,16 @@ const App = () => (
             <Route path="/admin/ia/suivi-interactions/:id" element={<AdminPlaceholder title="Détail interaction" />} />
 
             {/* Admin Documents Routes */}
-            <Route path="/admin/documents/en-attente" element={<AdminPlaceholder title="Documents à signer" />} />
-            <Route path="/admin/documents/signes" element={<AdminPlaceholder title="Documents signés" />} />
-            <Route path="/admin/documents/historique" element={<AdminPlaceholder title="Archives documentaires" />} />
+            <Route path="/admin/documents/en-attente" element={<DocumentsToSignPage />} />
+            <Route path="/admin/documents/signes" element={<DocumentsSignedPage />} />
+            <Route path="/admin/documents/historique" element={<DocumentsArchivePage />} />
+            <Route path="/admin/documents/detail/:id" element={<AdminPlaceholder title="Détail document" />} />
             <Route path="/admin/documents/modele" element={<AdminPlaceholder title="Modèles de documents" />} />
 
             {/* Admin Alertes Routes */}
-            <Route path="/admin/alertes" element={<AdminPlaceholder title="Vue d'ensemble opportunités" />} />
-            <Route path="/admin/alertes/inactifs" element={<AdminPlaceholder title="Clients inactifs" />} />
-            <Route path="/admin/alertes/profils-incomplets" element={<AdminPlaceholder title="Profils incomplets" />} />
+            <Route path="/admin/alertes" element={<AlertesDashboardPage />} />
+            <Route path="/admin/alertes/inactifs" element={<InactiveClientsPage />} />
+            <Route path="/admin/alertes/profils-incomplets" element={<IncompleteProfilesPage />} />
             <Route path="/admin/alertes/projets-en-cours" element={<AdminPlaceholder title="Projets non finalisés" />} />
             <Route path="/admin/alertes/gains-potentiels" element={<AdminPlaceholder title="Optimisations non activées" />} />
 

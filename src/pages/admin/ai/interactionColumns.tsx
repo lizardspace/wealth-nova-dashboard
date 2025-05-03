@@ -1,18 +1,20 @@
 
+// src/pages/admin/ai/interactionColumns.tsx
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Eye, Download } from "lucide-react";
 
 export type Interaction = {
   id: string;
   client: string;
   type: string;
   date: string;
-  status: "Complétée" | "En cours" | "Abandonnée";
   duration: string;
+  status: string;
   topics: string[];
-  satisfaction?: string; // Optional since we're adding it
+  satisfaction: string;
 };
 
 export const columns: ColumnDef<Interaction>[] = [
@@ -21,7 +23,7 @@ export const columns: ColumnDef<Interaction>[] = [
     header: "Client",
     cell: ({ row }) => (
       <Link
-        to={`/admin/ia/suivi-interactions/${row.original.id}`}
+        to={`/admin/clients/${row.original.id}`}
         className="font-medium text-primary hover:underline"
       >
         {row.getValue("client")}
@@ -34,7 +36,7 @@ export const columns: ColumnDef<Interaction>[] = [
   },
   {
     accessorKey: "date",
-    header: "Date",
+    header: "Date et heure",
   },
   {
     accessorKey: "duration",
@@ -45,19 +47,13 @@ export const columns: ColumnDef<Interaction>[] = [
     header: "Statut",
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
-      
-      let variant: "default" | "destructive" | "outline" | "secondary";
-      
-      if (status === "Complétée") {
-        variant = "default";
-      } else if (status === "Abandonnée") {
-        variant = "destructive";
-      } else {
-        variant = "secondary";
-      }
-      
       return (
-        <Badge variant={variant}>{status}</Badge>
+        <Badge 
+          variant={status === "Complétée" ? "success" : 
+                 status === "Abandonnée" ? "destructive" : "outline"}
+        >
+          {status}
+        </Badge>
       );
     },
   },
@@ -66,34 +62,34 @@ export const columns: ColumnDef<Interaction>[] = [
     header: "Sujets abordés",
     cell: ({ row }) => {
       const topics = row.getValue("topics") as string[];
-      
       return (
         <div className="flex flex-wrap gap-1">
-          {topics && topics.map((topic, index) => (
-            <Badge key={index} variant="outline">{topic}</Badge>
+          {topics.map((topic, i) => (
+            <Badge key={i} variant="outline" className="text-xs">
+              {topic}
+            </Badge>
           ))}
         </div>
       );
     },
   },
   {
+    accessorKey: "satisfaction",
+    header: "Satisfaction",
+  },
+  {
     id: "actions",
-    cell: ({ row }) => {
-      const interaction = row.original;
-      
-      return (
-        <div className="flex justify-end">
-          <Button
-            variant="ghost"
-            size="sm"
-            asChild
-          >
-            <Link to={`/admin/ia/suivi-interactions/${interaction.id}`}>
-              Détails
-            </Link>
-          </Button>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="flex space-x-2">
+        <Button variant="ghost" size="icon" asChild>
+          <Link to={`/admin/ia/suivi-interactions/${row.original.id}`}>
+            <Eye className="h-4 w-4" />
+          </Link>
+        </Button>
+        <Button variant="ghost" size="icon">
+          <Download className="h-4 w-4" />
+        </Button>
+      </div>
+    ),
   },
 ];
