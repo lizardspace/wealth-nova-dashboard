@@ -14,6 +14,7 @@ const recommendations: Recommendation[] = [
     recommendation: "Diversification du portefeuille immobilier",
     date: "2023-11-15",
     status: "En attente",
+    productEffect: "Aucun",
   },
   {
     id: "2",
@@ -21,6 +22,7 @@ const recommendations: Recommendation[] = [
     recommendation: "Ouverture d'un PER individuel",
     date: "2023-11-12",
     status: "Acceptée",
+    productEffect: "PER souscrit le 15/11/2023",
   },
   {
     id: "3",
@@ -28,6 +30,7 @@ const recommendations: Recommendation[] = [
     recommendation: "Réduction des liquidités - opportunités d'investissement",
     date: "2023-11-10",
     status: "Rejetée",
+    productEffect: "Aucun",
   },
   {
     id: "4",
@@ -35,6 +38,7 @@ const recommendations: Recommendation[] = [
     recommendation: "Ajustement assurance-vie - répartition unités de compte",
     date: "2023-11-08",
     status: "Acceptée",
+    productEffect: "Réallocation du contrat AV le 10/11/2023",
   },
   {
     id: "5",
@@ -42,6 +46,15 @@ const recommendations: Recommendation[] = [
     recommendation: "Optimisation fiscale - donation temporaire d'usufruit",
     date: "2023-11-05",
     status: "En attente",
+    productEffect: "Aucun",
+  },
+  {
+    id: "6",
+    client: "Dubois Julie",
+    recommendation: "Rééquilibrage portefeuille actions - surpondération technologie",
+    date: "2023-11-04",
+    status: "Ignorée",
+    productEffect: "Aucun",
   },
 ];
 
@@ -49,6 +62,7 @@ export default function RecommendationsPage() {
   const pendingRecommendations = recommendations.filter(r => r.status === "En attente");
   const acceptedRecommendations = recommendations.filter(r => r.status === "Acceptée");
   const rejectedRecommendations = recommendations.filter(r => r.status === "Rejetée");
+  const ignoredRecommendations = recommendations.filter(r => r.status === "Ignorée");
 
   return (
     <div className="space-y-6">
@@ -66,6 +80,7 @@ export default function RecommendationsPage() {
           <TabsTrigger value="pending">En attente ({pendingRecommendations.length})</TabsTrigger>
           <TabsTrigger value="accepted">Acceptées ({acceptedRecommendations.length})</TabsTrigger>
           <TabsTrigger value="rejected">Rejetées ({rejectedRecommendations.length})</TabsTrigger>
+          <TabsTrigger value="ignored">Ignorées ({ignoredRecommendations.length})</TabsTrigger>
         </TabsList>
         
         <TabsContent value="all" className="mt-4">
@@ -108,6 +123,17 @@ export default function RecommendationsPage() {
             </CardHeader>
             <CardContent>
               <DataTable columns={columns} data={rejectedRecommendations} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="ignored" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recommandations ignorées</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DataTable columns={columns} data={ignoredRecommendations} />
             </CardContent>
           </Card>
         </TabsContent>

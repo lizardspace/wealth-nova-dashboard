@@ -26,6 +26,26 @@ const interactions: Interaction[] = [
     topics: ["Assurance vie", "Fiscalité"],
     satisfaction: "3/5",
   },
+  {
+    id: "3",
+    client: "Bernard Pierre",
+    type: "Simulation",
+    date: "2023-11-08 11:45",
+    duration: "8 min",
+    status: "Complétée",
+    topics: ["Investissement", "SCPI"],
+    satisfaction: "5/5",
+  },
+  {
+    id: "4",
+    client: "Petit Marie",
+    type: "Chat",
+    date: "2023-11-12 16:20",
+    duration: "5 min",
+    status: "Complétée",
+    topics: ["Crédit", "Immobilier"],
+    satisfaction: "4/5",
+  },
 ];
 
 export default function InteractionTrackingPage() {

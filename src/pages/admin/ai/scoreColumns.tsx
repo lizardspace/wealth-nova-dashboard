@@ -3,6 +3,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { TrendingDown, TrendingUp, Minus } from "lucide-react";
 
 export type ClientScore = {
   id: string;
@@ -39,9 +40,41 @@ export const columns: ColumnDef<ClientScore>[] = [
   {
     accessorKey: "evolution",
     header: "Évolution",
+    cell: ({ row }) => {
+      const evolution = row.getValue("evolution") as string;
+      const value = parseInt(evolution);
+      return (
+        <div className="flex items-center">
+          {value > 0 ? (
+            <TrendingUp className="mr-2 h-4 w-4 text-green-500" />
+          ) : value < 0 ? (
+            <TrendingDown className="mr-2 h-4 w-4 text-red-500" />
+          ) : (
+            <Minus className="mr-2 h-4 w-4 text-gray-500" />
+          )}
+          {evolution}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "riskProfile",
     header: "Profil de risque",
+  },
+  {
+    accessorKey: "status",
+    header: "Statut",
+    cell: ({ row }) => {
+      const status = row.getValue("status") as string;
+      return (
+        <Badge 
+          variant={status === "stable" ? "outline" : 
+                 status === "declining" ? "destructive" : "default"}
+        >
+          {status === "stable" ? "Stable" : 
+           status === "declining" ? "En baisse" : "En hausse"}
+        </Badge>
+      );
+    },
   },
 ];
