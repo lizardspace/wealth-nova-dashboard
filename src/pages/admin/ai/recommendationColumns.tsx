@@ -1,6 +1,8 @@
+
 // src/pages/admin/ai/recommendationColumns.tsx
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
 export type Recommendation = {
@@ -16,7 +18,7 @@ export const columns: ColumnDef<Recommendation>[] = [
     accessorKey: "client",
     header: "Client",
     cell: ({ row }) => (
-      <Link 
+      <Link
         to={`/admin/ia/recommandations/${row.original.id}`}
         className="font-medium text-primary hover:underline"
       >
@@ -36,12 +38,41 @@ export const columns: ColumnDef<Recommendation>[] = [
     accessorKey: "status",
     header: "Statut",
     cell: ({ row }) => {
-      const status = row.getValue("status");
-      const variant = 
-        status === "Acceptée" ? "success" :
-        status === "Rejetée" ? "destructive" : "secondary";
+      const status = row.getValue("status") as string;
       
-      return <Badge variant={variant}>{status}</Badge>;
+      let variant: "default" | "destructive" | "outline" | "secondary";
+      
+      if (status === "Acceptée") {
+        variant = "default";
+      } else if (status === "Rejetée") {
+        variant = "destructive";
+      } else {
+        variant = "secondary";
+      }
+      
+      return (
+        <Badge variant={variant}>{status}</Badge>
+      );
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const recommendation = row.original;
+      
+      return (
+        <div className="flex justify-end">
+          <Button
+            variant="ghost"
+            size="sm"
+            asChild
+          >
+            <Link to={`/admin/ia/recommandations/${recommendation.id}`}>
+              Détails
+            </Link>
+          </Button>
+        </div>
+      );
     },
   },
 ];

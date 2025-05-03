@@ -5,8 +5,9 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./recommendationColumns";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { Recommendation } from "./recommendationColumns";
 
-const recommendations = [
+const recommendations: Recommendation[] = [
   {
     id: "1",
     client: "Dupont Jean",
