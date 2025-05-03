@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -57,6 +58,11 @@ import ScoresPage from "./pages/admin/ai/ScoresPage";
 import ClientScorePage from "./pages/admin/ai/ClientScorePage";
 import RecommendationsPage from "./pages/admin/ai/RecommendationsPage";
 import InteractionTrackingPage from "./pages/admin/ai/InteractionTrackingPage";
+
+// Import des pages de paramètres
+import RolesPage from "./pages/admin/settings/RolesPage";
+import PlatformPage from "./pages/admin/settings/PlatformPage";
+import SecurityPage from "./pages/admin/settings/SecurityPage";
 
 // Admin placeholder component - Will need to be implemented properly
 const AdminPlaceholder = ({ title }: { title: string }) => (
@@ -194,10 +200,11 @@ const App = () => (
             <Route path="/admin/alertes/gains-potentiels" element={<AdminPlaceholder title="Optimisations non activées" />} />
 
             {/* Admin Parametres Routes */}
-            <Route path="/admin/parametres/roles" element={<AdminPlaceholder title="Gestion utilisateurs" />} />
+            <Route path="/admin/parametres/roles" element={<RolesPage />} />
+            <Route path="/admin/parametres/roles/:id" element={<AdminPlaceholder title="Détail utilisateur" />} />
             <Route path="/admin/parametres/roles/new" element={<AdminPlaceholder title="Nouvel utilisateur" />} />
-            <Route path="/admin/parametres/plateforme" element={<AdminPlaceholder title="Configuration plateforme" />} />
-            <Route path="/admin/parametres/securite" element={<AdminPlaceholder title="Paramètres sécurité" />} />
+            <Route path="/admin/parametres/plateforme" element={<PlatformPage />} />
+            <Route path="/admin/parametres/securite" element={<SecurityPage />} />
             <Route path="/admin/parametres/historique-acces" element={<AdminPlaceholder title="Journal connexions" />} />
 
             {/* Admin Rendez-vous Routes */}

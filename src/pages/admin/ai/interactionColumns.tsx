@@ -1,15 +1,18 @@
+
 // src/pages/admin/ai/interactionColumns.tsx
 import { ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Star } from "lucide-react";
 
 export type Interaction = {
   id: string;
   client: string;
   type: string;
   date: string;
+  status: "Complétée" | "En cours" | "Abandonnée";
   duration: string;
-  satisfaction: string;
+  topics: string[];
 };
 
 export const columns: ColumnDef<Interaction>[] = [
@@ -17,7 +20,7 @@ export const columns: ColumnDef<Interaction>[] = [
     accessorKey: "client",
     header: "Client",
     cell: ({ row }) => (
-      <Link 
+      <Link
         to={`/admin/ia/suivi-interactions/${row.original.id}`}
         className="font-medium text-primary hover:underline"
       >
@@ -31,28 +34,64 @@ export const columns: ColumnDef<Interaction>[] = [
   },
   {
     accessorKey: "date",
-    header: "Date et heure",
+    header: "Date",
   },
   {
     accessorKey: "duration",
     header: "Durée",
   },
   {
-    accessorKey: "satisfaction",
-    header: "Satisfaction",
+    accessorKey: "status",
+    header: "Statut",
     cell: ({ row }) => {
-      const satisfaction = row.getValue("satisfaction");
-      const rating = parseInt(satisfaction.toString().split("/")[0]);
+      const status = row.getValue("status") as string;
+      
+      let variant: "default" | "destructive" | "outline" | "secondary";
+      
+      if (status === "Complétée") {
+        variant = "default";
+      } else if (status === "Abandonnée") {
+        variant = "destructive";
+      } else {
+        variant = "secondary";
+      }
       
       return (
-        <div className="flex items-center">
-          {[...Array(5)].map((_, i) => (
-            <Star 
-              key={i} 
-              className={`h-4 w-4 ${i < rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`} 
-            />
+        <Badge variant={variant}>{status}</Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "topics",
+    header: "Sujets abordés",
+    cell: ({ row }) => {
+      const topics = row.getValue("topics") as string[];
+      
+      return (
+        <div className="flex flex-wrap gap-1">
+          {topics && topics.map((topic, index) => (
+            <Badge key={index} variant="outline">{topic}</Badge>
           ))}
-          <span className="ml-2">{satisfaction}</span>
+        </div>
+      );
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const interaction = row.original;
+      
+      return (
+        <div className="flex justify-end">
+          <Button
+            variant="ghost"
+            size="sm"
+            asChild
+          >
+            <Link to={`/admin/ia/suivi-interactions/${interaction.id}`}>
+              Détails
+            </Link>
+          </Button>
         </div>
       );
     },

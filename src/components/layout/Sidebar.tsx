@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
@@ -11,7 +12,9 @@ import {
   Brain,
   Home,
   Menu,
-  X
+  X,
+  Shield,
+  Lock
 } from 'lucide-react';
 import {
   Tooltip,
@@ -85,9 +88,9 @@ const SidebarContent = ({ onItemClick }: { onItemClick?: () => void }) => (
         <div>
           <h2 className="text-sidebar-foreground/70 font-medium text-xs uppercase mb-2 px-3">Clients</h2>
           <div className="space-y-1">
-            <NavItem to="/admin/clients" icon={Users} label="Liste clients" />
-            <NavItem to="/admin/clients/export" icon={FileText} label="Export données" />
-            <NavItem to="/admin/clients/new" icon={Users} label="Nouveau client" />
+            <NavItem to="/admin/clients" icon={Users} label="Liste clients" onClick={onItemClick} />
+            <NavItem to="/admin/clients/export" icon={FileText} label="Export données" onClick={onItemClick} />
+            <NavItem to="/admin/clients/new" icon={Users} label="Nouveau client" onClick={onItemClick} />
           </div>
         </div>
 
@@ -95,10 +98,10 @@ const SidebarContent = ({ onItemClick }: { onItemClick?: () => void }) => (
         <div>
           <h2 className="text-sidebar-foreground/70 font-medium text-xs uppercase mb-2 px-3">Portefeuilles</h2>
           <div className="space-y-1">
-            <NavItem to="/admin/portfolios" icon={Briefcase} label="Vue globale" />
-            <NavItem to="/admin/portfolios/reels" icon={Briefcase} label="Encours réels" />
-            <NavItem to="/admin/portfolios/theoriques" icon={Briefcase} label="Encours théoriques" />
-            <NavItem to="/admin/portfolios/analyse" icon={BarChart} label="Analyses" />
+            <NavItem to="/admin/portfolios" icon={Briefcase} label="Vue globale" onClick={onItemClick} />
+            <NavItem to="/admin/portfolios/reels" icon={Briefcase} label="Encours réels" onClick={onItemClick} />
+            <NavItem to="/admin/portfolios/theoriques" icon={Briefcase} label="Encours théoriques" onClick={onItemClick} />
+            <NavItem to="/admin/portfolios/analyse" icon={BarChart} label="Analyses" onClick={onItemClick} />
           </div>
         </div>
 
@@ -106,9 +109,9 @@ const SidebarContent = ({ onItemClick }: { onItemClick?: () => void }) => (
         <div>
           <h2 className="text-sidebar-foreground/70 font-medium text-xs uppercase mb-2 px-3">Outils</h2>
           <div className="space-y-1">
-            <NavItem to="/admin/outils" icon={Settings} label="Liste des outils" />
-            <NavItem to="/admin/outils/simulateurs" icon={Settings} label="Simulateurs" />
-            <NavItem to="/admin/outils/produits" icon={Settings} label="Produits" />
+            <NavItem to="/admin/outils" icon={Settings} label="Liste des outils" onClick={onItemClick} />
+            <NavItem to="/admin/outils/simulateurs" icon={Settings} label="Simulateurs" onClick={onItemClick} />
+            <NavItem to="/admin/outils/produits" icon={Settings} label="Produits" onClick={onItemClick} />
           </div>
         </div>
 
@@ -116,9 +119,9 @@ const SidebarContent = ({ onItemClick }: { onItemClick?: () => void }) => (
         <div>
           <h2 className="text-sidebar-foreground/70 font-medium text-xs uppercase mb-2 px-3">Intelligence Artificielle</h2>
           <div className="space-y-1">
-            <NavItem to="/admin/ia/scores" icon={Brain} label="Scores" />
-            <NavItem to="/admin/ia/recommandations" icon={Brain} label="Recommandations" />
-            <NavItem to="/admin/ia/suivi-interactions" icon={Brain} label="Suivi IA" />
+            <NavItem to="/admin/ia/scores" icon={Brain} label="Scores" onClick={onItemClick} />
+            <NavItem to="/admin/ia/recommandations" icon={Brain} label="Recommandations" onClick={onItemClick} />
+            <NavItem to="/admin/ia/suivi-interactions" icon={Brain} label="Suivi IA" onClick={onItemClick} />
           </div>
         </div>
 
@@ -126,9 +129,9 @@ const SidebarContent = ({ onItemClick }: { onItemClick?: () => void }) => (
         <div>
           <h2 className="text-sidebar-foreground/70 font-medium text-xs uppercase mb-2 px-3">Documents</h2>
           <div className="space-y-1">
-            <NavItem to="/admin/documents/en-attente" icon={FileText} label="À signer" />
-            <NavItem to="/admin/documents/signes" icon={FileText} label="Signés" />
-            <NavItem to="/admin/documents/historique" icon={FileText} label="Archives" />
+            <NavItem to="/admin/documents/en-attente" icon={FileText} label="À signer" onClick={onItemClick} />
+            <NavItem to="/admin/documents/signes" icon={FileText} label="Signés" onClick={onItemClick} />
+            <NavItem to="/admin/documents/historique" icon={FileText} label="Archives" onClick={onItemClick} />
           </div>
         </div>
 
@@ -136,9 +139,9 @@ const SidebarContent = ({ onItemClick }: { onItemClick?: () => void }) => (
         <div>
           <h2 className="text-sidebar-foreground/70 font-medium text-xs uppercase mb-2 px-3">Alertes</h2>
           <div className="space-y-1">
-            <NavItem to="/admin/alertes" icon={Bell} label="Vue d'ensemble" />
-            <NavItem to="/admin/alertes/inactifs" icon={Bell} label="Clients inactifs" />
-            <NavItem to="/admin/alertes/profils-incomplets" icon={Bell} label="Profils incomplets" />
+            <NavItem to="/admin/alertes" icon={Bell} label="Vue d'ensemble" onClick={onItemClick} />
+            <NavItem to="/admin/alertes/inactifs" icon={Bell} label="Clients inactifs" onClick={onItemClick} />
+            <NavItem to="/admin/alertes/profils-incomplets" icon={Bell} label="Profils incomplets" onClick={onItemClick} />
           </div>
         </div>
 
@@ -146,9 +149,9 @@ const SidebarContent = ({ onItemClick }: { onItemClick?: () => void }) => (
         <div>
           <h2 className="text-sidebar-foreground/70 font-medium text-xs uppercase mb-2 px-3">Paramètres</h2>
           <div className="space-y-1">
-            <NavItem to="/admin/parametres/roles" icon={Settings} label="Utilisateurs" />
-            <NavItem to="/admin/parametres/plateforme" icon={Settings} label="Plateforme" />
-            <NavItem to="/admin/parametres/securite" icon={Settings} label="Sécurité" />
+            <NavItem to="/admin/parametres/roles" icon={Users} label="Utilisateurs" onClick={onItemClick} />
+            <NavItem to="/admin/parametres/plateforme" icon={Settings} label="Plateforme" onClick={onItemClick} />
+            <NavItem to="/admin/parametres/securite" icon={Shield} label="Sécurité" onClick={onItemClick} />
           </div>
         </div>
 
@@ -156,9 +159,9 @@ const SidebarContent = ({ onItemClick }: { onItemClick?: () => void }) => (
         <div>
           <h2 className="text-sidebar-foreground/70 font-medium text-xs uppercase mb-2 px-3">Rendez-vous</h2>
           <div className="space-y-1">
-            <NavItem to="/admin/rendez-vous" icon={Calendar} label="Planning" />
-            <NavItem to="/admin/rendez-vous/calendrier" icon={Calendar} label="Calendrier" />
-            <NavItem to="/admin/rendez-vous/historique" icon={Calendar} label="Historique" />
+            <NavItem to="/admin/rendez-vous" icon={Calendar} label="Planning" onClick={onItemClick} />
+            <NavItem to="/admin/rendez-vous/calendrier" icon={Calendar} label="Calendrier" onClick={onItemClick} />
+            <NavItem to="/admin/rendez-vous/historique" icon={Calendar} label="Historique" onClick={onItemClick} />
           </div>
         </div>
       </div>

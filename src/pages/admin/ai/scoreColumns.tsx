@@ -1,16 +1,17 @@
 
 // src/pages/admin/ai/scoreColumns.tsx
 import { ColumnDef } from "@tanstack/react-table";
-import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 export type ClientScore = {
   id: string;
   client: string;
   score: number;
+  variation: number;
   lastUpdate: string;
-  evolution: string;
-  riskProfile: string;
+  status: string;
 };
 
 export const columns: ColumnDef<ClientScore>[] = [
@@ -18,7 +19,7 @@ export const columns: ColumnDef<ClientScore>[] = [
     accessorKey: "client",
     header: "Client",
     cell: ({ row }) => (
-      <Link 
+      <Link
         to={`/admin/ia/scores/${row.original.id}`}
         className="font-medium text-primary hover:underline"
       >
@@ -28,52 +29,79 @@ export const columns: ColumnDef<ClientScore>[] = [
   },
   {
     accessorKey: "score",
-    header: "Score IA",
+    header: "Score",
     cell: ({ row }) => {
-      const score = Number(row.getValue("score"));
-      let color = "bg-amber-500";
+      const score = parseInt(row.getValue("score") as string);
       
-      if (score >= 80) color = "bg-emerald-500";
-      else if (score >= 60) color = "bg-blue-500";
-      else if (score < 40) color = "bg-red-500";
+      let color = "text-green-600";
+      if (score < 50) {
+        color = "text-red-600";
+      } else if (score < 70) {
+        color = "text-yellow-600";
+      }
       
-      return (
-        <div className="flex items-center gap-2">
-          <div className={`h-2.5 w-2.5 rounded-full ${color}`}></div>
-          <span className="font-medium">{score}</span>
-        </div>
-      );
+      return <span className={`font-bold ${color}`}>{score}/100</span>;
+    },
+  },
+  {
+    accessorKey: "variation",
+    header: "Variation",
+    cell: ({ row }) => {
+      const variation = parseInt(row.getValue("variation") as string);
+      
+      const color = variation > 0 ? "text-green-600" : 
+                    variation < 0 ? "text-red-600" : "text-gray-500";
+      
+      const prefix = variation > 0 ? "+" : "";
+      
+      return <span className={`${color}`}>{prefix}{variation}%</span>;
     },
   },
   {
     accessorKey: "lastUpdate",
-    header: "Mise à jour",
+    header: "Dernière mise à jour",
   },
   {
-    accessorKey: "evolution",
-    header: "Évolution",
+    accessorKey: "status",
+    header: "Statut",
     cell: ({ row }) => {
-      const evolution = row.getValue("evolution") as string;
-      const isPositive = evolution.startsWith("+");
+      const status = row.getValue("status") as string;
+      
+      let variant: "default" | "destructive" | "outline" | "secondary";
+      
+      if (status === "Bon") {
+        variant = "default";
+      } else if (status === "Critique") {
+        variant = "destructive";
+      } else if (status === "Moyen") {
+        variant = "secondary";
+      } else {
+        variant = "outline";
+      }
       
       return (
-        <span className={`font-medium ${isPositive ? "text-emerald-600" : "text-red-600"}`}>
-          {evolution}
-        </span>
+        <Badge variant={variant}>{status}</Badge>
       );
     },
   },
   {
-    accessorKey: "riskProfile",
-    header: "Profil de risque",
+    id: "actions",
     cell: ({ row }) => {
-      const profile = row.getValue("riskProfile") as string;
-      const variant = 
-        profile === "Dynamique" ? "default" :
-        profile === "Équilibré" ? "secondary" :
-        profile === "Prudent" ? "outline" : "secondary";
+      const client = row.original;
       
-      return <Badge variant={variant}>{profile}</Badge>;
+      return (
+        <div className="flex justify-end">
+          <Button
+            variant="ghost"
+            size="sm"
+            asChild
+          >
+            <Link to={`/admin/ia/scores/${client.id}`}>
+              Détails
+            </Link>
+          </Button>
+        </div>
+      );
     },
   },
 ];
