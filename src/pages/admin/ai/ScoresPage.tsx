@@ -1,10 +1,11 @@
+
 // src/pages/admin/ai/ScoresPage.tsx
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./scoreColumns";
 import { Button } from "@/components/ui/button";
+import { columns, ClientScore } from "./scoreColumns";
 
-const scores = [
+const scores: ClientScore[] = [
   {
     id: "1",
     client: "Dupont Jean",
@@ -12,6 +13,8 @@ const scores = [
     lastUpdate: "2023-11-15",
     evolution: "+5",
     riskProfile: "Équilibré",
+    variation: "positive",
+    status: "stable",
   },
   {
     id: "2",
@@ -20,6 +23,8 @@ const scores = [
     lastUpdate: "2023-11-10",
     evolution: "-2",
     riskProfile: "Prudent",
+    variation: "negative",
+    status: "declining",
   },
 ];
 

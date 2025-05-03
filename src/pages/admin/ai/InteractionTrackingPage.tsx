@@ -1,16 +1,19 @@
+
 // src/pages/admin/ai/InteractionTrackingPage.tsx
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
-import { columns } from "./interactionColumns";
+import { columns, Interaction } from "./interactionColumns";
 
-const interactions = [
+const interactions: Interaction[] = [
   {
     id: "1",
     client: "Dupont Jean",
     type: "Chat",
     date: "2023-11-15 14:30",
     duration: "12 min",
+    status: "Complétée",
+    topics: ["Retraite", "Placement"],
     satisfaction: "4/5",
   },
   {
@@ -19,6 +22,8 @@ const interactions = [
     type: "Recommandation",
     date: "2023-11-10 09:15",
     duration: "-",
+    status: "Abandonnée",
+    topics: ["Assurance vie", "Fiscalité"],
     satisfaction: "3/5",
   },
 ];

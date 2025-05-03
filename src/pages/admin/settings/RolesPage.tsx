@@ -9,9 +9,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { columns } from "./rolesColumns";
+import { columns, User } from "./rolesColumns";
 
-const dummyUsers = [
+const dummyUsers: User[] = [
   {
     id: "1",
     name: "Jean Dupont",

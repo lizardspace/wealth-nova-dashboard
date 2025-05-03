@@ -1,4 +1,3 @@
-
 // src/pages/admin/settings/SecurityPage.tsx
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,9 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Shield, ShieldAlert, ShieldCheck, Lock } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
-import { accessLogColumns } from "./accessLogColumns";
+import { accessLogColumns, AccessLog } from "./accessLogColumns";
 
-const dummyAccessLogs = [
+const dummyAccessLogs: AccessLog[] = [
   {
     id: "1",
     userName: "Jean Dupont",

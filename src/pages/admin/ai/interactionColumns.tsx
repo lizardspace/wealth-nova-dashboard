@@ -1,5 +1,4 @@
 
-// src/pages/admin/ai/interactionColumns.tsx
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ export type Interaction = {
   status: "Complétée" | "En cours" | "Abandonnée";
   duration: string;
   topics: string[];
+  satisfaction?: string; // Optional since we're adding it
 };
 
 export const columns: ColumnDef<Interaction>[] = [
