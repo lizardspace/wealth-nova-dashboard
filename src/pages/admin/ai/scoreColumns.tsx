@@ -1,9 +1,10 @@
+
 // src/pages/admin/ai/scoreColumns.tsx
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUp, ArrowDown } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 
-export type Score = {
+export type ClientScore = {
   id: string;
   client: string;
   score: number;
@@ -12,7 +13,7 @@ export type Score = {
   riskProfile: string;
 };
 
-export const columns: ColumnDef<Score>[] = [
+export const columns: ColumnDef<ClientScore>[] = [
   {
     accessorKey: "client",
     header: "Client",
@@ -27,38 +28,52 @@ export const columns: ColumnDef<Score>[] = [
   },
   {
     accessorKey: "score",
-    header: "Score",
-    cell: ({ row }) => (
-      <div className="flex items-center">
-        <span className="font-bold">{row.getValue("score")}/100</span>
-      </div>
-    ),
+    header: "Score IA",
+    cell: ({ row }) => {
+      const score = Number(row.getValue("score"));
+      let color = "bg-amber-500";
+      
+      if (score >= 80) color = "bg-emerald-500";
+      else if (score >= 60) color = "bg-blue-500";
+      else if (score < 40) color = "bg-red-500";
+      
+      return (
+        <div className="flex items-center gap-2">
+          <div className={`h-2.5 w-2.5 rounded-full ${color}`}></div>
+          <span className="font-medium">{score}</span>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "lastUpdate",
+    header: "Mise à jour",
   },
   {
     accessorKey: "evolution",
     header: "Évolution",
     cell: ({ row }) => {
-      const evolution = row.getValue("evolution");
-      const isPositive = evolution.toString().startsWith("+");
+      const evolution = row.getValue("evolution") as string;
+      const isPositive = evolution.startsWith("+");
       
       return (
-        <div className={`flex items-center ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
-          {isPositive ? (
-            <ArrowUp className="h-4 w-4 mr-1" />
-          ) : (
-            <ArrowDown className="h-4 w-4 mr-1" />
-          )}
+        <span className={`font-medium ${isPositive ? "text-emerald-600" : "text-red-600"}`}>
           {evolution}
-        </div>
+        </span>
       );
     },
   },
   {
     accessorKey: "riskProfile",
     header: "Profil de risque",
-  },
-  {
-    accessorKey: "lastUpdate",
-    header: "Dernière mise à jour",
+    cell: ({ row }) => {
+      const profile = row.getValue("riskProfile") as string;
+      const variant = 
+        profile === "Dynamique" ? "default" :
+        profile === "Équilibré" ? "secondary" :
+        profile === "Prudent" ? "outline" : "secondary";
+      
+      return <Badge variant={variant}>{profile}</Badge>;
+    },
   },
 ];

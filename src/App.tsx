@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -27,6 +26,7 @@ import ContactPage from "./pages/contact/ContactPage";
 import AnalysePage from "./pages/admin/portfolios/AnalysePage";
 
 // Import des nouvelles pages dashboard
+import VueGeneralePage from "./pages/admin/dashboard/VueGeneralePage";
 import EncoursPage from "./pages/admin/dashboard/EncoursPage";
 import StatsClientsPage from "./pages/admin/dashboard/StatsClientsPage";
 import AlertesPage from "./pages/admin/dashboard/AlertesPage";
@@ -136,7 +136,7 @@ const App = () => (
 
             {/* Admin Dashboard Routes */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="/admin/dashboard" element={<AdminPlaceholder title="Tableau de bord" />} />
+            <Route path="/admin/dashboard" element={<VueGeneralePage />} />
             <Route path="/admin/dashboard/encours" element={<EncoursPage />} />
             <Route path="/admin/dashboard/stats-clients" element={<StatsClientsPage />} />
             <Route path="/admin/dashboard/alertes" element={<AlertesPage />} />
