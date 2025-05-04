@@ -1,42 +1,71 @@
 
-// src/pages/admin/ai/interactionColumns.tsx
-import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Eye, Download } from "lucide-react";
+import { MoreHorizontal, ArrowUpDown } from "lucide-react";
+import { type ColumnDef } from "@tanstack/react-table";
 
 export type Interaction = {
   id: string;
   client: string;
-  type: string;
   date: string;
+  topic: string;
   duration: string;
-  status: string;
-  topics: string[];
-  satisfaction: string;
+  status: "Terminée" | "En cours" | "Interrompue";
 };
 
-export const columns: ColumnDef<Interaction>[] = [
+export const interactionColumns: ColumnDef<Interaction>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "client",
     header: "Client",
-    cell: ({ row }) => (
-      <Link
-        to={`/admin/clients/${row.original.id}`}
-        className="font-medium text-primary hover:underline"
-      >
-        {row.getValue("client")}
-      </Link>
-    ),
-  },
-  {
-    accessorKey: "type",
-    header: "Type",
   },
   {
     accessorKey: "date",
-    header: "Date et heure",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Date
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+  },
+  {
+    accessorKey: "topic",
+    header: "Sujet",
   },
   {
     accessorKey: "duration",
@@ -47,10 +76,16 @@ export const columns: ColumnDef<Interaction>[] = [
     header: "Statut",
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
+
       return (
-        <Badge 
-          variant={status === "Complétée" ? "success" : 
-                 status === "Abandonnée" ? "destructive" : "outline"}
+        <Badge
+          variant={
+            status === "Terminée"
+              ? "outline"
+              : status === "En cours"
+              ? "secondary"
+              : "destructive"
+          }
         >
           {status}
         </Badge>
@@ -58,38 +93,29 @@ export const columns: ColumnDef<Interaction>[] = [
     },
   },
   {
-    accessorKey: "topics",
-    header: "Sujets abordés",
+    id: "actions",
     cell: ({ row }) => {
-      const topics = row.getValue("topics") as string[];
+      const interaction = row.original;
+
       return (
-        <div className="flex flex-wrap gap-1">
-          {topics.map((topic, i) => (
-            <Badge key={i} variant="outline" className="text-xs">
-              {topic}
-            </Badge>
-          ))}
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(interaction.id)}>
+              Copier l'ID
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Voir les détails</DropdownMenuItem>
+            <DropdownMenuItem>Exporter la conversation</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       );
     },
-  },
-  {
-    accessorKey: "satisfaction",
-    header: "Satisfaction",
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => (
-      <div className="flex space-x-2">
-        <Button variant="ghost" size="icon" asChild>
-          <Link to={`/admin/ia/suivi-interactions/${row.original.id}`}>
-            <Eye className="h-4 w-4" />
-          </Link>
-        </Button>
-        <Button variant="ghost" size="icon">
-          <Download className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
   },
 ];

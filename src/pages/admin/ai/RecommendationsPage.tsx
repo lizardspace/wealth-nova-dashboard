@@ -1,143 +1,142 @@
 
-// src/pages/admin/ai/RecommendationsPage.tsx
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./recommendationColumns";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Recommendation } from "./recommendationColumns";
+import React from 'react';
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+type Recommendation = {
+  id: number;
+  client: string;
+  date: string;
+  description: string;
+  status: "En attente" | "Acceptée" | "Rejetée";
+  product?: string;
+  productAdopted?: boolean;
+};
 
 const recommendations: Recommendation[] = [
   {
-    id: "1",
-    client: "Dupont Jean",
-    recommendation: "Diversification du portefeuille immobilier",
-    date: "2023-11-15",
-    status: "En attente",
-    productEffect: "Aucun",
-  },
-  {
-    id: "2",
-    client: "Martin Sophie",
-    recommendation: "Ouverture d'un PER individuel",
-    date: "2023-11-12",
+    id: 1,
+    client: "Jean Dupont",
+    date: "15/04/2025",
+    description: "Augmenter l'allocation en actions",
     status: "Acceptée",
-    productEffect: "PER souscrit le 15/11/2023",
+    product: "Fonds dynamique",
+    productAdopted: true
   },
   {
-    id: "3",
-    client: "Bernard Pierre",
-    recommendation: "Réduction des liquidités - opportunités d'investissement",
-    date: "2023-11-10",
+    id: 2,
+    client: "Marie Lefevre",
+    date: "12/04/2025",
+    description: "Souscrire à une assurance-vie",
+    status: "En attente",
+    product: "Assurance-vie Premium",
+    productAdopted: false
+  },
+  {
+    id: 3,
+    client: "Philippe Martin",
+    date: "10/04/2025",
+    description: "Rééquilibrer le portefeuille",
     status: "Rejetée",
-    productEffect: "Aucun",
+    product: "Service d'analyse",
+    productAdopted: false
   },
   {
-    id: "4",
-    client: "Petit Marie",
-    recommendation: "Ajustement assurance-vie - répartition unités de compte",
-    date: "2023-11-08",
+    id: 4,
+    client: "Sophie Dubois",
+    date: "05/04/2025",
+    description: "Investir dans l'immobilier locatif",
     status: "Acceptée",
-    productEffect: "Réallocation du contrat AV le 10/11/2023",
+    product: "SCPI Rendement",
+    productAdopted: true
   },
   {
-    id: "5",
-    client: "Robert Antoine",
-    recommendation: "Optimisation fiscale - donation temporaire d'usufruit",
-    date: "2023-11-05",
-    status: "En attente",
-    productEffect: "Aucun",
-  },
-  {
-    id: "6",
-    client: "Dubois Julie",
-    recommendation: "Rééquilibrage portefeuille actions - surpondération technologie",
-    date: "2023-11-04",
-    status: "Ignorée",
-    productEffect: "Aucun",
-  },
+    id: 5,
+    client: "Michel Bernard",
+    date: "01/04/2025",
+    description: "Ouvrir un PER",
+    status: "Rejetée",
+    product: "PER Flexible",
+    productAdopted: false
+  }
 ];
 
-export default function RecommendationsPage() {
-  const pendingRecommendations = recommendations.filter(r => r.status === "En attente");
-  const acceptedRecommendations = recommendations.filter(r => r.status === "Acceptée");
-  const rejectedRecommendations = recommendations.filter(r => r.status === "Rejetée");
-  const ignoredRecommendations = recommendations.filter(r => r.status === "Ignorée");
-
+const RecommendationsPage = () => {
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Recommandations IA</h1>
-        <div className="flex space-x-2">
-          <Button variant="outline">Filtrer</Button>
-          <Button>Exporter les données</Button>
-        </div>
+    <div className="container mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">Recommandations IA</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Recommandations acceptées</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{recommendations.filter(r => r.status === "Acceptée").length}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Recommandations rejetées</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{recommendations.filter(r => r.status === "Rejetée").length}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Produits adoptés</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{recommendations.filter(r => r.productAdopted).length}</p>
+          </CardContent>
+        </Card>
       </div>
 
-      <Tabs defaultValue="all" className="w-full">
-        <TabsList>
-          <TabsTrigger value="all">Toutes ({recommendations.length})</TabsTrigger>
-          <TabsTrigger value="pending">En attente ({pendingRecommendations.length})</TabsTrigger>
-          <TabsTrigger value="accepted">Acceptées ({acceptedRecommendations.length})</TabsTrigger>
-          <TabsTrigger value="rejected">Rejetées ({rejectedRecommendations.length})</TabsTrigger>
-          <TabsTrigger value="ignored">Ignorées ({ignoredRecommendations.length})</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="all" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Liste des recommandations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DataTable columns={columns} data={recommendations} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="pending" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recommandations en attente</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DataTable columns={columns} data={pendingRecommendations} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="accepted" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recommandations acceptées</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DataTable columns={columns} data={acceptedRecommendations} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="rejected" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recommandations rejetées</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DataTable columns={columns} data={rejectedRecommendations} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="ignored" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recommandations ignorées</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DataTable columns={columns} data={ignoredRecommendations} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Client</TableHead>
+            <TableHead>Date</TableHead>
+            <TableHead>Recommandation</TableHead>
+            <TableHead>Produit</TableHead>
+            <TableHead>Statut</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {recommendations.map((recommendation) => (
+            <TableRow key={recommendation.id}>
+              <TableCell className="font-medium">{recommendation.client}</TableCell>
+              <TableCell>{recommendation.date}</TableCell>
+              <TableCell>{recommendation.description}</TableCell>
+              <TableCell>{recommendation.product}</TableCell>
+              <TableCell>
+                <Badge
+                  variant={
+                    recommendation.status === "Acceptée"
+                      ? "outline"
+                      : recommendation.status === "En attente"
+                      ? "secondary"
+                      : "destructive"
+                  }
+                >
+                  {recommendation.status}
+                </Badge>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
-}
+};
+
+export default RecommendationsPage;

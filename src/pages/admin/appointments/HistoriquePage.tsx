@@ -1,245 +1,423 @@
-
 import React from 'react';
-import { Search, Filter, Calendar, Download, Eye } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { DataTable } from "@/components/ui/data-table";
-import { ColumnDef } from "@tanstack/react-table";
-import { Link } from "react-router-dom";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Eye, MoreHorizontal, FileDown } from "lucide-react";
 
-interface AppointmentHistory {
-  id: string;
+type Appointment = {
+  id: number;
   client: string;
   date: string;
-  type: string;
+  time: string;
   advisor: string;
-  status: string;
-  duration: string;
-  summary: string;
-}
+  type: "video" | "phone" | "in-person";
+  status: "completed" | "cancelled" | "rescheduled";
+  notes?: string;
+};
 
-const appointments: AppointmentHistory[] = [
+const appointments: Appointment[] = [
   {
-    id: "1",
+    id: 1,
     client: "Jean Dupont",
-    date: "15/04/2024",
-    type: "Visioconférence",
+    date: "15/04/2025",
+    time: "14:00 - 15:00",
     advisor: "Marie Lambert",
-    status: "Effectué",
-    duration: "45 min",
-    summary: "Oui",
+    type: "video",
+    status: "completed",
+    notes: "Discussion sur la stratégie d'investissement"
   },
   {
-    id: "2",
+    id: 2,
     client: "Sophie Martin",
-    date: "10/04/2024",
-    type: "Téléphone",
+    date: "14/04/2025",
+    time: "10:30 - 11:15",
     advisor: "Paul Bernard",
-    status: "Annulé",
-    duration: "30 min",
-    summary: "Non",
+    type: "phone",
+    status: "completed",
+    notes: "Point sur l'assurance vie"
   },
   {
-    id: "3",
-    client: "Philippe Durand",
-    date: "05/04/2024",
-    type: "Présentiel",
+    id: 3,
+    client: "Michel Lefebvre",
+    date: "12/04/2025",
+    time: "09:00 - 10:00",
     advisor: "Marie Lambert",
-    status: "Effectué",
-    duration: "60 min",
-    summary: "Oui",
+    type: "in-person",
+    status: "cancelled",
+    notes: "Client indisponible"
   },
   {
-    id: "4",
-    client: "Amélie Petit",
-    date: "01/04/2024",
-    type: "Visioconférence",
+    id: 4,
+    client: "Camille Dubois",
+    date: "10/04/2025",
+    time: "16:00 - 17:00",
     advisor: "Thomas Richard",
-    status: "Reporté",
-    duration: "45 min",
-    summary: "Non",
+    type: "video",
+    status: "completed",
+    notes: "Préparation retraite"
   },
   {
-    id: "5",
-    client: "Michel Leroy",
-    date: "25/03/2024",
-    type: "Téléphone",
+    id: 5,
+    client: "Philippe Moreau",
+    date: "08/04/2025",
+    time: "11:00 - 12:00",
     advisor: "Paul Bernard",
-    status: "Effectué",
-    duration: "30 min",
-    summary: "Oui",
+    type: "phone",
+    status: "rescheduled",
+    notes: "Reporté au 15/05/2025"
   },
   {
-    id: "6",
-    client: "Émilie Dubois",
-    date: "20/03/2024",
-    type: "Présentiel",
+    id: 6,
+    client: "Isabelle Petit",
+    date: "05/04/2025",
+    time: "14:30 - 15:30",
+    advisor: "Marie Lambert",
+    type: "in-person",
+    status: "completed",
+    notes: "Signature du contrat d'assurance"
+  },
+  {
+    id: 7,
+    client: "Laurent Roux",
+    date: "03/04/2025",
+    time: "09:30 - 10:30",
     advisor: "Thomas Richard",
-    status: "Effectué",
-    duration: "60 min",
-    summary: "Oui",
+    type: "video",
+    status: "completed",
+    notes: "Explication des options de placement"
   },
+  {
+    id: 8,
+    client: "Nicole Blanc",
+    date: "01/04/2025",
+    time: "15:00 - 16:00",
+    advisor: "Paul Bernard",
+    type: "phone",
+    status: "cancelled",
+    notes: "Client malade"
+  }
 ];
 
-const columns: ColumnDef<AppointmentHistory>[] = [
-  {
-    accessorKey: "client",
-    header: "Client",
-    cell: ({ row }) => (
-      <div>
-        <Link
-          to={`/admin/clients/${row.original.id}`}
-          className="font-medium hover:underline text-primary"
-        >
-          {row.getValue("client")}
-        </Link>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "date",
-    header: "Date",
-  },
-  {
-    accessorKey: "type",
-    header: "Type",
-    cell: ({ row }) => {
-      const type = row.getValue("type") as string;
-      return (
-        <Badge
-          variant="outline"
-          className={
-            type === "Visioconférence" ? "border-blue-500 text-blue-500" :
-            type === "Téléphone" ? "border-green-500 text-green-500" :
-            "border-purple-500 text-purple-500"
-          }
-        >
-          {type}
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "advisor",
-    header: "Conseiller",
-  },
-  {
-    accessorKey: "status",
-    header: "Statut",
-    cell: ({ row }) => {
-      const status = row.getValue("status") as string;
-      return (
-        <Badge
-          variant={
-            status === "Effectué" ? "success" :
-            status === "Annulé" ? "destructive" :
-            "outline"
-          }
-        >
-          {status}
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "duration",
-    header: "Durée",
-  },
-  {
-    accessorKey: "summary",
-    header: "Compte-rendu",
-  },
-  {
-    id: "actions",
-    header: "Actions",
-    cell: ({ row }) => (
-      <div className="flex space-x-2">
-        <Button variant="ghost" size="icon" asChild>
-          <Link to={`/admin/rendez-vous/historique/${row.original.id}`}>
-            <Eye className="h-4 w-4" />
-          </Link>
-        </Button>
-        <Button variant="ghost" size="icon">
-          <Download className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
-  },
-];
-
-export default function HistoriquePage() {
+const HistoriquePage = () => {
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Historique des rendez-vous</h1>
-        <div className="flex gap-2">
-          <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Exporter
-          </Button>
-          <Button variant="outline">
-            <Calendar className="mr-2 h-4 w-4" />
-            Filtre par date
-          </Button>
-        </div>
+    <div className="container mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Historique des rendez-vous</h1>
+        <Button variant="outline">
+          <FileDown className="mr-2 h-4 w-4" />
+          Exporter
+        </Button>
       </div>
 
-      <div className="flex justify-between items-center">
-        <div className="relative max-w-md w-full">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher un rendez-vous..."
-            className="pl-8"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Select defaultValue="recent">
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Trier par" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="recent">Plus récents</SelectItem>
-              <SelectItem value="oldest">Plus anciens</SelectItem>
-              <SelectItem value="client">Client (A-Z)</SelectItem>
-              <SelectItem value="advisor">Conseiller (A-Z)</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline" size="icon">
-            <Filter className="h-4 w-4" />
-          </Button>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total des rendez-vous</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{appointments.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Rendez-vous complétés</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{appointments.filter(a => a.status === "completed").length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Annulations</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{appointments.filter(a => a.status === "cancelled").length}</div>
+          </CardContent>
+        </Card>
       </div>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>Tous les rendez-vous passés</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DataTable columns={columns} data={appointments} />
-        </CardContent>
-      </Card>
-
-      <div className="bg-muted/30 p-4 rounded-lg border">
-        <div className="flex items-start gap-4">
-          <Calendar className="h-6 w-6 text-primary mt-1" />
-          <div>
-            <h3 className="font-medium">Gestion des archives</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              Les rendez-vous de plus de 24 mois sont automatiquement archivés et peuvent être consultés dans ce tableau.
-              Pour des requêtes spécifiques sur d'anciennes données, contactez le support technique.
-            </p>
-          </div>
-        </div>
-      </div>
+      <Tabs defaultValue="all" className="w-full">
+        <TabsList>
+          <TabsTrigger value="all">Tous</TabsTrigger>
+          <TabsTrigger value="completed">Complétés</TabsTrigger>
+          <TabsTrigger value="cancelled">Annulés</TabsTrigger>
+          <TabsTrigger value="rescheduled">Reportés</TabsTrigger>
+        </TabsList>
+        <TabsContent value="all" className="mt-6">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Client</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Horaire</TableHead>
+                <TableHead>Conseiller</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Statut</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {appointments.map((appointment) => (
+                <TableRow key={appointment.id}>
+                  <TableCell className="font-medium">{appointment.client}</TableCell>
+                  <TableCell>{appointment.date}</TableCell>
+                  <TableCell>{appointment.time}</TableCell>
+                  <TableCell>{appointment.advisor}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      {appointment.type === "video" ? (
+                        <span>Visioconférence</span>
+                      ) : appointment.type === "phone" ? (
+                        <span>Téléphone</span>
+                      ) : (
+                        <span>Présentiel</span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        appointment.status === "completed"
+                          ? "outline"
+                          : appointment.status === "rescheduled"
+                          ? "secondary"
+                          : "destructive"
+                      }
+                    >
+                      {appointment.status === "completed"
+                        ? "Terminé"
+                        : appointment.status === "cancelled"
+                        ? "Annulé"
+                        : "Reporté"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem>
+                          <Eye className="mr-2 h-4 w-4" /> Voir le détail
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>Télécharger le compte-rendu</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TabsContent>
+        <TabsContent value="completed">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Client</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Horaire</TableHead>
+                <TableHead>Conseiller</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Statut</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {appointments
+                .filter((appointment) => appointment.status === "completed")
+                .map((appointment) => (
+                  <TableRow key={appointment.id}>
+                    <TableCell className="font-medium">{appointment.client}</TableCell>
+                    <TableCell>{appointment.date}</TableCell>
+                    <TableCell>{appointment.time}</TableCell>
+                    <TableCell>{appointment.advisor}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center">
+                        {appointment.type === "video" ? (
+                          <span>Visioconférence</span>
+                        ) : appointment.type === "phone" ? (
+                          <span>Téléphone</span>
+                        ) : (
+                          <span>Présentiel</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                      >
+                        Terminé
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem>
+                            <Eye className="mr-2 h-4 w-4" /> Voir le détail
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>Télécharger le compte-rendu</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </TabsContent>
+        <TabsContent value="cancelled">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Client</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Horaire</TableHead>
+                <TableHead>Conseiller</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Statut</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {appointments
+                .filter((appointment) => appointment.status === "cancelled")
+                .map((appointment) => (
+                  <TableRow key={appointment.id}>
+                    <TableCell className="font-medium">{appointment.client}</TableCell>
+                    <TableCell>{appointment.date}</TableCell>
+                    <TableCell>{appointment.time}</TableCell>
+                    <TableCell>{appointment.advisor}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center">
+                        {appointment.type === "video" ? (
+                          <span>Visioconférence</span>
+                        ) : appointment.type === "phone" ? (
+                          <span>Téléphone</span>
+                        ) : (
+                          <span>Présentiel</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="destructive"
+                      >
+                        Annulé
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem>
+                            <Eye className="mr-2 h-4 w-4" /> Voir le détail
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>Télécharger le compte-rendu</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </TabsContent>
+        <TabsContent value="rescheduled">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Client</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Horaire</TableHead>
+                <TableHead>Conseiller</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Statut</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {appointments
+                .filter((appointment) => appointment.status === "rescheduled")
+                .map((appointment) => (
+                  <TableRow key={appointment.id}>
+                    <TableCell className="font-medium">{appointment.client}</TableCell>
+                    <TableCell>{appointment.date}</TableCell>
+                    <TableCell>{appointment.time}</TableCell>
+                    <TableCell>{appointment.advisor}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center">
+                        {appointment.type === "video" ? (
+                          <span>Visioconférence</span>
+                        ) : appointment.type === "phone" ? (
+                          <span>Téléphone</span>
+                        ) : (
+                          <span>Présentiel</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="secondary"
+                      >
+                        Reporté
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem>
+                            <Eye className="mr-2 h-4 w-4" /> Voir le détail
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>Télécharger le compte-rendu</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </TabsContent>
+      </Tabs>
     </div>
   );
-}
+};
+
+export default HistoriquePage;
