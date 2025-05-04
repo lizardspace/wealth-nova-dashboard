@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -104,6 +103,11 @@ const PublicOnlyRoute = ({ children }: { children: React.ReactNode }) => {
 
   return <>{children}</>;
 };
+
+// Import des pages de rendez-vous
+import PlanningPage from "./pages/admin/appointments/PlanningPage";
+import CalendarPage from "./pages/admin/appointments/CalendarPage";
+import HistoriquePage from "./pages/admin/appointments/HistoriquePage";
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -219,11 +223,11 @@ const App = () => (
             <Route path="/admin/parametres/historique-acces" element={<AdminPlaceholder title="Journal connexions" />} />
 
             {/* Admin Rendez-vous Routes */}
-            <Route path="/admin/rendez-vous" element={<AdminPlaceholder title="Planning global" />} />
-            <Route path="/admin/rendez-vous/calendrier" element={<AdminPlaceholder title="Vue calendrier" />} />
+            <Route path="/admin/rendez-vous" element={<PlanningPage />} />
+            <Route path="/admin/rendez-vous/calendrier" element={<CalendarPage />} />
             <Route path="/admin/rendez-vous/creneau/new" element={<AdminPlaceholder title="Nouveau créneau" />} />
-            <Route path="/admin/rendez-vous/creneau/:id/edit" element={<AdminPlaceholder title="Modifier créneau" />} />
-            <Route path="/admin/rendez-vous/historique" element={<AdminPlaceholder title="Archives rendez-vous" />} />
+            <Route path="/admin/rendez-vous/creneau/:id/edit" element={<AdminPlaceholder title="Modifier cr��neau" />} />
+            <Route path="/admin/rendez-vous/historique" element={<HistoriquePage />} />
           </Route>
 
           {/* Catch-all route */}
