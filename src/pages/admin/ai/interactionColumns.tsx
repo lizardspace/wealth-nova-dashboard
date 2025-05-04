@@ -20,6 +20,9 @@ export type Interaction = {
   topic: string;
   duration: string;
   status: "Terminée" | "En cours" | "Interrompue";
+  type?: string;
+  topics?: string[];
+  satisfaction?: string;
 };
 
 export const interactionColumns: ColumnDef<Interaction>[] = [
@@ -119,3 +122,6 @@ export const interactionColumns: ColumnDef<Interaction>[] = [
     },
   },
 ];
+
+// Export the columns with a different name to match the import in InteractionTrackingPage.tsx
+export const columns = interactionColumns;
