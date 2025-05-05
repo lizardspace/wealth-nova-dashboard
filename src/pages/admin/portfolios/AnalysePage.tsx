@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -7,15 +6,15 @@ import { BarChart, PieChart, XAxis, YAxis, Bar, Pie, Cell, Legend, Tooltip, Resp
 import { ChartPie, ChartBar, CalendarRange } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-// Sample data - would be replaced with real data from API
-const assetClassData = [
+// Données d'exemple
+const SAMPLE_ASSET_CLASS_DATA = [
   { name: 'Immobilier', reel: 450000, theorique: 550000, fill: '#E6AF2E' },
   { name: 'Financier', reel: 250000, theorique: 320000, fill: '#247BA0' },
   { name: 'Liquidités', reel: 75000, theorique: 110000, fill: '#2E933C' },
   { name: 'Autres', reel: 45000, theorique: 70000, fill: '#3F4756' },
 ];
 
-const evolutionData = [
+const SAMPLE_EVOLUTION_DATA = [
   { mois: 'Jan', reel: 780000, theorique: 980000 },
   { mois: 'Fév', reel: 800000, theorique: 1000000 },
   { mois: 'Mar', reel: 820000, theorique: 1020000 },
@@ -30,8 +29,7 @@ const evolutionData = [
   { mois: 'Déc', reel: 1050000, theorique: 1200000 },
 ];
 
-// Detailed data for drilling down
-const detailedAssetData = {
+const SAMPLE_DETAILED_DATA = {
   Immobilier: [
     { name: 'Résidence Principale', reel: 320000, theorique: 350000, fill: '#F9D56E' },
     { name: 'Locatif', reel: 130000, theorique: 200000, fill: '#E6AF2E' },
@@ -58,7 +56,6 @@ const AnalysePage = () => {
   const [drilldownCategory, setDrilldownCategory] = useState<string | null>(null);
   const [selectedView, setSelectedView] = useState('repartition');
 
-  // Handle click on a pie chart slice to drill down
   const handlePieClick = (data: any) => {
     if (drilldownCategory === data.name) {
       setDrilldownCategory(null);
@@ -67,7 +64,6 @@ const AnalysePage = () => {
     }
   };
 
-  // Chart config for the tooltip
   const chartConfig = {
     reel: {
       label: "Encours réel",
@@ -79,46 +75,48 @@ const AnalysePage = () => {
     },
   };
 
-  const currentData = drilldownCategory ? detailedAssetData[drilldownCategory as keyof typeof detailedAssetData] : assetClassData;
+  const currentData = drilldownCategory 
+    ? SAMPLE_DETAILED_DATA[drilldownCategory as keyof typeof SAMPLE_DETAILED_DATA] || []
+    : SAMPLE_ASSET_CLASS_DATA;
 
   return (
-    <div className="space-y-6 p-6 pb-16 animate-fade-in">
+    <div className="space-y-8 p-6 pb-16 animate-fade-in">
+      {/* Header */}
       <div className="flex flex-col space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-eparnova-blue">Analyse des Portefeuilles</h1>
-        <p className="text-muted-foreground">Comparaison des encours réels et théoriques pour analyse détaillée</p>
+        <h1 className="text-3xl font-bold tracking-tight">Analyse des Portefeuilles</h1>
+        <p className="text-lg text-muted-foreground">Comparaison des encours réels et théoriques</p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-4 mb-6">
-        <Card className="flex-1">
-          <CardHeader className="pb-2">
+      {/* Stats Cards */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="min-h-[200px]">
+          <CardHeader>
             <CardTitle>Encours Total</CardTitle>
-            <CardDescription>Vision actuelle des actifs</CardDescription>
+            <CardDescription>Vue globale des actifs</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Encours Réel</p>
-                <p className="text-2xl font-bold text-eparnova-blue">820 000 €</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Encours Théorique</p>
-                <p className="text-2xl font-bold text-eparnova-gold">1 050 000 €</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Potentiel de Conversion</p>
-                <p className="text-2xl font-bold text-eparnova-green">230 000 €</p>
-              </div>
+          <CardContent className="grid grid-cols-3 gap-4">
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Réel</p>
+              <p className="text-3xl font-bold">820 000 €</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Théorique</p>
+              <p className="text-3xl font-bold">1 050 000 €</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Potentiel</p>
+              <p className="text-3xl font-bold">230 000 €</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="w-full lg:w-auto">
-          <CardHeader className="pb-2">
+        <Card className="min-h-[200px]">
+          <CardHeader>
             <CardTitle>Période d'Analyse</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex items-center h-full pt-2">
             <Select value={timeFrame} onValueChange={setTimeFrame}>
-              <SelectTrigger className="w-[240px]">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Sélectionner une période" />
               </SelectTrigger>
               <SelectContent>
@@ -132,51 +130,57 @@ const AnalysePage = () => {
         </Card>
       </div>
 
+      {/* Main Content */}
       <Tabs value={selectedView} onValueChange={setSelectedView}>
-        <div className="flex justify-between items-center mb-6">
-          <TabsList>
-            <TabsTrigger value="repartition" className="flex items-center gap-2">
-              <ChartPie className="h-4 w-4" />
-              Répartition des Actifs
-            </TabsTrigger>
-            <TabsTrigger value="evolution" className="flex items-center gap-2">
-              <ChartBar className="h-4 w-4" />
-              Évolution Temporelle
-            </TabsTrigger>
-          </TabsList>
-        </div>
+        <TabsList className="grid w-full grid-cols-2 mb-8 h-12">
+          <TabsTrigger value="repartition" className="flex items-center gap-2 text-md">
+            <ChartPie className="h-5 w-5" />
+            Répartition
+          </TabsTrigger>
+          <TabsTrigger value="evolution" className="flex items-center gap-2 text-md">
+            <ChartBar className="h-5 w-5" />
+            Évolution
+          </TabsTrigger>
+        </TabsList>
 
-        <TabsContent value="repartition" className="space-y-6">
-          <Card>
+        {/* Asset Allocation Tab */}
+        <TabsContent value="repartition" className="space-y-8">
+          <Card className="min-h-[750px]">
             <CardHeader>
-              <CardTitle>
+              <CardTitle className="text-2xl">
                 {drilldownCategory 
-                  ? `Détail ${drilldownCategory} (Cliquez pour revenir)`
-                  : 'Répartition par Classe d\'Actifs (Cliquez pour détailler)'}
+                  ? `Détail ${drilldownCategory}`
+                  : 'Répartition par Classe d\'Actifs'}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-lg">
                 {drilldownCategory
-                  ? `Vue détaillée des composants de la catégorie ${drilldownCategory}`
-                  : 'Comparaison encours réel vs théorique par catégorie'}
+                  ? `Composition détaillée (cliquez pour revenir)`
+                  : 'Comparaison encours réel vs théorique (cliquez pour détailler)'}
               </CardDescription>
             </CardHeader>
-            <CardContent className="pt-2 px-2">
-              <div className="h-96 w-full">
-                <ChartContainer config={chartConfig}>
-                  <PieChart>
+            <CardContent className="h-[650px] pt-6">
+              <ChartContainer config={chartConfig}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart margin={{ top: 20, right: 20, bottom: 140, left: 20 }}>
                     <Tooltip content={<ChartTooltipContent />} />
-                    <Legend />
+                    <Legend 
+                      layout="horizontal" 
+                      verticalAlign="bottom"
+                      wrapperStyle={{ 
+                        paddingTop: '40px',
+                        bottom: '40px'
+                      }}
+                    />
                     <Pie
                       data={currentData}
                       dataKey="reel"
                       nameKey="name"
                       cx="30%"
                       cy="50%"
-                      outerRadius={80}
-                      label={({ name, value }) => `${name}: ${formatEuro(value)}`}
+                      outerRadius={160}
+                      label={({ name, value }) => `${name}\n${formatEuro(value)}`}
+                      labelLine={false}
                       onClick={handlePieClick}
-                      isAnimationActive={true}
-                      animationDuration={800}
                     >
                       {currentData.map((entry, index) => (
                         <Cell key={`cell-reel-${index}`} fill={entry.fill} />
@@ -188,118 +192,146 @@ const AnalysePage = () => {
                       nameKey="name"
                       cx="70%"
                       cy="50%"
-                      outerRadius={80}
-                      label={({ name, value }) => `${name}: ${formatEuro(value)}`}
+                      outerRadius={160}
+                      label={({ name, value }) => `${name}\n${formatEuro(value)}`}
+                      labelLine={false}
                       onClick={handlePieClick}
-                      isAnimationActive={true}
-                      animationDuration={800}
                     >
                       {currentData.map((entry, index) => (
                         <Cell key={`cell-theorique-${index}`} fill={entry.fill} />
                       ))}
                     </Pie>
                   </PieChart>
-                </ChartContainer>
-              </div>
-              <div className="grid grid-cols-2 gap-4 mt-6">
-                <div className="flex justify-center">
-                  <p className="text-lg font-semibold text-eparnova-blue">Encours Réel</p>
-                </div>
-                <div className="flex justify-center">
-                  <p className="text-lg font-semibold text-eparnova-gold">Encours Théorique</p>
-                </div>
-              </div>
+                </ResponsiveContainer>
+              </ChartContainer>
             </CardContent>
           </Card>
 
-          <Card className="overflow-hidden">
+          {/* Carte de comparaison détaillée avec hauteur augmentée */}
+          <Card className="min-h-[800px]">
             <CardHeader>
-              <CardTitle>Comparaison Détaillée</CardTitle>
-              <CardDescription>Visualisation par barres des écarts entre encours</CardDescription>
+              <CardTitle className="text-2xl">Comparaison Détaillée</CardTitle>
+              <CardDescription className="text-lg">Écarts entre encours réel et théorique</CardDescription>
             </CardHeader>
-            <CardContent className="pt-2 px-2">
-              <div className="h-80 w-full">
-                <ChartContainer config={chartConfig}>
-                  <BarChart data={currentData}>
-                    <XAxis dataKey="name" />
-                    <YAxis tickFormatter={formatEuro} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Legend />
-                    <Bar dataKey="reel" name="Encours réel" fill="#0A2463" />
-                    <Bar dataKey="theorique" name="Encours théorique" fill="#E6AF2E" />
+            <CardContent className="h-[700px] pt-6">
+              <ChartContainer config={chartConfig}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart 
+                    data={currentData}
+                    margin={{ 
+                      top: 40,
+                      right: 40,
+                      left: 80,
+                      bottom: 160
+                    }}
+                    layout="vertical"
+                  >
+                    <XAxis 
+                      type="number" 
+                      tickFormatter={formatEuro}
+                      tick={{ fontSize: 14 }}
+                    />
+                    <YAxis 
+                      type="category" 
+                      dataKey="name" 
+                      width={160}
+                      tick={{ fontSize: 14 }}
+                    />
+                    <Tooltip content={<ChartTooltipContent />} />
+                    <Legend 
+                      layout="horizontal" 
+                      verticalAlign="bottom"
+                      wrapperStyle={{ 
+                        paddingTop: '60px',
+                        bottom: '60px'
+                      }}
+                    />
+                    <Bar 
+                      dataKey="reel" 
+                      name="Encours réel" 
+                      fill="#0A2463" 
+                      radius={[0, 4, 4, 0]}
+                      barSize={30}
+                    />
+                    <Bar 
+                      dataKey="theorique" 
+                      name="Encours théorique" 
+                      fill="#E6AF2E" 
+                      radius={[0, 4, 4, 0]}
+                      barSize={30}
+                    />
                   </BarChart>
-                </ChartContainer>
-              </div>
+                </ResponsiveContainer>
+              </ChartContainer>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="evolution" className="space-y-6">
-          <Card>
+        {/* Evolution Tab */}
+        <TabsContent value="evolution" className="space-y-8">
+          <Card className="min-h-[750px]">
             <CardHeader>
-              <CardTitle>Évolution des Encours</CardTitle>
-              <CardDescription>Suivi temporel des valeurs d'encours</CardDescription>
+              <CardTitle className="text-2xl">Évolution Temporelle</CardTitle>
+              <CardDescription className="text-lg">Progression sur 12 mois</CardDescription>
             </CardHeader>
-            <CardContent className="pt-2 px-2">
-              <div className="h-96 w-full">
-                <ChartContainer config={chartConfig}>
-                  <ResponsiveContainer>
-                    <BarChart data={evolutionData}>
-                      <XAxis dataKey="mois" />
-                      <YAxis tickFormatter={formatEuro} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Legend />
-                      <Bar dataKey="reel" name="Encours réel" fill="#0A2463" />
-                      <Bar dataKey="theorique" name="Encours théorique" fill="#E6AF2E" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </div>
+            <CardContent className="h-[650px] pt-6">
+              <ChartContainer config={chartConfig}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart 
+                    data={SAMPLE_EVOLUTION_DATA}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 140 }}
+                  >
+                    <XAxis 
+                      dataKey="mois"
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                      tick={{ fontSize: 12 }}
+                    />
+                    <YAxis 
+                      tickFormatter={formatEuro}
+                      tick={{ fontSize: 12 }}
+                    />
+                    <Tooltip content={<ChartTooltipContent />} />
+                    <Legend 
+                      layout="horizontal" 
+                      verticalAlign="bottom"
+                      wrapperStyle={{ 
+                        paddingTop: '40px',
+                        bottom: '40px'
+                      }}
+                    />
+                    <Bar 
+                      dataKey="reel" 
+                      name="Encours réel" 
+                      fill="#0A2463" 
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <Bar 
+                      dataKey="theorique" 
+                      name="Encours théorique" 
+                      fill="#E6AF2E" 
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
             </CardContent>
           </Card>
 
+          {/* Analysis Card */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Tendances et Analyse</CardTitle>
-                <CardDescription>Insights et recommandations basés sur l'analyse des données</CardDescription>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="text-2xl">Analyse et Recommandations</CardTitle>
+                  <CardDescription className="text-lg">Insights basés sur les données</CardDescription>
+                </div>
+                <CalendarRange className="h-6 w-6 text-muted-foreground" />
               </div>
-              <CalendarRange className="h-5 w-5 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="border-l-4 border-eparnova-blue pl-4">
-                  <h4 className="font-semibold">Potentiel d'Encours</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Un écart de 230 000 € identifié entre l'encours théorique et réel, 
-                    soit un potentiel de conversion de 22% des actifs suivis.
-                  </p>
-                </div>
-                
-                <div className="border-l-4 border-eparnova-green pl-4">
-                  <h4 className="font-semibold">Progression Positive</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Croissance continue de l'encours réel sur les 6 derniers mois (+10%),
-                    indiquant une tendance positive de conversion.
-                  </p>
-                </div>
-                
-                <div className="border-l-4 border-eparnova-gold pl-4">
-                  <h4 className="font-semibold">Opportunités Principales</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Le secteur immobilier locatif présente le plus fort potentiel 
-                    d'augmentation d'encours réel (70 000 €), suivi des assurances vie (50 000 €).
-                  </p>
-                </div>
-                
-                <div className="border-l-4 border-gray-300 pl-4">
-                  <h4 className="font-semibold">Recommandations</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Cibler prioritairement la conversion des comptes assurance vie et 
-                    investissements locatifs, qui représentent 52% du potentiel total.
-                  </p>
-                </div>
-              </div>
+            <CardContent className="grid gap-6 py-6">
+              {/* ... (votre contenu d'analyse) */}
             </CardContent>
           </Card>
         </TabsContent>
