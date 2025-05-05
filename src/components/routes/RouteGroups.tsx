@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 
 // Simple placeholder for admin routes not yet implemented
 export const AdminPlaceholder = ({ title }: { title: string }) => (
