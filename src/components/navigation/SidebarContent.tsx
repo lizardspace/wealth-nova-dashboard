@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
@@ -33,20 +34,20 @@ const SidebarSection = ({ title, items, onItemClick }: SidebarSectionProps) => {
   const [isExpanded, setIsExpanded] = React.useState(true);
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1 mb-3">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center w-full px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+        className="flex items-center w-full px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors group"
       >
         {isExpanded ? (
-          <ChevronDown className="w-4 h-4 mr-2 text-slate-500" />
+          <ChevronDown className="w-4 h-4 mr-2 text-slate-500 group-hover:text-slate-700 transition-transform" />
         ) : (
-          <ChevronRight className="w-4 h-4 mr-2 text-slate-500" />
+          <ChevronRight className="w-4 h-4 mr-2 text-slate-500 group-hover:text-slate-700 transition-transform" />
         )}
         <span className="font-medium">{title}</span>
       </button>
       {isExpanded && (
-        <div className="ml-2 space-y-1 border-l-2 border-slate-100 pl-4">
+        <div className="ml-2 space-y-1 border-l-2 border-slate-100 pl-4 animate-accordion-down">
           {items.map((item) => (
             <NavLink
               key={item.to}
@@ -55,17 +56,17 @@ const SidebarSection = ({ title, items, onItemClick }: SidebarSectionProps) => {
               onClick={onItemClick}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors',
+                  'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200',
                   isActive
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
+                    ? 'bg-blue-50 text-blue-600 shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800 hover:translate-x-1'
                 )
               }
             >
               {({ isActive }) => (
                 <>
                   <item.icon className={cn(
-                    'w-4 h-4 mr-3 flex-shrink-0',
+                    'w-4 h-4 mr-3 flex-shrink-0 transition-colors',
                     isActive ? 'text-blue-500' : 'text-slate-500'
                   )} />
                   <span>{item.label}</span>
@@ -143,9 +144,13 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
 
   return (
     <div className="w-64 h-full flex flex-col bg-slate-50 border-r border-slate-200 overflow-y-auto">
+      <div className="p-4 flex items-center justify-center border-b border-slate-200">
+        <div className="text-xl font-bold text-eparnova-blue flex items-center">
+          <span className="text-eparnova-gold">EPAR</span>NOVA <span className="text-xs ml-2 bg-eparnova-blue/10 text-eparnova-blue px-2 py-1 rounded-md">Admin</span>
+        </div>
+      </div>
       
-      
-      <nav className="flex-1 px-3 py-4 space-y-4">
+      <nav className="flex-1 px-3 py-4 space-y-2">
         <SidebarSection title="Tableau de bord" items={dashboardItems} onItemClick={onItemClick} />
         <SidebarSection title="Clients" items={clientsItems} onItemClick={onItemClick} />
         <SidebarSection title="Portefeuilles" items={portfolioItems} onItemClick={onItemClick} />
@@ -157,10 +162,10 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
         <SidebarSection title="Paramètres" items={settingsItems} onItemClick={onItemClick} />
       </nav>
 
-      <div className="p-4 border-t border-slate-200 bg-white">
+      <div className="p-4 border-t border-slate-200 bg-white hover:bg-slate-50 transition-colors">
         <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center">
-            <span className="text-sm font-medium text-purple-600">AD</span>
+          <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center">
+            <span className="text-sm font-medium text-blue-600">AD</span>
           </div>
           <div>
             <p className="text-sm font-medium text-slate-800">Admin User</p>

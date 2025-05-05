@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -36,16 +35,16 @@ const AlertesPage = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Alertes & Opportunités</h1>
+          <h1 className="text-2xl font-bold text-slate-800">Alertes & Opportunités</h1>
           <p className="text-muted-foreground">
             Suivi des opportunités commerciales prioritaires
           </p>
         </div>
         <div className="flex gap-2 mt-2 sm:mt-0">
-          <Button variant="outline">
+          <Button variant="outline" className="hover:border-blue-300 transition-colors">
             Gérer les relances
           </Button>
-          <Button>
+          <Button className="bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm">
             <Bell className="mr-2 h-4 w-4" />
             Créer une alerte
           </Button>
@@ -53,7 +52,7 @@ const AlertesPage = () => {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="hover:shadow-md transition-all border-slate-200 hover:border-blue-200">
           <CardHeader className="pb-2">
             <CardDescription>Total alertes</CardDescription>
             <CardTitle className="text-2xl">96</CardTitle>
@@ -66,7 +65,7 @@ const AlertesPage = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover:shadow-md transition-all border-slate-200 hover:border-blue-200">
           <CardHeader className="pb-2">
             <CardDescription>Alertes prioritaires</CardDescription>
             <CardTitle className="text-2xl">35</CardTitle>
@@ -78,7 +77,7 @@ const AlertesPage = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover:shadow-md transition-all border-slate-200 hover:border-blue-200">
           <CardHeader className="pb-2">
             <CardDescription>Relances effectuées</CardDescription>
             <CardTitle className="text-2xl">28</CardTitle>
@@ -91,7 +90,7 @@ const AlertesPage = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover:shadow-md transition-all border-slate-200 hover:border-blue-200">
           <CardHeader className="pb-2">
             <CardDescription>Taux de conversion</CardDescription>
             <CardTitle className="text-2xl">32%</CardTitle>
@@ -105,7 +104,7 @@ const AlertesPage = () => {
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-1">
+        <Card className="md:col-span-1 hover:shadow-md transition-all border-slate-200 hover:border-blue-200">
           <CardHeader>
             <CardTitle>Répartition par type</CardTitle>
             <CardDescription>
@@ -135,15 +134,15 @@ const AlertesPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-2">
+        <Card className="md:col-span-2 hover:shadow-md transition-all border-slate-200 hover:border-blue-200">
           <CardHeader>
             <CardTitle>Alertes critiques</CardTitle>
             <CardDescription>
               Opportunités à traiter en priorité
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Alert className="mb-4 bg-red-50 border-red-200">
+          <CardContent className="space-y-4">
+            <Alert className="bg-red-50 border-red-200 hover:bg-red-100 transition-colors">
               <AlertTriangle className="h-4 w-4 text-red-500" />
               <AlertTitle className="text-red-700">Attention</AlertTitle>
               <AlertDescription className="text-red-600">
@@ -151,7 +150,7 @@ const AlertesPage = () => {
               </AlertDescription>
             </Alert>
             
-            <Alert className="mb-4 bg-amber-50 border-amber-200">
+            <Alert className="bg-amber-50 border-amber-200 hover:bg-amber-100 transition-colors">
               <AlertTriangle className="h-4 w-4 text-amber-500" />
               <AlertTitle className="text-amber-700">Opportunités</AlertTitle>
               <AlertDescription className="text-amber-600">
@@ -159,7 +158,7 @@ const AlertesPage = () => {
               </AlertDescription>
             </Alert>
 
-            <Alert className="bg-blue-50 border-blue-200">
+            <Alert className="bg-blue-50 border-blue-200 hover:bg-blue-100 transition-colors">
               <FileText className="h-4 w-4 text-blue-500" />
               <AlertTitle className="text-blue-700">Simulations</AlertTitle>
               <AlertDescription className="text-blue-600">
@@ -170,7 +169,7 @@ const AlertesPage = () => {
         </Card>
       </div>
 
-      <Card>
+      <Card className="hover:shadow-md transition-all border-slate-200 hover:border-blue-200">
         <CardHeader>
           <CardTitle>Liste des alertes prioritaires</CardTitle>
           <CardDescription>
@@ -191,13 +190,13 @@ const AlertesPage = () => {
               </thead>
               <tbody className="divide-y">
                 {alertsList.map((alert) => (
-                  <tr key={alert.id}>
+                  <tr key={alert.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="py-3">{alert.type}</td>
-                    <td className="py-3">{alert.client}</td>
+                    <td className="py-3 font-medium group-hover:text-blue-600 transition-colors">{alert.client}</td>
                     <td className="py-3">
                       <Badge className={
-                        alert.niveau === "critique" ? "bg-red-500" :
-                        alert.niveau === "important" ? "bg-amber-500" : "bg-blue-500"
+                        alert.niveau === "critique" ? "bg-red-500 hover:bg-red-600" :
+                        alert.niveau === "important" ? "bg-amber-500 hover:bg-amber-600" : "bg-blue-500 hover:bg-blue-600"
                       }>
                         {alert.niveau}
                       </Badge>
@@ -213,10 +212,10 @@ const AlertesPage = () => {
                         variant="outline"
                         size="sm"
                         className={
-                          alert.action === "Relance" ? "text-red-600 border-red-200 hover:bg-red-50" :
-                          alert.action === "Email" ? "text-blue-600 border-blue-200 hover:bg-blue-50" :
-                          alert.action === "Appel" ? "text-amber-600 border-amber-200 hover:bg-amber-50" :
-                          "text-green-600 border-green-200 hover:bg-green-50"
+                          alert.action === "Relance" ? "text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300" :
+                          alert.action === "Email" ? "text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-300" :
+                          alert.action === "Appel" ? "text-amber-600 border-amber-200 hover:bg-amber-50 hover:border-amber-300" :
+                          "text-green-600 border-green-200 hover:bg-green-50 hover:border-green-300"
                         }
                       >
                         {alert.action}
