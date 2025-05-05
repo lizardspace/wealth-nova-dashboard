@@ -1,405 +1,419 @@
 
 import React, { useState } from 'react';
-import { 
+import {
   Card, 
-  CardHeader, 
-  CardTitle, 
+  CardContent, 
   CardDescription, 
-  CardContent,
-  CardFooter
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Download, FileSpreadsheet, Users } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+  CardHeader, 
+  CardTitle
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import { 
+  FileText,
+  Download,
+  Filter,
+  UserPlus,
+  Users,
+  FilePlus
+} from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-// Interface pour le type des champs d'export
-interface ExportFields {
-  nomPrenom: boolean;
-  dateNaissance: boolean;
-  email: boolean;
-  telephone: boolean;
-  patrimoineEstime: boolean;
-  abonne: boolean;
-  encoursReel: boolean;
-  encoursTheorique: boolean;
-  scoreIA: boolean;
-  statutProfil: boolean;
-  objetPatrimoniaux: boolean;
-  produitsDetenus: boolean;
-  simulationsEffectuees: boolean;
-  rendezvousProgrammes: boolean;
-  rencontresEffectuees: boolean;
-  dateDerniereConnexion: boolean;
-  derniereActivite: boolean;
+// Types et données fictives
+type FieldCategory = 'personal' | 'financial' | 'fiscal' | 'products' | 'simulations' | 'scores';
+
+interface ExportField {
+  id: string;
+  label: string;
+  category: FieldCategory;
+  selected: boolean;
 }
 
-const ExportDonneesPage = () => {
-  const { toast } = useToast();
-  const [format, setFormat] = useState<'csv' | 'xlsx'>('xlsx');
+const exportFields: ExportField[] = [
+  // Données personnelles
+  { id: 'nom', label: 'Nom', category: 'personal', selected: true },
+  { id: 'prenom', label: 'Prénom', category: 'personal', selected: true },
+  { id: 'dateNaissance', label: 'Date de naissance', category: 'personal', selected: true },
+  { id: 'adresse', label: 'Adresse complète', category: 'personal', selected: false },
+  { id: 'email', label: 'Email', category: 'personal', selected: true },
+  { id: 'telephone', label: 'Téléphone', category: 'personal', selected: true },
+  { id: 'profession', label: 'Profession', category: 'personal', selected: false },
+  { id: 'situationFamiliale', label: 'Situation familiale', category: 'personal', selected: false },
+  { id: 'enfantsACharge', label: 'Enfants à charge', category: 'personal', selected: false },
   
-  // Initialisation des champs avec les valeurs par défaut
-  const [selectedFields, setSelectedFields] = useState<ExportFields>({
-    nomPrenom: true,
-    dateNaissance: true,
-    email: true,
-    telephone: true,
-    patrimoineEstime: true,
-    abonne: true,
-    encoursReel: true,
-    encoursTheorique: true,
-    scoreIA: true,
-    statutProfil: false,
-    objetPatrimoniaux: false,
-    produitsDetenus: false,
-    simulationsEffectuees: false,
-    rendezvousProgrammes: false,
-    rencontresEffectuees: false,
-    dateDerniereConnexion: false,
-    derniereActivite: false
-  });
+  // Données financières
+  { id: 'patrimoineGlobal', label: 'Patrimoine global', category: 'financial', selected: true },
+  { id: 'actifs', label: 'Total des actifs', category: 'financial', selected: true },
+  { id: 'passifs', label: 'Total des passifs', category: 'financial', selected: true },
+  { id: 'liquidites', label: 'Liquidités', category: 'financial', selected: true },
+  { id: 'immobilier', label: 'Actifs immobiliers', category: 'financial', selected: false },
+  { id: 'valeursMobilieres', label: 'Valeurs mobilières', category: 'financial', selected: false },
+  { id: 'epargneRetraite', label: 'Épargne retraite', category: 'financial', selected: false },
+  { id: 'assuranceVie', label: 'Assurance vie', category: 'financial', selected: false },
+  { id: 'creditImmobilier', label: 'Crédits immobiliers', category: 'financial', selected: false },
+  { id: 'creditConsommation', label: 'Crédits à la consommation', category: 'financial', selected: false },
+  { id: 'revenusAnnuels', label: 'Revenus annuels', category: 'financial', selected: false },
+  { id: 'chargesAnnuelles', label: 'Charges annuelles', category: 'financial', selected: false },
+  
+  // Données fiscales
+  { id: 'trancheImpot', label: 'Tranche d\'impôt', category: 'fiscal', selected: false },
+  { id: 'revenuFiscalReference', label: 'Revenu fiscal de référence', category: 'fiscal', selected: false },
+  { id: 'partsImpot', label: 'Nombre de parts', category: 'fiscal', selected: false },
+  { id: 'imposableIFI', label: 'Assujetti IFI', category: 'fiscal', selected: false },
+  { id: 'montantIFI', label: 'Montant IFI', category: 'fiscal', selected: false },
+  { id: 'reductionsImpots', label: 'Réductions d\'impôts', category: 'fiscal', selected: false },
+  
+  // Produits souscrits
+  { id: 'produitsSouscrits', label: 'Liste des produits', category: 'products', selected: false },
+  { id: 'datesProduits', label: 'Dates de souscription', category: 'products', selected: false },
+  { id: 'montantsProduits', label: 'Montants investis', category: 'products', selected: false },
+  { id: 'performanceProduits', label: 'Performance des produits', category: 'products', selected: false },
+  { id: 'fraisProduits', label: 'Frais des produits', category: 'products', selected: false },
+  
+  // Simulations
+  { id: 'simulationsRealisees', label: 'Simulations réalisées', category: 'simulations', selected: false },
+  { id: 'resultatsSimulation', label: 'Résultats des simulations', category: 'simulations', selected: false },
+  { id: 'datesDerniereSimulation', label: 'Dates dernière simulation', category: 'simulations', selected: false },
+  { id: 'typesSimulation', label: 'Types de simulation', category: 'simulations', selected: false },
+  
+  // Scores et profils
+  { id: 'scorePatrimonial', label: 'Score patrimonial', category: 'scores', selected: true },
+  { id: 'profilRisque', label: 'Profil de risque', category: 'scores', selected: true },
+  { id: 'objectifsPatrimoniaux', label: 'Objectifs patrimoniaux', category: 'scores', selected: false },
+  { id: 'horizonInvestissement', label: 'Horizon d\'investissement', category: 'scores', selected: false },
+];
 
-  // Fonction pour sélectionner tous les champs
-  const selectAll = () => {
-    // Créer un nouvel objet avec toutes les propriétés à true
-    const allSelected = Object.keys(selectedFields).reduce((acc, key) => {
-      acc[key as keyof ExportFields] = true;
-      return acc;
-    }, {} as ExportFields);
-    
-    setSelectedFields(allSelected);
+// Liste des clients fictifs
+const mockClients = [
+  { id: 1, nom: "Dupont", prenom: "Jean", selected: false },
+  { id: 2, nom: "Martin", prenom: "Sophie", selected: false },
+  { id: 3, nom: "Bernard", prenom: "Pierre", selected: false },
+  { id: 4, nom: "Petit", prenom: "Marie", selected: false },
+  { id: 5, nom: "Robert", prenom: "Antoine", selected: false },
+  { id: 6, nom: "Durand", prenom: "Claire", selected: false },
+  { id: 7, nom: "Leroy", prenom: "Thomas", selected: false },
+  { id: 8, nom: "Moreau", prenom: "Isabelle", selected: false },
+  { id: 9, nom: "Simon", prenom: "Michel", selected: false },
+  { id: 10, nom: "Laurent", prenom: "Emma", selected: false }
+];
+
+export default function ExportDonneesPage() {
+  const [activeTab, setActiveTab] = useState<string>('fields');
+  const [fields, setFields] = useState<ExportField[]>(exportFields);
+  const [clients, setClients] = useState(mockClients);
+  const [format, setFormat] = useState<string>('csv');
+  const [selectedCategory, setSelectedCategory] = useState<FieldCategory | 'all'>('all');
+  const [selectAllClients, setSelectAllClients] = useState(false);
+  const [selectAllFields, setSelectAllFields] = useState(false);
+
+  const handleFieldToggle = (fieldId: string) => {
+    setFields(fields.map(field => 
+      field.id === fieldId ? { ...field, selected: !field.selected } : field
+    ));
   };
 
-  // Fonction pour désélectionner tous les champs
-  const deselectAll = () => {
-    // Créer un nouvel objet avec toutes les propriétés à false
-    const allDeselected = Object.keys(selectedFields).reduce((acc, key) => {
-      acc[key as keyof ExportFields] = false;
-      return acc;
-    }, {} as ExportFields);
-    
-    setSelectedFields(allDeselected);
+  const handleClientToggle = (clientId: number) => {
+    setClients(clients.map(client => 
+      client.id === clientId ? { ...client, selected: !client.selected } : client
+    ));
   };
 
-  // Fonction pour mettre à jour un champ spécifique
-  const toggleField = (field: keyof ExportFields) => {
-    setSelectedFields({
-      ...selectedFields,
-      [field]: !selectedFields[field]
-    });
+  const handleSelectAllClients = () => {
+    const newSelectAll = !selectAllClients;
+    setSelectAllClients(newSelectAll);
+    setClients(clients.map(client => ({ ...client, selected: newSelectAll })));
   };
 
-  // Fonction pour générer l'export
+  const handleSelectAllFields = () => {
+    const newSelectAll = !selectAllFields;
+    setSelectAllFields(newSelectAll);
+    setFields(fields.map(field => 
+      selectedCategory === 'all' || field.category === selectedCategory 
+        ? { ...field, selected: newSelectAll } 
+        : field
+    ));
+  };
+
+  const handleCategoryChange = (category: FieldCategory | 'all') => {
+    setSelectedCategory(category);
+    setSelectAllFields(false);
+  };
+
+  const filteredFields = selectedCategory === 'all'
+    ? fields
+    : fields.filter(field => field.category === selectedCategory);
+
+  const selectedFieldsCount = fields.filter(field => field.selected).length;
+  const selectedClientsCount = clients.filter(client => client.selected).length;
+  
   const handleExport = () => {
-    // Compter le nombre de champs sélectionnés
-    const selectedCount = Object.values(selectedFields).filter(Boolean).length;
-
-    toast({
-      title: `Export ${format.toUpperCase()} lancé`,
-      description: `Export de ${selectedCount} colonnes en cours de génération...`,
-      duration: 3000,
+    const fieldsToExport = fields.filter(f => f.selected);
+    const clientsToExport = clients.filter(c => c.selected);
+    
+    console.log('Exporting data:', {
+      clients: clientsToExport,
+      fields: fieldsToExport,
+      format
     });
     
-    // Simuler un délai de génération
-    setTimeout(() => {
-      toast({
-        title: "Export terminé",
-        description: `Le fichier ${format.toUpperCase()} est prêt à être téléchargé`,
-        duration: 5000,
-      });
-    }, 2000);
+    // Dans une application réelle, cela déclencherait l'export des données
+    alert(`Export ${format.toUpperCase()} généré avec ${clientsToExport.length} clients et ${fieldsToExport.length} champs.`);
+  };
+
+  const getCategoryLabel = (category: FieldCategory): string => {
+    switch(category) {
+      case 'personal': return 'Données personnelles';
+      case 'financial': return 'Données financières';
+      case 'fiscal': return 'Fiscalité';
+      case 'products': return 'Produits souscrits';
+      case 'simulations': return 'Simulations';
+      case 'scores': return 'Scores et profils';
+      default: return category;
+    }
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Export des données clients</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Export de données clients</h1>
+          <p className="text-muted-foreground">Sélectionnez les champs et les clients à exporter</p>
+        </div>
+        <div className="space-x-2">
+          <Button variant="outline">
+            <Filter className="h-4 w-4 mr-2" />
+            Filtrer
+          </Button>
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="h-4 w-4 mr-2" />
+            Prévisualiser
+          </Button>
+          <Button onClick={handleExport}>
+            <FileText className="h-4 w-4 mr-2" />
+            Exporter
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-1">
+          <CardHeader>
+            <CardTitle>Paramètres d'export</CardTitle>
+            <CardDescription>Configurez votre export de données</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label>Format d'export</Label>
+              <Select value={format} onValueChange={setFormat}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="csv">CSV</SelectItem>
+                  <SelectItem value="excel">Excel</SelectItem>
+                  <SelectItem value="pdf">PDF</SelectItem>
+                  <SelectItem value="json">JSON</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Résumé de la sélection</Label>
+              <Card>
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Clients sélectionnés:</span>
+                    <Badge variant={selectedClientsCount > 0 ? "default" : "outline"}>
+                      {selectedClientsCount} / {clients.length}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Champs sélectionnés:</span>
+                    <Badge variant={selectedFieldsCount > 0 ? "default" : "outline"}>
+                      {selectedFieldsCount} / {fields.length}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Format:</span>
+                    <Badge variant="secondary" className="uppercase">
+                      {format}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Modèles d'export</Label>
+              <div className="space-y-2">
+                <Button variant="outline" className="w-full flex justify-start">
+                  <FilePlus className="h-4 w-4 mr-2" />
+                  Export complet
+                </Button>
+                <Button variant="outline" className="w-full flex justify-start">
+                  <FilePlus className="h-4 w-4 mr-2" />
+                  Export financier
+                </Button>
+                <Button variant="outline" className="w-full flex justify-start">
+                  <FilePlus className="h-4 w-4 mr-2" />
+                  Export fiscal
+                </Button>
+                <Button variant="outline" className="w-full flex justify-start">
+                  <FilePlus className="h-4 w-4 mr-2" />
+                  Enregistrer ce modèle...
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-2">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>Données à exporter</CardTitle>
+                <TabsList>
+                  <TabsTrigger value="fields">Champs</TabsTrigger>
+                  <TabsTrigger value="clients">Clients</TabsTrigger>
+                </TabsList>
+              </div>
+              <CardDescription>
+                {activeTab === 'fields' ? 
+                  "Sélectionnez les champs à inclure dans l'export" : 
+                  "Sélectionnez les clients à inclure dans l'export"}
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent>
+              <TabsContent value="fields" className="mt-0 space-y-4">
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Select 
+                    value={selectedCategory} 
+                    onValueChange={(value) => handleCategoryChange(value as FieldCategory | 'all')}
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Catégorie" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toutes les catégories</SelectItem>
+                      <SelectItem value="personal">Données personnelles</SelectItem>
+                      <SelectItem value="financial">Données financières</SelectItem>
+                      <SelectItem value="fiscal">Fiscalité</SelectItem>
+                      <SelectItem value="products">Produits souscrits</SelectItem>
+                      <SelectItem value="simulations">Simulations</SelectItem>
+                      <SelectItem value="scores">Scores et profils</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleSelectAllFields}
+                  >
+                    {selectAllFields ? 'Désélectionner tout' : 'Sélectionner tout'}
+                  </Button>
+                </div>
+
+                <ScrollArea className="h-[400px] pr-4">
+                  <div className="space-y-6">
+                    {/* Group fields by category */}
+                    {(selectedCategory === 'all' ? 
+                      Array.from(new Set(fields.map(f => f.category))) : 
+                      [selectedCategory]
+                    ).map(category => (
+                      <div key={category} className="space-y-3">
+                        <h3 className="font-medium">{getCategoryLabel(category as FieldCategory)}</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {fields
+                            .filter(field => field.category === category)
+                            .map(field => (
+                              <div key={field.id} className="flex items-center space-x-2">
+                                <Checkbox 
+                                  id={`field-${field.id}`}
+                                  checked={field.selected}
+                                  onCheckedChange={() => handleFieldToggle(field.id)}
+                                />
+                                <label
+                                  htmlFor={`field-${field.id}`}
+                                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                >
+                                  {field.label}
+                                </label>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+
+              <TabsContent value="clients" className="mt-0 space-y-4">
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleSelectAllClients}
+                  >
+                    {selectAllClients ? 'Désélectionner tout' : 'Sélectionner tout'}
+                  </Button>
+                  
+                  <Badge className="ml-auto">
+                    {selectedClientsCount} clients sélectionnés
+                  </Badge>
+                </div>
+
+                <ScrollArea className="h-[400px] pr-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {clients.map(client => (
+                      <div key={client.id} className="flex items-center space-x-2 border p-3 rounded-md">
+                        <Checkbox 
+                          id={`client-${client.id}`}
+                          checked={client.selected}
+                          onCheckedChange={() => handleClientToggle(client.id)}
+                        />
+                        <div className="flex-1">
+                          <label
+                            htmlFor={`client-${client.id}`}
+                            className="font-medium"
+                          >
+                            {client.nom} {client.prenom}
+                          </label>
+                          <p className="text-xs text-muted-foreground">ID: {client.id}</p>
+                        </div>
+                        <Button size="icon" variant="ghost" className="h-8 w-8">
+                          <UserPlus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+            </CardContent>
+          </Tabs>
+        </Card>
       </div>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Configurer l'export</CardTitle>
-          <CardDescription>
-            Sélectionnez les informations à inclure dans votre export et choisissez le format.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="fields" className="w-full">
-            <TabsList className="mb-4">
-              <TabsTrigger value="fields">Champs à exporter</TabsTrigger>
-              <TabsTrigger value="filters">Filtres</TabsTrigger>
-              <TabsTrigger value="format">Format et options</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="fields" className="space-y-4">
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={selectAll} size="sm">
-                  Tout sélectionner
-                </Button>
-                <Button variant="outline" onClick={deselectAll} size="sm">
-                  Tout désélectionner
-                </Button>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Groupe: Informations personnelles */}
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium">Informations personnelles</h3>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="nomPrenom" 
-                        checked={selectedFields.nomPrenom} 
-                        onCheckedChange={() => toggleField('nomPrenom')}
-                      />
-                      <Label htmlFor="nomPrenom">Nom et prénom</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="dateNaissance" 
-                        checked={selectedFields.dateNaissance} 
-                        onCheckedChange={() => toggleField('dateNaissance')}
-                      />
-                      <Label htmlFor="dateNaissance">Date de naissance</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="email" 
-                        checked={selectedFields.email} 
-                        onCheckedChange={() => toggleField('email')}
-                      />
-                      <Label htmlFor="email">Email</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="telephone" 
-                        checked={selectedFields.telephone} 
-                        onCheckedChange={() => toggleField('telephone')}
-                      />
-                      <Label htmlFor="telephone">Téléphone</Label>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Groupe: Situation financière */}
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium">Situation financière</h3>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="patrimoineEstime" 
-                        checked={selectedFields.patrimoineEstime} 
-                        onCheckedChange={() => toggleField('patrimoineEstime')}
-                      />
-                      <Label htmlFor="patrimoineEstime">Patrimoine estimé</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="encoursReel" 
-                        checked={selectedFields.encoursReel} 
-                        onCheckedChange={() => toggleField('encoursReel')}
-                      />
-                      <Label htmlFor="encoursReel">Encours réel</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="encoursTheorique" 
-                        checked={selectedFields.encoursTheorique} 
-                        onCheckedChange={() => toggleField('encoursTheorique')}
-                      />
-                      <Label htmlFor="encoursTheorique">Encours théorique</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="produitsDetenus" 
-                        checked={selectedFields.produitsDetenus} 
-                        onCheckedChange={() => toggleField('produitsDetenus')}
-                      />
-                      <Label htmlFor="produitsDetenus">Produits détenus</Label>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Groupe: Activité client */}
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium">Activité client</h3>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="abonne" 
-                        checked={selectedFields.abonne} 
-                        onCheckedChange={() => toggleField('abonne')}
-                      />
-                      <Label htmlFor="abonne">Statut abonnement</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="dateDerniereConnexion" 
-                        checked={selectedFields.dateDerniereConnexion} 
-                        onCheckedChange={() => toggleField('dateDerniereConnexion')}
-                      />
-                      <Label htmlFor="dateDerniereConnexion">Dernière connexion</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="derniereActivite" 
-                        checked={selectedFields.derniereActivite} 
-                        onCheckedChange={() => toggleField('derniereActivite')}
-                      />
-                      <Label htmlFor="derniereActivite">Dernière activité</Label>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Groupe: Intelligence artificielle */}
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium">Intelligence artificielle</h3>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="scoreIA" 
-                        checked={selectedFields.scoreIA} 
-                        onCheckedChange={() => toggleField('scoreIA')}
-                      />
-                      <Label htmlFor="scoreIA">Score patrimonial IA</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="statutProfil" 
-                        checked={selectedFields.statutProfil} 
-                        onCheckedChange={() => toggleField('statutProfil')}
-                      />
-                      <Label htmlFor="statutProfil">Statut du profil</Label>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Groupe: Objectifs et simulations */}
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium">Objectifs et simulations</h3>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="objetPatrimoniaux" 
-                        checked={selectedFields.objetPatrimoniaux} 
-                        onCheckedChange={() => toggleField('objetPatrimoniaux')}
-                      />
-                      <Label htmlFor="objetPatrimoniaux">Objectifs patrimoniaux</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="simulationsEffectuees" 
-                        checked={selectedFields.simulationsEffectuees} 
-                        onCheckedChange={() => toggleField('simulationsEffectuees')}
-                      />
-                      <Label htmlFor="simulationsEffectuees">Simulations effectuées</Label>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Groupe: Rendez-vous */}
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium">Rendez-vous</h3>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="rendezvousProgrammes" 
-                        checked={selectedFields.rendezvousProgrammes} 
-                        onCheckedChange={() => toggleField('rendezvousProgrammes')}
-                      />
-                      <Label htmlFor="rendezvousProgrammes">RDV programmés</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="rencontresEffectuees" 
-                        checked={selectedFields.rencontresEffectuees} 
-                        onCheckedChange={() => toggleField('rencontresEffectuees')}
-                      />
-                      <Label htmlFor="rencontresEffectuees">Rencontres effectuées</Label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="filters">
-              <div className="bg-muted/50 rounded-md p-4 text-center">
-                <Users className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                <h3 className="text-sm font-medium">Filtres clients</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Cette fonctionnalité permet de filtrer les clients à inclure dans l'export selon différents critères.
-                </p>
-                <Button variant="outline" className="mt-4" disabled>
-                  Bientôt disponible
-                </Button>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="format" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center space-x-2">
-                      <FileSpreadsheet className="h-5 w-5 text-green-600" />
-                      <CardTitle className="text-base">Format Excel (XLSX)</CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      Format complet avec mise en forme, filtres et onglets multiples.
-                    </p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button 
-                      variant={format === 'xlsx' ? 'default' : 'outline'} 
-                      className="w-full" 
-                      onClick={() => setFormat('xlsx')}
-                    >
-                      Sélectionner XLSX
-                    </Button>
-                  </CardFooter>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center space-x-2">
-                      <FileSpreadsheet className="h-5 w-5 text-blue-600" />
-                      <CardTitle className="text-base">Format CSV</CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      Format simple compatible avec tous les logiciels, séparateur au choix.
-                    </p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button 
-                      variant={format === 'csv' ? 'default' : 'outline'} 
-                      className="w-full" 
-                      onClick={() => setFormat('csv')}
-                    >
-                      Sélectionner CSV
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <div className="text-sm text-muted-foreground">
-            {Object.values(selectedFields).filter(Boolean).length} champs sélectionnés
-          </div>
-          <Button onClick={handleExport}>
-            <Download className="mr-2 h-4 w-4" />
-            Générer l'export {format.toUpperCase()}
-          </Button>
-        </CardFooter>
-      </Card>
+      <div className="flex justify-end space-x-2">
+        <Button variant="outline">Annuler</Button>
+        <Button 
+          disabled={selectedFieldsCount === 0 || selectedClientsCount === 0}
+          onClick={handleExport}
+        >
+          <Download className="h-4 w-4 mr-2" />
+          Générer l'export
+        </Button>
+      </div>
     </div>
   );
-};
-
-export default ExportDonneesPage;
+}

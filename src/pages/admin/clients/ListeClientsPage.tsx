@@ -19,39 +19,88 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, UserPlus, Filter } from 'lucide-react';
+import { Search, UserPlus, Filter, BarChart, BriefcaseIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // Données fictives pour la démo
 const mockClients = [
-  { id: 1, nom: "Dupont", prenom: "Jean", dateNaissance: "15/04/1975", telephone: "06 12 34 56 78", email: "jean.dupont@email.com", abonnement: true, scoreIA: 85, statutProfil: "complet", derniereActivite: "10/04/2025" },
-  { id: 2, nom: "Martin", prenom: "Sophie", dateNaissance: "22/07/1980", telephone: "06 23 45 67 89", email: "sophie.martin@email.com", abonnement: true, scoreIA: 72, statutProfil: "complet", derniereActivite: "12/04/2025" },
-  { id: 3, nom: "Bernard", prenom: "Pierre", dateNaissance: "30/11/1965", telephone: "06 34 56 78 90", email: "pierre.bernard@email.com", abonnement: false, scoreIA: 65, statutProfil: "incomplet", derniereActivite: "05/03/2025" },
-  { id: 4, nom: "Petit", prenom: "Marie", dateNaissance: "18/09/1990", telephone: "06 45 67 89 01", email: "marie.petit@email.com", abonnement: false, scoreIA: 91, statutProfil: "complet", derniereActivite: "15/04/2025" },
-  { id: 5, nom: "Robert", prenom: "Antoine", dateNaissance: "07/06/1972", telephone: "06 56 78 90 12", email: "antoine.robert@email.com", abonnement: true, scoreIA: 78, statutProfil: "complet", derniereActivite: "08/04/2025" }
+  { id: 1, nom: "Dupont", prenom: "Jean", dateNaissance: "15/04/1975", telephone: "06 12 34 56 78", email: "jean.dupont@email.com", abonnement: true, scoreIA: 85, statutProfil: "complet", derniereActivite: "10/04/2025", patrimoineGlobal: 850000, actifs: 920000, passifs: 70000 },
+  { id: 2, nom: "Martin", prenom: "Sophie", dateNaissance: "22/07/1980", telephone: "06 23 45 67 89", email: "sophie.martin@email.com", abonnement: true, scoreIA: 72, statutProfil: "complet", derniereActivite: "12/04/2025", patrimoineGlobal: 650000, actifs: 790000, passifs: 140000 },
+  { id: 3, nom: "Bernard", prenom: "Pierre", dateNaissance: "30/11/1965", telephone: "06 34 56 78 90", email: "pierre.bernard@email.com", abonnement: false, scoreIA: 65, statutProfil: "incomplet", derniereActivite: "05/03/2025", patrimoineGlobal: 420000, actifs: 490000, passifs: 70000 },
+  { id: 4, nom: "Petit", prenom: "Marie", dateNaissance: "18/09/1990", telephone: "06 45 67 89 01", email: "marie.petit@email.com", abonnement: false, scoreIA: 91, statutProfil: "complet", derniereActivite: "15/04/2025", patrimoineGlobal: 1250000, actifs: 1400000, passifs: 150000 },
+  { id: 5, nom: "Robert", prenom: "Antoine", dateNaissance: "07/06/1972", telephone: "06 56 78 90 12", email: "antoine.robert@email.com", abonnement: true, scoreIA: 78, statutProfil: "complet", derniereActivite: "08/04/2025", patrimoineGlobal: 720000, actifs: 920000, passifs: 200000 }
 ];
 
 const ListeClientsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredClients, setFilteredClients] = useState(mockClients);
+  const [filter, setFilter] = useState({
+    abonnement: "all",
+    statut: "all",
+    score: "all"
+  });
   const navigate = useNavigate();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
     
-    if (term === "") {
-      setFilteredClients(mockClients);
-      return;
+    applyFilters(term, filter);
+  };
+
+  const handleFilterChange = (key: string, value: string) => {
+    const newFilter = { ...filter, [key]: value };
+    setFilter(newFilter);
+    applyFilters(searchTerm, newFilter);
+  };
+
+  const applyFilters = (term: string, currentFilter: typeof filter) => {
+    let results = mockClients;
+    
+    // Apply search term
+    if (term) {
+      results = results.filter(client => 
+        client.nom.toLowerCase().includes(term) || 
+        client.prenom.toLowerCase().includes(term) || 
+        client.email.toLowerCase().includes(term)
+      );
     }
 
-    const results = mockClients.filter(client => 
-      client.nom.toLowerCase().includes(term) || 
-      client.prenom.toLowerCase().includes(term) || 
-      client.email.toLowerCase().includes(term)
-    );
+    // Apply abonnement filter
+    if (currentFilter.abonnement !== "all") {
+      const isSubscribed = currentFilter.abonnement === "true";
+      results = results.filter(client => client.abonnement === isSubscribed);
+    }
+
+    // Apply statut filter
+    if (currentFilter.statut !== "all") {
+      results = results.filter(client => client.statutProfil === currentFilter.statut);
+    }
+
+    // Apply score filter
+    if (currentFilter.score !== "all") {
+      switch(currentFilter.score) {
+        case "high":
+          results = results.filter(client => client.scoreIA >= 80);
+          break;
+        case "medium":
+          results = results.filter(client => client.scoreIA >= 60 && client.scoreIA < 80);
+          break;
+        case "low":
+          results = results.filter(client => client.scoreIA < 60);
+          break;
+      }
+    }
     
     setFilteredClients(results);
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('fr-FR', { 
+      style: 'currency', 
+      currency: 'EUR',
+      maximumFractionDigits: 0 
+    }).format(value);
   };
 
   return (
@@ -85,9 +134,12 @@ const ListeClientsPage = () => {
                 className="pl-8"
               />
             </div>
-            <div className="flex gap-2">
-              <Select defaultValue="all">
-                <SelectTrigger className="w-[180px]">
+            <div className="flex flex-wrap gap-2">
+              <Select 
+                defaultValue={filter.abonnement}
+                onValueChange={(value) => handleFilterChange('abonnement', value)}
+              >
+                <SelectTrigger className="w-[150px]">
                   <SelectValue placeholder="Abonnement" />
                 </SelectTrigger>
                 <SelectContent>
@@ -96,8 +148,12 @@ const ListeClientsPage = () => {
                   <SelectItem value="false">Non abonnés</SelectItem>
                 </SelectContent>
               </Select>
-              <Select defaultValue="all">
-                <SelectTrigger className="w-[180px]">
+              
+              <Select 
+                defaultValue={filter.statut}
+                onValueChange={(value) => handleFilterChange('statut', value)}
+              >
+                <SelectTrigger className="w-[150px]">
                   <SelectValue placeholder="Statut profil" />
                 </SelectTrigger>
                 <SelectContent>
@@ -106,6 +162,22 @@ const ListeClientsPage = () => {
                   <SelectItem value="incomplet">Incomplets</SelectItem>
                 </SelectContent>
               </Select>
+              
+              <Select 
+                defaultValue={filter.score}
+                onValueChange={(value) => handleFilterChange('score', value)}
+              >
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Score IA" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous</SelectItem>
+                  <SelectItem value="high">Élevé (80+)</SelectItem>
+                  <SelectItem value="medium">Moyen (60-79)</SelectItem>
+                  <SelectItem value="low">Faible (&lt;60)</SelectItem>
+                </SelectContent>
+              </Select>
+              
               <Button variant="outline" size="icon">
                 <Filter className="h-4 w-4" />
               </Button>
@@ -115,19 +187,20 @@ const ListeClientsPage = () => {
       </Card>
 
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 overflow-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nom</TableHead>
-                <TableHead>Prénom</TableHead>
-                <TableHead>Date de naissance</TableHead>
-                <TableHead>Téléphone</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Abonnement</TableHead>
-                <TableHead>Score IA</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead>Dernière activité</TableHead>
+                <TableHead className="whitespace-nowrap">Nom</TableHead>
+                <TableHead className="whitespace-nowrap">Prénom</TableHead>
+                <TableHead className="whitespace-nowrap">Patrimoine global</TableHead>
+                <TableHead className="whitespace-nowrap">Téléphone</TableHead>
+                <TableHead className="whitespace-nowrap">Email</TableHead>
+                <TableHead className="whitespace-nowrap">Abonnement</TableHead>
+                <TableHead className="whitespace-nowrap">Score IA</TableHead>
+                <TableHead className="whitespace-nowrap">Statut</TableHead>
+                <TableHead className="whitespace-nowrap">Dernière activité</TableHead>
+                <TableHead className="whitespace-nowrap">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -139,7 +212,15 @@ const ListeClientsPage = () => {
                 >
                   <TableCell className="font-medium">{client.nom}</TableCell>
                   <TableCell>{client.prenom}</TableCell>
-                  <TableCell>{client.dateNaissance}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-2">
+                      <BriefcaseIcon className="h-4 w-4 text-muted-foreground"/>
+                      <span>{formatCurrency(client.patrimoineGlobal)}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Actifs: {formatCurrency(client.actifs)} / Passifs: {formatCurrency(client.passifs)}
+                    </div>
+                  </TableCell>
                   <TableCell>{client.telephone}</TableCell>
                   <TableCell>{client.email}</TableCell>
                   <TableCell>
@@ -164,6 +245,18 @@ const ListeClientsPage = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>{client.derniereActivite}</TableCell>
+                  <TableCell>
+                    <div className="flex space-x-1">
+                      <Button size="icon" variant="outline" className="h-8 w-8">
+                        <BarChart className="h-4 w-4" />
+                        <span className="sr-only">Analyser</span>
+                      </Button>
+                      <Button size="icon" variant="outline" className="h-8 w-8">
+                        <BriefcaseIcon className="h-4 w-4" />
+                        <span className="sr-only">Portfolio</span>
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

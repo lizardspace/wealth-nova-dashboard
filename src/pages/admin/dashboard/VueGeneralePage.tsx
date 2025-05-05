@@ -5,7 +5,8 @@ import {
   CardContent, 
   CardDescription, 
   CardHeader, 
-  CardTitle 
+  CardTitle, 
+  CardFooter
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,11 +18,17 @@ import {
   Briefcase, 
   AlertTriangle, 
   Brain,
-  CalendarClock 
+  CalendarClock, 
+  Mail,
+  MessageSquare,
+  BarChart,
+  PieChart,
+  Phone,
+  FileText
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import {
-  BarChart,
+  BarChart as ReBarChart,
   Bar,
   LineChart,
   Line,
@@ -31,10 +38,12 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  PieChart,
+  PieChart as RePieChart,
   Pie,
   Cell
 } from 'recharts';
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Données fictives pour le dashboard
 const clientsData = [
@@ -47,22 +56,48 @@ const clientsData = [
 ];
 
 const encoursData = [
-  { month: 'Jan', reels: 1200000, theoriques: 2800000 },
-  { month: 'Fév', reels: 1350000, theoriques: 2900000 },
-  { month: 'Mar', reels: 1450000, theoriques: 3000000 },
-  { month: 'Avr', reels: 1600000, theoriques: 3050000 },
-  { month: 'Mai', reels: 1750000, theoriques: 3100000 },
-  { month: 'Juin', reels: 1900000, theoriques: 3200000 },
+  { month: 'Jan', reels: 1200000, theoriques: 2800000, disponible: 580000 },
+  { month: 'Fév', reels: 1350000, theoriques: 2900000, disponible: 620000 },
+  { month: 'Mar', reels: 1450000, theoriques: 3000000, disponible: 640000 },
+  { month: 'Avr', reels: 1600000, theoriques: 3050000, disponible: 590000 },
+  { month: 'Mai', reels: 1750000, theoriques: 3100000, disponible: 620000 },
+  { month: 'Juin', reels: 1900000, theoriques: 3200000, disponible: 580000 },
 ];
 
 const alertesData = [
-  { name: 'Profils incomplets', value: 42 },
-  { name: 'Projets non finalisés', value: 58 },
-  { name: 'Clients inactifs', value: 35 },
-  { name: 'Optimisations possibles', value: 87 },
+  { name: 'Profils incomplets', value: 42, color: '#8B5CF6' },
+  { name: 'Projets non finalisés', value: 58, color: '#F97316' },
+  { name: 'Clients inactifs', value: 35, color: '#D946EF' },
+  { name: 'Optimisations possibles', value: 87, color: '#0EA5E9' },
 ];
 
 const COLORS = ['#8B5CF6', '#F97316', '#D946EF', '#0EA5E9'];
+
+const activitesRecentes = [
+  { client: "Jean Dupont", action: "Souscription", date: "Aujourd'hui, 14:25", montant: "15 000€", produit: "Assurance-vie" },
+  { client: "Marie Martin", action: "Rachat partiel", date: "Aujourd'hui, 11:10", montant: "5 000€", produit: "SCPI Rendement" },
+  { client: "Antoine Fernet", action: "Adhésion", date: "Hier, 16:30", montant: "-", produit: "Abonnement Premium" },
+  { client: "Sophie Legrand", action: "Versement libre", date: "Hier, 10:15", montant: "7 500€", produit: "PER" },
+  { client: "Pierre Dubois", action: "Résiliation", date: "22/05/2025", montant: "-", produit: "Protection Revenus" },
+  { client: "Emma Blanc", action: "Souscription", date: "21/05/2025", montant: "75 000€", produit: "SCPI Européenne" },
+];
+
+const prochainRDV = [
+  { client: "Philippe Martin", theme: "Bilan patrimonial annuel", date: "Aujourd'hui", heure: "15:30" },
+  { client: "Claire Moreau", theme: "Étude retraite", date: "Aujourd'hui", heure: "17:00" },
+  { client: "Thomas Leroy", theme: "Optimisation fiscale", date: "Demain", heure: "10:00" },
+  { client: "Nathalie Petit", theme: "Investissement locatif", date: "Demain", heure: "14:30" },
+  { client: "Julien Roux", theme: "Succession", date: "Après-demain", heure: "11:15" },
+];
+
+// Données pour la répartition des classes d'actifs
+const classesActifs = [
+  { name: 'Immobilier', value: 45 },
+  { name: 'Actions', value: 20 },
+  { name: 'Obligations', value: 15 },
+  { name: 'Monétaire', value: 10 },
+  { name: 'Alternatif', value: 10 },
+];
 
 const VueGeneralePage = () => {
   const [periode, setPeriode] = React.useState("6mois");
@@ -70,6 +105,7 @@ const VueGeneralePage = () => {
   // Calculs statistiques
   const encoursReelsActuel = encoursData[encoursData.length - 1].reels;
   const encoursTheoriquesActuel = encoursData[encoursData.length - 1].theoriques;
+  const encoursDisponibleActuel = encoursData[encoursData.length - 1].disponible;
   const tauxConversion = (encoursReelsActuel / encoursTheoriquesActuel) * 100;
   
   const clientsActuels = clientsData[clientsData.length - 1].total;
@@ -100,267 +136,363 @@ const VueGeneralePage = () => {
 
       {/* Rangée de statistiques clés */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Encours réels</CardDescription>
-            <CardTitle className="text-2xl text-blue-600">
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-blue-100">
+            <CardDescription>Encours théorique global</CardDescription>
+            <CardTitle className="text-2xl text-blue-700">
+              {(encoursTheoriquesActuel / 1000000).toFixed(2)} M€
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <div className="text-sm text-muted-foreground flex items-center">
+              <ArrowUpRight className="mr-1 h-4 w-4 text-emerald-500" />
+              +4,2% depuis 30 jours
+            </div>
+            <Button variant="link" className="p-0 h-auto text-xs mt-1" onClick={() => window.location.href = '/admin/portfolios/theoriques'}>
+              Voir détails
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-2 bg-gradient-to-r from-emerald-50 to-emerald-100">
+            <CardDescription>Encours réel sous gestion</CardDescription>
+            <CardTitle className="text-2xl text-emerald-700">
               {(encoursReelsActuel / 1000000).toFixed(2)} M€
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4">
             <div className="text-sm text-muted-foreground flex items-center">
               <ArrowUpRight className="mr-1 h-4 w-4 text-emerald-500" />
               +8,6% depuis 30 jours
             </div>
+            <Button variant="link" className="p-0 h-auto text-xs mt-1" onClick={() => window.location.href = '/admin/portfolios/reels'}>
+              Voir détails
+            </Button>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Taux de conversion</CardDescription>
-            <CardTitle className="text-2xl text-emerald-600">{tauxConversion.toFixed(1)}%</CardTitle>
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-2 bg-gradient-to-r from-amber-50 to-amber-100">
+            <CardDescription>Épargne disponible</CardDescription>
+            <CardTitle className="text-2xl text-amber-700">
+              {(encoursDisponibleActuel / 1000000).toFixed(2)} M€
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <Progress value={tauxConversion} className="h-2" />
-            <div className="text-xs text-muted-foreground mt-2">
-              Encours réels / encours théoriques
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Clients actifs</CardDescription>
-            <CardTitle className="text-2xl">{clientsActuels}</CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4">
             <div className="text-sm text-muted-foreground flex items-center">
-              <ArrowUpRight className="mr-1 h-4 w-4 text-emerald-500" />
-              {tauxCroissance.toFixed(1)}% de croissance
+              <ArrowDownRight className="mr-1 h-4 w-4 text-red-500" />
+              -6,8% depuis 30 jours
             </div>
+            <Button variant="link" className="p-0 h-auto text-xs mt-1">
+              Opportunités d'investissement
+            </Button>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Alertes totales</CardDescription>
-            <CardTitle className="text-2xl text-amber-500">{totalAlertes}</CardTitle>
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-2 bg-gradient-to-r from-purple-50 to-purple-100">
+            <CardDescription>Conversion R/T</CardDescription>
+            <CardTitle className="text-2xl text-purple-700">
+              {tauxConversion.toFixed(1)}%
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-sm text-muted-foreground">
-              {alertesData[0].value} profils incomplets
+          <CardContent className="pt-4">
+            <Progress value={tauxConversion} className="h-2" />
+            <div className="flex justify-between text-xs text-muted-foreground mt-2">
+              <span>Objectif: 75%</span>
+              <Button variant="link" className="p-0 h-auto text-xs" onClick={() => window.location.href = '/admin/portfolios/analyse'}>
+                Analyser les écarts
+              </Button>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Contenu principal en onglets */}
-      <Tabs defaultValue="evolution" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="evolution">Évolution</TabsTrigger>
-          <TabsTrigger value="clients">Clients</TabsTrigger>
-          <TabsTrigger value="alertes">Alertes</TabsTrigger>
-          <TabsTrigger value="actions">Actions prioritaires</TabsTrigger>
-        </TabsList>
-        
-        {/* Onglet Évolution */}
-        <TabsContent value="evolution">
-          <Card>
-            <CardHeader>
-              <CardTitle>Évolution des encours</CardTitle>
-              <CardDescription>
-                Suivi des encours réels et théoriques sur la période sélectionnée
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="h-96">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Classes d'actifs */}
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle>Répartition des actifs</CardTitle>
+            <CardDescription>Allocation globale du portefeuille</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={encoursData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => `${(Number(value) / 1000000).toFixed(2)} M€`} />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="reels" 
-                    name="Encours réels" 
-                    stroke="#8B5CF6" 
-                    strokeWidth={2} 
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="theoriques" 
-                    name="Encours théoriques" 
-                    stroke="#64748B" 
-                    strokeWidth={2} 
-                    strokeDasharray="5 5" 
-                  />
-                </LineChart>
+                <RePieChart>
+                  <Pie
+                    data={classesActifs}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {classesActifs.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                </RePieChart>
               </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        {/* Onglet Clients */}
-        <TabsContent value="clients">
-          <Card>
-            <CardHeader>
-              <CardTitle>Évolution client</CardTitle>
-              <CardDescription>
-                Suivi de la base client et nouveaux clients
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="h-96">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={clientsData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="total" name="Total clients" fill="#8B5CF6" />
-                  <Bar dataKey="nouveaux" name="Nouveaux clients" fill="#0EA5E9" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        {/* Onglet Alertes */}
-        <TabsContent value="alertes">
-          <Card>
-            <CardHeader>
-              <CardTitle>Distribution des alertes</CardTitle>
-              <CardDescription>
-                Répartition par type d'alerte nécessitant une action
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="h-72">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={alertesData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
+            </div>
+            <div className="mt-4">
+              <Button variant="outline" size="sm" className="w-full">
+                Ajuster l'allocation cible
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Opportunités identifiées */}
+        <Card className="col-span-1">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center justify-between">
+              <span>Opportunités</span>
+              <Badge className="bg-amber-500">{totalAlertes}</Badge>
+            </CardTitle>
+            <CardDescription>Actions commerciales prioritaires</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <ScrollArea className="h-72 pr-4">
+              <div className="space-y-3">
+                <OpportunityItem 
+                  icon={AlertTriangle} 
+                  iconColor="text-amber-500" 
+                  title="42 profils incomplets" 
+                  description="Données manquantes pour recommandations"
+                  action="Relancer"
+                  onClick={() => window.location.href = '/admin/alertes/profils-incomplets'}
+                />
+                
+                <OpportunityItem 
+                  icon={Users} 
+                  iconColor="text-blue-500" 
+                  title="35 clients inactifs (30j+)" 
+                  description="Risque de désabonnement"
+                  action="Contacter"
+                  onClick={() => window.location.href = '/admin/alertes/inactifs'}
+                />
+                
+                <OpportunityItem 
+                  icon={Brain} 
+                  iconColor="text-purple-500" 
+                  title="87 optimisations possibles" 
+                  description="Suggestions IA pour amélioration"
+                  action="Étudier"
+                  onClick={() => window.location.href = '/admin/ia/recommandations'}
+                />
+                
+                <OpportunityItem 
+                  icon={BarChart} 
+                  iconColor="text-emerald-500" 
+                  title="23 clients sous-investis" 
+                  description="Épargne disponible importante"
+                  action="Proposer"
+                />
+                
+                <OpportunityItem 
+                  icon={AlertTriangle} 
+                  iconColor="text-red-500" 
+                  title="8 contrats en déséquilibre" 
+                  description="Allocation non conforme au profil"
+                  action="Réaligner"
+                />
+              </div>
+            </ScrollArea>
+          </CardContent>
+          <CardFooter className="border-t pt-4">
+            <Button variant="outline" size="sm" className="w-full">
+              Voir toutes les opportunités
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Mouvements récents */}
+        <Card className="col-span-1">
+          <CardHeader className="pb-2">
+            <CardTitle>Mouvements récents</CardTitle>
+            <CardDescription>Actions clients et transactions</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <ScrollArea className="h-72 pr-4">
+              <div className="space-y-3">
+                {activitesRecentes.map((activite, index) => (
+                  <div key={index} className="border rounded-md p-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="font-medium">{activite.client}</span>
+                      <Badge 
+                        variant={activite.action === "Résiliation" ? "destructive" : 
+                                activite.action === "Rachat partiel" ? "outline" : 
+                                "default"}
+                        className="text-xs"
                       >
-                        {alertesData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-
-                <div className="space-y-4">
-                  {alertesData.map((alerte, index) => (
-                    <div key={index} className="flex items-center">
-                      <div 
-                        className="h-3 w-3 rounded-full mr-2" 
-                        style={{ backgroundColor: COLORS[index % COLORS.length] }} 
-                      />
-                      <div className="flex-1">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm font-medium">{alerte.name}</span>
-                          <span className="text-sm">{alerte.value}</span>
-                        </div>
-                        <Progress value={(alerte.value / totalAlertes) * 100} className="h-1" />
-                      </div>
+                        {activite.action}
+                      </Badge>
                     </div>
-                  ))}
-                </div>
+                    <div className="flex justify-between mt-1 text-muted-foreground">
+                      <span>{activite.produit}</span>
+                      <span>{activite.montant !== "-" && activite.montant}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {activite.date}
+                    </div>
+                  </div>
+                ))}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        {/* Onglet Actions prioritaires */}
-        <TabsContent value="actions">
-          <Card>
-            <CardHeader>
-              <CardTitle>Actions prioritaires</CardTitle>
-              <CardDescription>
-                Tâches nécessitant une attention immédiate
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="border rounded-md p-4">
-                  <div className="flex items-center">
-                    <Users className="h-5 w-5 mr-2 text-blue-500" />
-                    <h3 className="text-sm font-semibold">15 clients inactifs depuis 30 jours</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Prévoir une campagne de réengagement et des relances personnalisées.
-                  </p>
-                  <div className="mt-3 flex justify-end">
-                    <Button size="sm" variant="outline">Voir les clients</Button>
-                  </div>
-                </div>
+            </ScrollArea>
+          </CardContent>
+          <CardFooter className="border-t pt-4">
+            <div className="w-full flex gap-2">
+              <Select defaultValue="all">
+                <SelectTrigger className="text-xs h-8">
+                  <SelectValue placeholder="Type d'action" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes les actions</SelectItem>
+                  <SelectItem value="souscription">Souscriptions</SelectItem>
+                  <SelectItem value="rachat">Rachats</SelectItem>
+                  <SelectItem value="resiliation">Résiliations</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" className="ml-auto">
+                Historique complet
+              </Button>
+            </div>
+          </CardFooter>
+        </Card>
+      </div>
 
-                <div className="border rounded-md p-4">
-                  <div className="flex items-center">
-                    <AlertTriangle className="h-5 w-5 mr-2 text-amber-500" />
-                    <h3 className="text-sm font-semibold">23 profils incomplets</h3>
+      {/* Agenda et évolution */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-1">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center">
+              <CalendarClock className="mr-2 h-5 w-5" />
+              Prochains rendez-vous
+            </CardTitle>
+            <CardDescription>Planning sur 3 jours</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <div className="space-y-4">
+              {prochainRDV.map((rdv, index) => (
+                <div key={index} className="border rounded-md p-3">
+                  <div className="flex justify-between">
+                    <span className="font-medium">{rdv.client}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {rdv.date}, {rdv.heure}
+                    </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Des informations essentielles manquent pour des recommandations optimales.
-                  </p>
-                  <div className="mt-3 flex justify-end">
-                    <Button size="sm" variant="outline">Consulter</Button>
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    {rdv.theme}
+                  </div>
+                  <div className="mt-2 flex gap-2">
+                    <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
+                      <FileText className="h-3 w-3 mr-1" />
+                      Fiche
+                    </Button>
+                    <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
+                      <Mail className="h-3 w-3 mr-1" />
+                      Email
+                    </Button>
+                    <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
+                      <Phone className="h-3 w-3 mr-1" />
+                      Appel
+                    </Button>
+                    <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
+                      <MessageSquare className="h-3 w-3 mr-1" />
+                      Notes
+                    </Button>
                   </div>
                 </div>
+              ))}
+            </div>
+          </CardContent>
+          <CardFooter className="border-t pt-4">
+            <Button variant="outline" className="w-full" onClick={() => window.location.href = '/admin/rendez-vous'}>
+              Voir le planning complet
+            </Button>
+          </CardFooter>
+        </Card>
 
-                <div className="border rounded-md p-4">
-                  <div className="flex items-center">
-                    <Briefcase className="h-5 w-5 mr-2 text-emerald-500" />
-                    <h3 className="text-sm font-semibold">8 projets immobiliers en attente</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Des simulations ont été effectuées sans suite après 14 jours.
-                  </p>
-                  <div className="mt-3 flex justify-end">
-                    <Button size="sm" variant="outline">Détails</Button>
-                  </div>
-                </div>
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Évolution des encours</CardTitle>
+            <CardDescription>
+              Comparaison théorique/réel et épargne disponible
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="h-96">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={encoursData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip formatter={(value) => `${(Number(value) / 1000000).toFixed(2)} M€`} />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="reels" 
+                  name="Encours réels" 
+                  stroke="#10B981" 
+                  strokeWidth={2} 
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="theoriques" 
+                  name="Encours théoriques" 
+                  stroke="#3B82F6" 
+                  strokeWidth={2} 
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="disponible" 
+                  name="Épargne disponible" 
+                  stroke="#F59E0B" 
+                  strokeWidth={2} 
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
 
-                <div className="border rounded-md p-4">
-                  <div className="flex items-center">
-                    <Brain className="h-5 w-5 mr-2 text-purple-500" />
-                    <h3 className="text-sm font-semibold">42 recommandations IA non consultées</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Des opportunités d'optimisation patrimoniale automatisées à examiner.
-                  </p>
-                  <div className="mt-3 flex justify-end">
-                    <Button size="sm" variant="outline">Examiner</Button>
-                  </div>
-                </div>
-
-                <div className="border rounded-md p-4">
-                  <div className="flex items-center">
-                    <CalendarClock className="h-5 w-5 mr-2 text-indigo-500" />
-                    <h3 className="text-sm font-semibold">5 rendez-vous à replanifier</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Rendez-vous annulés nécessitant une nouvelle planification.
-                  </p>
-                  <div className="mt-3 flex justify-end">
-                    <Button size="sm" variant="outline">Calendrier</Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+// Composant pour chaque élément d'opportunité
+const OpportunityItem = ({ 
+  icon: Icon, 
+  iconColor, 
+  title, 
+  description, 
+  action, 
+  onClick 
+}: { 
+  icon: React.ElementType, 
+  iconColor: string, 
+  title: string, 
+  description: string, 
+  action: string, 
+  onClick?: () => void 
+}) => {
+  return (
+    <div className="border rounded-md p-3">
+      <div className="flex items-start justify-between">
+        <div className="flex items-start">
+          <div className={`${iconColor} mr-3 mt-0.5`}>
+            <Icon className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="font-medium text-sm">{title}</div>
+            <div className="text-xs text-muted-foreground">{description}</div>
+          </div>
+        </div>
+        <Button onClick={onClick} size="sm" className="h-7 text-xs">
+          {action}
+        </Button>
+      </div>
     </div>
   );
 };
