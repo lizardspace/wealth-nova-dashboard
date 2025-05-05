@@ -80,11 +80,7 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
   return (
     <div className="w-full bg-sidebar h-full flex flex-col overflow-y-auto border-r border-sidebar-border">
       <div className="p-4">
-        <NavLink to="/admin" className="flex items-center mb-6">
-          <span className="text-xl font-bold text-eparnova-blue">
-            <span className="text-eparnova-gold">EPAR</span>NOVA
-          </span>
-        </NavLink>
+        
 
         <div className="space-y-6">
           <SidebarSection title="Tableau de bord" items={dashboardItems} onItemClick={onItemClick} />
