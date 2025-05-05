@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Index from '../../pages/Index';
 import PortfolioPage from '../../pages/portfolio/PortfolioPage';
 import AddAssetPage from '../../pages/portfolio/AddAssetPage';
@@ -15,7 +15,7 @@ import ContactPage from '../../pages/contact/ContactPage';
 
 const UserRoutes = () => {
   return (
-    <>
+    <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/portfolio" element={<PortfolioPage />} />
       <Route path="/portfolio/add" element={<AddAssetPage />} />
@@ -27,7 +27,7 @@ const UserRoutes = () => {
       <Route path="/chat" element={<ChatPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/contact" element={<ContactPage />} />
-    </>
+    </Routes>
   );
 };
 

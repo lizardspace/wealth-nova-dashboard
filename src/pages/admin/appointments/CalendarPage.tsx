@@ -14,13 +14,14 @@ import {
 } from "@/components/ui/select";
 import { DayAppointments } from '@/components/appointments/DayAppointments';
 
+// Use the correct AppointmentType type for events
 const events = [
   { 
     id: 1, 
     title: "Bilan patrimonial", 
     client: "Jean Dupont", 
     time: "09:00 - 10:00", 
-    type: "video",
+    type: "video" as const,
     advisor: "Marie Lambert"
   },
   { 
@@ -28,7 +29,7 @@ const events = [
     title: "Point mensuel", 
     client: "Sophie Martin", 
     time: "11:30 - 12:15", 
-    type: "phone",
+    type: "phone" as const,
     advisor: "Paul Bernard"
   },
   { 
@@ -36,7 +37,7 @@ const events = [
     title: "Signature contrat", 
     client: "Philippe Durand", 
     time: "14:00 - 15:00", 
-    type: "in-person",
+    type: "in-person" as const,
     advisor: "Marie Lambert"
   },
   { 
@@ -44,7 +45,7 @@ const events = [
     title: "Présentation stratégie", 
     client: "Amélie Petit", 
     time: "16:30 - 17:30", 
-    type: "video",
+    type: "video" as const,
     advisor: "Thomas Richard"
   }
 ];

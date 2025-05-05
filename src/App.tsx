@@ -8,13 +8,13 @@ import { PublicOnlyRoute, PrivateRoute } from "./components/routes/RouteGroups";
 import NotFound from "./pages/NotFound";
 import "./App.css";
 
-// Routes groups
-import UserRoutes from "./components/routes/UserRoutes";
-import AdminRoutes from "./components/routes/AdminRoutes";
-
 // Auth pages
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+
+// Import route components
+import UserRoutes from "./components/routes/UserRoutes";
+import AdminRoutes from "./components/routes/AdminRoutes";
 
 const queryClient = new QueryClient();
 
@@ -38,12 +38,12 @@ const App = () => (
           } />
 
           {/* Protected Routes under MainLayout */}
-          <Route element={<PrivateRoute />}>
+          <Route path="/" element={<PrivateRoute />}>
             {/* User routes */}
-            <UserRoutes />
+            <Route path="/*" element={<UserRoutes />} />
             
             {/* Admin Routes */}
-            <AdminRoutes />
+            <Route path="admin/*" element={<AdminRoutes />} />
           </Route>
 
           {/* Catch-all route */}
