@@ -1,16 +1,20 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./components/layout/MainLayout";
-import Index from "./pages/Index";
-import Login from "./pages/auth/Login";
-import Register from "./pages/auth/Register";
+import { AdminPlaceholder, PublicOnlyRoute, PrivateRoute } from "./components/routes/RouteGroups";
 import NotFound from "./pages/NotFound";
 import "./App.css";
 
-// Import des pages
+// Pages
+import Index from "./pages/Index";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+
+// Client routes
 import PortfolioPage from "./pages/portfolio/PortfolioPage";
 import AddAssetPage from "./pages/portfolio/AddAssetPage";
 import StatementPage from "./pages/statement/StatementPage";
@@ -22,27 +26,19 @@ import ChatPage from "./pages/chat/ChatPage";
 import ProfilePage from "./pages/profile/ProfilePage";
 import ContactPage from "./pages/contact/ContactPage";
 
-// Import de la nouvelle page d'analyse des portefeuilles
-import AnalysePage from "./pages/admin/portfolios/AnalysePage";
-
-// Import des nouvelles pages dashboard
+// Admin pages
 import VueGeneralePage from "./pages/admin/dashboard/VueGeneralePage";
 import EncoursPage from "./pages/admin/dashboard/EncoursPage";
 import StatsClientsPage from "./pages/admin/dashboard/StatsClientsPage";
 import AlertesPage from "./pages/admin/dashboard/AlertesPage";
 import PerformancePage from "./pages/admin/dashboard/PerformancePage";
-
-// Import des nouvelles pages clients
 import ListeClientsPage from "./pages/admin/clients/ListeClientsPage";
 import ExportDonneesPage from "./pages/admin/clients/ExportDonneesPage";
 import NouveauClientPage from "./pages/admin/clients/NouveauClientPage";
-
-// Import des nouvelles pages portefeuilles
 import VueGlobalePage from "./pages/admin/portfolios/VueGlobalePage";
 import EncoursReelsPage from "./pages/admin/portfolios/EncoursReelsPage";
 import EncoursTheoriquesPage from "./pages/admin/portfolios/EncoursTheoriquesPage";
-
-// Dans App.tsx
+import AnalysePage from "./pages/admin/portfolios/AnalysePage";
 import ToolsListPage from "./pages/admin/tools/ToolsListPage";
 import SimulatorsListPage from "./pages/admin/tools/SimulatorsListPage";
 import SimulatorDetailPage from "./pages/admin/tools/SimulatorDetailPage";
@@ -51,63 +47,24 @@ import ProductsListPage from "./pages/admin/tools/ProductsListPage";
 import ProductDetailPage from "./pages/admin/tools/ProductDetailPage";
 import NewProductPage from "./pages/admin/tools/NewProductPage";
 import ConditionalRulesPage from "./pages/admin/tools/ConditionalRulesPage";
-
-// Import des pages IA
 import ScoresPage from "./pages/admin/ai/ScoresPage";
 import ClientScorePage from "./pages/admin/ai/ClientScorePage";
 import RecommendationsPage from "./pages/admin/ai/RecommendationsPage";
 import InteractionTrackingPage from "./pages/admin/ai/InteractionTrackingPage";
-
-// Import des pages de paramètres
-import RolesPage from "./pages/admin/settings/RolesPage";
-import PlatformPage from "./pages/admin/settings/PlatformPage";
-import SecurityPage from "./pages/admin/settings/SecurityPage";
-
-// Import des pages de Documents
 import DocumentsToSignPage from "./pages/admin/documents/DocumentsToSignPage";
 import DocumentsSignedPage from "./pages/admin/documents/DocumentsSignedPage";
 import DocumentsArchivePage from "./pages/admin/documents/DocumentsArchivePage";
-
-// Import des pages d'Alertes
 import AlertesDashboardPage from "./pages/admin/alertes/AlertesDashboardPage";
 import InactiveClientsPage from "./pages/admin/alertes/InactiveClientsPage";
 import IncompleteProfilesPage from "./pages/admin/alertes/IncompleteProfilesPage";
-
-// Admin placeholder component - Will need to be implemented properly
-const AdminPlaceholder = ({ title }: { title: string }) => (
-  <div className="p-6">
-    <h1 className="text-2xl font-bold mb-4">{title}</h1>
-    <p className="text-gray-500">Cette page est en cours de développement.</p>
-  </div>
-);
-
-const queryClient = new QueryClient();
-
-// Simple auth check
-const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return <>{children}</>;
-};
-
-const PublicOnlyRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-
-  if (isAuthenticated) {
-    return <Navigate to="/" replace />;
-  }
-
-  return <>{children}</>;
-};
-
-// Import des pages de rendez-vous
+import RolesPage from "./pages/admin/settings/RolesPage";
+import PlatformPage from "./pages/admin/settings/PlatformPage";
+import SecurityPage from "./pages/admin/settings/SecurityPage";
 import PlanningPage from "./pages/admin/appointments/PlanningPage";
 import CalendarPage from "./pages/admin/appointments/CalendarPage";
 import HistoriquePage from "./pages/admin/appointments/HistoriquePage";
+
+const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -134,35 +91,30 @@ const App = () => (
               <MainLayout />
             </PrivateRoute>
           }>
+            {/* User routes */}
             <Route path="/" element={<Index />} />
-
-            {/* Portfolio routes */}
             <Route path="/portfolio" element={<PortfolioPage />} />
             <Route path="/portfolio/add" element={<AddAssetPage />} />
-
-            {/* Statement route */}
             <Route path="/statement" element={<StatementPage />} />
-
-            {/* Tools routes */}
             <Route path="/simulators" element={<SimulatorsPage />} />
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
-
-            {/* Contact routes */}
             <Route path="/appointments" element={<AppointmentsPage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/contact" element={<ContactPage />} />
 
-            {/* Admin Dashboard Routes */}
+            {/* Admin Routes */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+            
+            {/* Dashboard Routes */}
             <Route path="/admin/dashboard" element={<VueGeneralePage />} />
             <Route path="/admin/dashboard/encours" element={<EncoursPage />} />
             <Route path="/admin/dashboard/stats-clients" element={<StatsClientsPage />} />
             <Route path="/admin/dashboard/alertes" element={<AlertesPage />} />
             <Route path="/admin/dashboard/performance" element={<PerformancePage />} />
-
-            {/* Admin Clients Routes */}
+            
+            {/* Client Routes */}
             <Route path="/admin/clients" element={<ListeClientsPage />} />
             <Route path="/admin/clients/export" element={<ExportDonneesPage />} />
             <Route path="/admin/clients/new" element={<NouveauClientPage />} />
@@ -172,16 +124,16 @@ const App = () => (
             <Route path="/admin/clients/:clientId/documents" element={<AdminPlaceholder title="Documents client" />} />
             <Route path="/admin/clients/:clientId/rendez-vous" element={<AdminPlaceholder title="Rendez-vous client" />} />
             <Route path="/admin/clients/:clientId/chat-history" element={<AdminPlaceholder title="Historique chat" />} />
-
-            {/* Admin Portfolios Routes */}
+            
+            {/* Portfolio Routes */}
             <Route path="/admin/portfolios" element={<VueGlobalePage />} />
             <Route path="/admin/portfolios/reels" element={<EncoursReelsPage />} />
             <Route path="/admin/portfolios/theoriques" element={<EncoursTheoriquesPage />} />
             <Route path="/admin/portfolios/analyse" element={<AnalysePage />} />
             <Route path="/admin/portfolios/classe-actif" element={<AdminPlaceholder title="Classes d'actifs" />} />
             <Route path="/admin/portfolios/evolution" element={<AdminPlaceholder title="Évolution portefeuilles" />} />
-
-            {/* Admin Outils Routes */}
+            
+            {/* Tools Routes */}
             <Route path="/admin/outils" element={<ToolsListPage />} />
             <Route path="/admin/outils/simulateurs" element={<SimulatorsListPage />} />
             <Route path="/admin/outils/simulateurs/:id" element={<SimulatorDetailPage />} />
@@ -190,8 +142,8 @@ const App = () => (
             <Route path="/admin/outils/produits/:id" element={<ProductDetailPage />} />
             <Route path="/admin/outils/produits/new" element={<NewProductPage />} />
             <Route path="/admin/outils/regles-affichage" element={<ConditionalRulesPage />} />
-
-            {/* Admin IA Routes */}
+            
+            {/* AI Routes */}
             <Route path="/admin/ia" element={<Navigate to="/admin/ia/scores" replace />} />
             <Route path="/admin/ia/scores" element={<ScoresPage />} />
             <Route path="/admin/ia/scores/:clientId" element={<ClientScorePage />} />
@@ -199,34 +151,34 @@ const App = () => (
             <Route path="/admin/ia/recommandations/:id" element={<AdminPlaceholder title="Détail recommandation" />} />
             <Route path="/admin/ia/suivi-interactions" element={<InteractionTrackingPage />} />
             <Route path="/admin/ia/suivi-interactions/:id" element={<AdminPlaceholder title="Détail interaction" />} />
-
-            {/* Admin Documents Routes */}
+            
+            {/* Documents Routes */}
             <Route path="/admin/documents/en-attente" element={<DocumentsToSignPage />} />
             <Route path="/admin/documents/signes" element={<DocumentsSignedPage />} />
             <Route path="/admin/documents/historique" element={<DocumentsArchivePage />} />
             <Route path="/admin/documents/detail/:id" element={<AdminPlaceholder title="Détail document" />} />
             <Route path="/admin/documents/modele" element={<AdminPlaceholder title="Modèles de documents" />} />
-
-            {/* Admin Alertes Routes */}
+            
+            {/* Alerts Routes */}
             <Route path="/admin/alertes" element={<AlertesDashboardPage />} />
             <Route path="/admin/alertes/inactifs" element={<InactiveClientsPage />} />
             <Route path="/admin/alertes/profils-incomplets" element={<IncompleteProfilesPage />} />
             <Route path="/admin/alertes/projets-en-cours" element={<AdminPlaceholder title="Projets non finalisés" />} />
             <Route path="/admin/alertes/gains-potentiels" element={<AdminPlaceholder title="Optimisations non activées" />} />
-
-            {/* Admin Parametres Routes */}
+            
+            {/* Settings Routes */}
             <Route path="/admin/parametres/roles" element={<RolesPage />} />
             <Route path="/admin/parametres/roles/:id" element={<AdminPlaceholder title="Détail utilisateur" />} />
             <Route path="/admin/parametres/roles/new" element={<AdminPlaceholder title="Nouvel utilisateur" />} />
             <Route path="/admin/parametres/plateforme" element={<PlatformPage />} />
             <Route path="/admin/parametres/securite" element={<SecurityPage />} />
             <Route path="/admin/parametres/historique-acces" element={<AdminPlaceholder title="Journal connexions" />} />
-
-            {/* Admin Rendez-vous Routes */}
+            
+            {/* Appointments Routes */}
             <Route path="/admin/rendez-vous" element={<PlanningPage />} />
             <Route path="/admin/rendez-vous/calendrier" element={<CalendarPage />} />
             <Route path="/admin/rendez-vous/creneau/new" element={<AdminPlaceholder title="Nouveau créneau" />} />
-            <Route path="/admin/rendez-vous/creneau/:id/edit" element={<AdminPlaceholder title="Modifier cr��neau" />} />
+            <Route path="/admin/rendez-vous/creneau/:id/edit" element={<AdminPlaceholder title="Modifier créneau" />} />
             <Route path="/admin/rendez-vous/historique" element={<HistoriquePage />} />
           </Route>
 
