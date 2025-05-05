@@ -4,6 +4,7 @@ import { Route } from 'react-router-dom';
 import ListeClientsPage from '../../pages/admin/clients/ListeClientsPage';
 import ExportDonneesPage from '../../pages/admin/clients/ExportDonneesPage';
 import NouveauClientPage from '../../pages/admin/clients/NouveauClientPage';
+import ClientDetailPage from '../../pages/admin/clients/ClientDetailPage';
 
 // Simple placeholder component for routes not yet implemented
 const AdminPlaceholder = ({ title }: { title: string }) => (
@@ -19,7 +20,7 @@ const ClientsRoutes = () => {
       <Route path="/admin/clients" element={<ListeClientsPage />} />
       <Route path="/admin/clients/export" element={<ExportDonneesPage />} />
       <Route path="/admin/clients/new" element={<NouveauClientPage />} />
-      <Route path="/admin/clients/:clientId" element={<AdminPlaceholder title="Détail client" />} />
+      <Route path="/admin/clients/:clientId" element={<ClientDetailPage />} />
       <Route path="/admin/clients/:clientId/edit" element={<AdminPlaceholder title="Édition client" />} />
       <Route path="/admin/clients/:clientId/simulations" element={<AdminPlaceholder title="Simulations client" />} />
       <Route path="/admin/clients/:clientId/documents" element={<AdminPlaceholder title="Documents client" />} />

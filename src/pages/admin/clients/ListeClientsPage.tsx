@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Table, 
   TableBody, 
@@ -20,7 +20,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, UserPlus, Filter, BarChart, BriefcaseIcon } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 // Données fictives pour la démo
 const mockClients = [
@@ -101,6 +100,10 @@ const ListeClientsPage = () => {
       currency: 'EUR',
       maximumFractionDigits: 0 
     }).format(value);
+  };
+
+  const handleClientClick = (clientId: number) => {
+    navigate(`/admin/clients/${clientId}`);
   };
 
   return (
@@ -208,7 +211,7 @@ const ListeClientsPage = () => {
                 <TableRow 
                   key={client.id}
                   className="cursor-pointer hover:bg-muted"
-                  onClick={() => navigate(`/admin/clients/${client.id}`)}
+                  onClick={() => handleClientClick(client.id)}
                 >
                   <TableCell className="font-medium">{client.nom}</TableCell>
                   <TableCell>{client.prenom}</TableCell>
@@ -247,11 +250,27 @@ const ListeClientsPage = () => {
                   <TableCell>{client.derniereActivite}</TableCell>
                   <TableCell>
                     <div className="flex space-x-1">
-                      <Button size="icon" variant="outline" className="h-8 w-8">
+                      <Button 
+                        size="icon" 
+                        variant="outline" 
+                        className="h-8 w-8"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Add analysis action here
+                        }}
+                      >
                         <BarChart className="h-4 w-4" />
                         <span className="sr-only">Analyser</span>
                       </Button>
-                      <Button size="icon" variant="outline" className="h-8 w-8">
+                      <Button 
+                        size="icon" 
+                        variant="outline" 
+                        className="h-8 w-8"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Add portfolio action here
+                        }}
+                      >
                         <BriefcaseIcon className="h-4 w-4" />
                         <span className="sr-only">Portfolio</span>
                       </Button>

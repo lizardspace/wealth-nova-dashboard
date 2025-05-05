@@ -1,113 +1,147 @@
 
 import React from 'react';
-import { Video, Users, Phone, Clock } from 'lucide-react';
+import { format, isSameDay } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { Video, Clock, Users, Phone } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Card } from "@/components/ui/card";
 
-interface Event {
+type AppointmentType = 'video' | 'phone' | 'in-person';
+
+interface AppointmentEvent {
   id: number;
   title: string;
   client: string;
   time: string;
-  type: string;
+  type: AppointmentType;
   advisor: string;
 }
 
 interface DayAppointmentsProps {
   date: Date;
-  events: Event[];
+  events: AppointmentEvent[];
 }
 
-const timeSlots = [
-  "08:00", "09:00", "10:00", "11:00", "12:00", 
-  "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"
-];
+export const DayAppointments: React.FC<DayAppointmentsProps> = ({ date, events }) => {
+  const hours = Array.from({ length: 10 }, (_, i) => i + 8); // 8:00 to 17:00
+  const filteredEvents = events.filter(event => {
+    return true; // In a real app, filter by date
+  });
 
-export function DayAppointments({ date, events }: DayAppointmentsProps) {
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('fr-FR', { 
-      day: 'numeric',
-      month: 'long', 
-      year: 'numeric' 
-    });
+  const getTypeIcon = (type: AppointmentType) => {
+    switch(type) {
+      case 'video':
+        return <Video className="h-4 w-4" />;
+      case 'phone':
+        return <Phone className="h-4 w-4" />;
+      case 'in-person':
+        return <Users className="h-4 w-4" />;
+    }
   };
 
-  // Function to get events for a specific time slot
-  const getEventsForTimeSlot = (timeSlot: string) => {
-    return events.filter(event => {
-      const startTime = event.time.split(' - ')[0];
-      return startTime === timeSlot;
-    });
+  const getTypeColor = (type: AppointmentType) => {
+    switch(type) {
+      case 'video':
+        return 'bg-blue-100 border-blue-300 text-blue-800';
+      case 'phone':
+        return 'bg-green-100 border-green-300 text-green-800';
+      case 'in-person':
+        return 'bg-purple-100 border-purple-300 text-purple-800';
+    }
   };
+
+  const getCurrentTimePosition = () => {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const totalMinutes = hours * 60 + minutes;
+    
+    // Only show current time line for today
+    if (!isSameDay(now, date)) return null;
+    
+    // Position from top is based on time (8:00 = 0)
+    const startHour = 8;
+    const minutesSinceStart = totalMinutes - (startHour * 60);
+    const position = minutesSinceStart * (80 / 60); // Each hour is 80px height
+
+    return position;
+  };
+
+  const currentTimePosition = getCurrentTimePosition();
 
   return (
-    <div className="space-y-1">
-      {timeSlots.map((timeSlot) => {
-        const slotEvents = getEventsForTimeSlot(timeSlot);
-        
-        return (
-          <div key={timeSlot} className="grid grid-cols-[80px_1fr] gap-2">
-            <div className="text-sm font-medium text-muted-foreground py-4 text-right pr-4 border-r">
-              {timeSlot}
-            </div>
-            <div className="py-2 pl-2">
-              {slotEvents.length > 0 ? (
-                <div className="space-y-2">
-                  {slotEvents.map((event) => (
-                    <div 
-                      key={event.id} 
-                      className={`rounded-md p-3 border ${
-                        event.type === "video" ? "border-l-4 border-l-blue-500" : 
-                        event.type === "phone" ? "border-l-4 border-l-green-500" : 
-                        "border-l-4 border-l-purple-500"
-                      }`}
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-medium">{event.title}</h4>
-                          <Link 
-                            to={`/admin/clients/${event.id}`}
-                            className="text-primary text-sm hover:underline"
-                          >
-                            {event.client}
-                          </Link>
-                          <div className="flex items-center text-xs text-muted-foreground mt-1">
-                            <Clock className="h-3 w-3 mr-1" />
-                            {event.time}
-                          </div>
-                        </div>
-                        <div className="flex items-center">
-                          {event.type === "video" ? (
-                            <Video className="h-4 w-4 text-blue-500" />
-                          ) : event.type === "phone" ? (
-                            <Phone className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <Users className="h-4 w-4 text-purple-500" />
-                          )}
-                          <div className="ml-2 text-xs text-muted-foreground">
-                            {event.advisor}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex justify-end mt-2">
-                        <Button variant="ghost" size="sm" asChild>
-                          <Link to={`/admin/rendez-vous/${event.id}`}>
-                            Détails
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="h-12 border border-dashed rounded-md flex items-center justify-center text-sm text-muted-foreground">
-                  Aucun rendez-vous
-                </div>
-              )}
-            </div>
+    <div className="relative min-h-[800px]">
+      {/* Time column */}
+      <div className="absolute left-0 top-0 w-16 h-full text-center">
+        {hours.map(hour => (
+          <div key={hour} className="h-20 border-b border-dashed border-gray-200 relative">
+            <span className="absolute -top-2.5 left-0 text-xs text-gray-500 w-full text-center">
+              {`${hour}:00`}
+            </span>
           </div>
-        );
-      })}
+        ))}
+      </div>
+      
+      {/* Current time indicator */}
+      {currentTimePosition !== null && (
+        <div 
+          className="absolute left-16 right-0 border-t-2 border-red-500 z-10"
+          style={{ top: `${currentTimePosition}px` }}
+        >
+          <div className="absolute -left-3 -top-1.5 w-3 h-3 rounded-full bg-red-500"></div>
+        </div>
+      )}
+
+      {/* Events */}
+      <div className="ml-16 relative">
+        {filteredEvents.map(event => {
+          // For demo, we'll position events statically
+          // In a real app, calculate position based on time
+          const [startHour, startMinute] = event.time.split(' - ')[0].split(':').map(Number);
+          
+          // Calculate top position based on start time
+          const startTime = startHour * 60 + startMinute;
+          const topPosition = ((startTime - 8*60) / 60) * 80; // 80px per hour
+          
+          // In a real app, calculate duration from actual event times
+          // Here we'll use fixed height for demo
+          const height = 80; // 1 hour event
+          
+          return (
+            <Card
+              key={event.id}
+              className={`absolute p-2 rounded-md border shadow-sm w-[calc(100%-8px)] cursor-pointer ${getTypeColor(event.type)}`}
+              style={{
+                top: `${topPosition}px`,
+                height: `${height}px`,
+                left: '4px'
+              }}
+            >
+              <div className="flex flex-col h-full">
+                <div className="flex items-center justify-between text-sm font-medium">
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3 opacity-70" />
+                    <span>{event.time}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {getTypeIcon(event.type)}
+                  </div>
+                </div>
+                <div className="font-medium mt-1">{event.title}</div>
+                <div className="text-xs mt-auto flex justify-between">
+                  <span>{event.client}</span>
+                  <span className="opacity-75">{event.advisor}</span>
+                </div>
+              </div>
+            </Card>
+          );
+        })}
+
+        {/* Hour grid */}
+        {hours.map(hour => (
+          <div key={hour} className="h-20 border-b border-dashed border-gray-200"></div>
+        ))}
+      </div>
     </div>
   );
-}
+};

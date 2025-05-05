@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
+import MainLayout from '../layout/MainLayout';
 
 // Simple placeholder for admin routes not yet implemented
 export const AdminPlaceholder = ({ title }: { title: string }) => (
@@ -17,8 +18,13 @@ export const PublicOnlyRoute = ({ children }: { children: React.ReactNode }) => 
   return <>{children}</>;
 };
 
-export const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+export const PrivateRoute = () => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  return <>{children}</>;
+  
+  return (
+    <MainLayout>
+      <Outlet />
+    </MainLayout>
+  );
 };
