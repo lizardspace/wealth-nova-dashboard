@@ -140,6 +140,20 @@
   .hover-scale:hover {
     transform: scale(1.05);
   }
+
+  /* Ajout de nouvelles classes utilitaires pour les graphiques */
+  .chart-container {
+    @apply w-full h-full flex justify-center items-center overflow-hidden;
+  }
+  
+  .chart-responsive {
+    @apply w-full h-full;
+    min-height: 250px;
+  }
+  
+  .chart-card {
+    @apply shadow-sm hover:shadow-md transition-all duration-300;
+  }
 }
 
 @keyframes fadeIn {
@@ -179,5 +193,32 @@
   }
   50% {
     opacity: 0.5;
+  }
+}
+
+/* Ajouts pour les graphiques Recharts */
+.recharts-wrapper {
+  margin: 0 auto;
+}
+
+.recharts-legend-wrapper {
+  padding: 5px 0;
+}
+
+.recharts-default-tooltip {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid #ddd !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  padding: 8px 12px !important;
+}
+
+@media (max-width: 640px) {
+  .recharts-legend-wrapper {
+    font-size: 10px !important;
+  }
+  
+  .recharts-text {
+    font-size: 10px !important;
   }
 }

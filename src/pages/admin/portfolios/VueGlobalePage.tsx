@@ -148,14 +148,14 @@ const VueGlobalePage = () => {
                 Évolution des encours réels et théoriques sur la période
               </CardDescription>
             </CardHeader>
-            <CardContent className="h-96">
+            <CardContent className="h-[400px]"> {/* Augmenté la hauteur de 380px à 400px */}
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={encoursTotalData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip formatter={(value) => `${(Number(value) / 1000000).toFixed(2)} M€`} />
-                  <Legend />
+                  <Legend wrapperStyle={{ paddingTop: '15px' }} />
                   <Line type="monotone" dataKey="reels" name="Encours réels" stroke="#8B5CF6" strokeWidth={2} />
                   <Line type="monotone" dataKey="theoriques" name="Encours théoriques" stroke="#64748B" strokeWidth={2} strokeDasharray="5 5" />
                 </LineChart>
@@ -175,16 +175,16 @@ const VueGlobalePage = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="h-80">
+                <div className="h-[320px]"> {/* Augmenté la hauteur de 280px à 320px */}
                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
+                    <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                       <Pie
                         data={repartitionActifs}
                         cx="50%"
                         cy="50%"
                         labelLine={false}
                         label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={100}
+                        outerRadius={110} {/* Ajusté le rayon pour mieux s'adapter à la nouvelle hauteur */}
                         fill="#8884d8"
                         dataKey="value"
                       >
@@ -197,18 +197,18 @@ const VueGlobalePage = () => {
                   </ResponsiveContainer>
                 </div>
                 
-                <div className="h-80">
+                <div className="h-[320px]"> {/* Augmenté la hauteur de 280px à 320px */}
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={repartitionActifs}
                       layout="vertical"
-                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                      margin={{ top: 20, right: 30, left: 40, bottom: 5 }} {/* Augmenté la marge gauche pour mieux afficher les étiquettes */}
                     >
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis type="number" />
-                      <YAxis dataKey="name" type="category" />
+                      <YAxis dataKey="name" type="category" width={100} /> {/* Défini une largeur fixe pour les étiquettes */}
                       <Tooltip formatter={(value) => `${value}%`} />
-                      <Legend />
+                      <Legend wrapperStyle={{ paddingTop: '15px' }} />
                       <Bar dataKey="value" name="Pourcentage" fill="#8B5CF6" />
                     </BarChart>
                   </ResponsiveContainer>

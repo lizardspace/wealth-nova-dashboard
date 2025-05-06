@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -111,15 +112,15 @@ const AlertesPage = () => {
               Types d'alertes actives
             </CardDescription>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[350px]"> {/* Augmenté la hauteur de 300px à 350px */}
             <ChartContainer config={{}}>
-              <PieChart>
+              <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}> {/* Ajout des marges explicites */}
                 <Pie
                   data={alertsByTypeData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  outerRadius={90}
+                  outerRadius={110} {/* Augmenté le rayon du graphique */}
                   fill="#8884d8"
                   dataKey="value"
                   label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}

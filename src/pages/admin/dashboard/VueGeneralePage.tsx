@@ -217,16 +217,16 @@ const VueGeneralePage = () => {
             <CardDescription>Allocation globale du portefeuille</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-64">
+            <div className="h-[300px]"> {/* Augmenté la hauteur de 264px à 300px */}
               <ResponsiveContainer width="100%" height="100%">
-                <RePieChart>
+                <RePieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}> {/* Ajout des marges */}
                   <Pie
                     data={classesActifs}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
                     label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
+                    outerRadius={100}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -255,7 +255,7 @@ const VueGeneralePage = () => {
             <CardDescription>Actions commerciales prioritaires</CardDescription>
           </CardHeader>
           <CardContent className="pt-2">
-            <ScrollArea className="h-72 pr-4">
+            <ScrollArea className="h-[340px] pr-4"> {/* Augmenté la hauteur de 272px à 340px */}
               <div className="space-y-3">
                 <OpportunityItem 
                   icon={AlertTriangle} 
@@ -316,7 +316,7 @@ const VueGeneralePage = () => {
             <CardDescription>Actions clients et transactions</CardDescription>
           </CardHeader>
           <CardContent className="pt-2">
-            <ScrollArea className="h-72 pr-4">
+            <ScrollArea className="h-[340px] pr-4"> {/* Augmenté la hauteur de 272px à 340px */}
               <div className="space-y-3">
                 {activitesRecentes.map((activite, index) => (
                   <div key={index} className="border rounded-md p-2 text-sm">
@@ -423,14 +423,17 @@ const VueGeneralePage = () => {
               Comparaison théorique/réel et épargne disponible
             </CardDescription>
           </CardHeader>
-          <CardContent className="h-96">
+          <CardContent className="h-[420px]"> {/* Augmenté la hauteur de 396px à 420px */}
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={encoursData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <LineChart 
+                data={encoursData} 
+                margin={{ top: 20, right: 30, left: 30, bottom: 15 }} {/* Augmenté les marges */}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
                 <Tooltip formatter={(value) => `${(Number(value) / 1000000).toFixed(2)} M€`} />
-                <Legend />
+                <Legend wrapperStyle={{ paddingTop: '15px' }} />
                 <Line 
                   type="monotone" 
                   dataKey="reels" 
