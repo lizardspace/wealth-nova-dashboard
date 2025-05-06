@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { CalendarIcon, Filter, Plus, List, LayoutGrid, Clock } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,8 @@ import {
   calendarEvents, 
   appointments,
   AppointmentType,
-  Event
+  Event,
+  HistoricalAppointment
 } from '@/components/appointments/AppointmentTypes';
 import { AppointmentList } from '@/components/appointments/AppointmentList';
 import { AppointmentGrid } from '@/components/appointments/AppointmentGrid';

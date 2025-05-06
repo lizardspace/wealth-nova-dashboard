@@ -25,23 +25,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-type AppointmentType = 'video' | 'phone' | 'in-person';
-type AppointmentStatus = 'upcoming' | 'completed' | 'cancelled' | 'rescheduled' | 'pending';
-
-interface Appointment {
-  id: number;
-  client: string;
-  date: string;
-  time: string;
-  advisor: string;
-  type: AppointmentType;
-  status: AppointmentStatus;
-  notes?: string;
-}
+import { 
+  AppointmentType, 
+  AppointmentStatus, 
+  HistoricalAppointment 
+} from './AppointmentTypes';
 
 interface HistoryViewProps {
-  appointments: Appointment[];
+  appointments: HistoricalAppointment[];
 }
 
 export const HistoryView: React.FC<HistoryViewProps> = ({ appointments }) => {
@@ -99,7 +90,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ appointments }) => {
 };
 
 interface AppointmentHistoryTableProps {
-  appointments: Appointment[];
+  appointments: HistoricalAppointment[];
 }
 
 const AppointmentHistoryTable: React.FC<AppointmentHistoryTableProps> = ({ appointments }) => {
