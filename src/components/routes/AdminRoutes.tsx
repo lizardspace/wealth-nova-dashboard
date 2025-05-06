@@ -9,7 +9,6 @@ import AIRoutes from './AIRoutes';
 import DocumentsRoutes from './DocumentsRoutes';
 import AlertesRoutes from './AlertesRoutes';
 import SettingsRoutes from './SettingsRoutes';
-import AppointmentsRoutes from './AppointmentsRoutes';
 
 const AdminRoutes = () => {
   return (
@@ -23,7 +22,6 @@ const AdminRoutes = () => {
       <Route path="/documents/*" element={<DocumentsRoutes />} />
       <Route path="/alertes/*" element={<AlertesRoutes />} />
       <Route path="/settings/*" element={<SettingsRoutes />} />
-      <Route path="/rendez-vous/*" element={<AppointmentsRoutes />} />
     </Routes>
   );
 };

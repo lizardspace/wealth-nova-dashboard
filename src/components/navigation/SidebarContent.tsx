@@ -90,7 +90,8 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
     { to: "/admin/dashboard/encours", icon: BarChart, label: "Encours R/T" },
     { to: "/admin/dashboard/stats-clients", icon: Users, label: "Stats clients" },
     { to: "/admin/dashboard/alertes", icon: Bell, label: "Alertes" },
-    { to: "/admin/dashboard/performance", icon: BarChart, label: "Performance" }
+    { to: "/admin/dashboard/performance", icon: BarChart, label: "Performance" },
+    { to: "/admin/dashboard/rendez-vous", icon: Calendar, label: "Rendez-vous" },
   ];
 
   const clientsItems = [
@@ -136,12 +137,6 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
     { to: "/admin/parametres/securite", icon: Shield, label: "Sécurité" }
   ];
 
-  const appointmentsItems = [
-    { to: "/admin/rendez-vous", icon: Calendar, label: "Planning", end: true },
-    { to: "/admin/rendez-vous/calendrier", icon: Calendar, label: "Calendrier" },
-    { to: "/admin/rendez-vous/historique", icon: Calendar, label: "Historique" }
-  ];
-
   return (
     <div className="w-64 h-full flex flex-col bg-slate-50 border-r border-slate-200 overflow-y-auto">
       <div className="p-4 flex items-center justify-center border-b border-slate-200">
@@ -158,7 +153,6 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
         <SidebarSection title="Intelligence Artificielle" items={aiItems} onItemClick={onItemClick} />
         <SidebarSection title="Documents" items={documentsItems} onItemClick={onItemClick} />
         <SidebarSection title="Alertes" items={alertsItems} onItemClick={onItemClick} />
-        <SidebarSection title="Rendez-vous" items={appointmentsItems} onItemClick={onItemClick} />
         <SidebarSection title="Paramètres" items={settingsItems} onItemClick={onItemClick} />
       </nav>
 

@@ -6,6 +6,7 @@ import EncoursPage from '../../pages/admin/dashboard/EncoursPage';
 import StatsClientsPage from '../../pages/admin/dashboard/StatsClientsPage';
 import AlertesPage from '../../pages/admin/dashboard/AlertesPage';
 import PerformancePage from '../../pages/admin/dashboard/PerformancePage';
+import AppointmentsPage from '../../pages/admin/dashboard/AppointmentsPage';
 
 const DashboardRoutes = () => {
   return (
@@ -15,6 +16,7 @@ const DashboardRoutes = () => {
       <Route path="/stats-clients" element={<StatsClientsPage />} />
       <Route path="/alertes" element={<AlertesPage />} />
       <Route path="/performance" element={<PerformancePage />} />
+      <Route path="/rendez-vous" element={<AppointmentsPage />} />
     </Routes>
   );
 };
