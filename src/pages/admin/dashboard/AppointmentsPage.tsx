@@ -171,7 +171,7 @@ const appointments: Appointment[] = [
   }
 ];
 
-const AppointmentsPage = () => {
+const AppointmentsPage = (): React.ReactNode => {
   const [viewType, setViewType] = useState<"list" | "grid" | "calendar" | "history">("calendar");
   const [date, setDate] = useState<Date>(new Date());
   const [view, setView] = useState<'day' | 'week'>('day');
@@ -294,7 +294,7 @@ const AppointmentsPage = () => {
   );
 
   // Render history view
-  const renderHistoryView = () => (
+  const renderHistoryView = (): JSX.Element => (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <Card>
@@ -518,6 +518,94 @@ const AppointmentsPage = () => {
           </Table>
         </TabsContent>
       </Tabs>
+    </div>
+  );
+  
+  // Main component return with proper explicit JSX.Element return type
+  return (
+    <div className="space-y-6">
+      {viewType === "calendar" && (
+        <div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <button onClick={handlePreviousDate} className="p-2 rounded-md hover:bg-gray-100">
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <div className="text-lg font-medium">{month} {year}</div>
+              <button onClick={handleNextDate} className="p-2 rounded-md hover:bg-gray-100">
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button onClick={() => setViewType("list")} className="p-2 rounded-md hover:bg-gray-100">
+                <List className="h-4 w-4" />
+              </button>
+              <button onClick={() => setViewType("grid")} className="p-2 rounded-md hover:bg-gray-100">
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+              <button onClick={() => setViewType("history")} className="p-2 rounded-md hover:bg-gray-100">
+                <Calendar className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+          {renderDayAppointments()}
+        </div>
+      )}
+      {viewType === "list" && (
+        <div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <button onClick={handlePreviousDate} className="p-2 rounded-md hover:bg-gray-100">
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <div className="text-lg font-medium">{month} {year}</div>
+              <button onClick={handleNextDate} className="p-2 rounded-md hover:bg-gray-100">
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button onClick={() => setViewType("calendar")} className="p-2 rounded-md hover:bg-gray-100">
+                <Calendar className="h-4 w-4" />
+              </button>
+              <button onClick={() => setViewType("grid")} className="p-2 rounded-md hover:bg-gray-100">
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+              <button onClick={() => setViewType("history")} className="p-2 rounded-md hover:bg-gray-100">
+                <Calendar className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+          {renderDayAppointments()}
+        </div>
+      )}
+      {viewType === "grid" && (
+        <div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <button onClick={handlePreviousDate} className="p-2 rounded-md hover:bg-gray-100">
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <div className="text-lg font-medium">{month} {year}</div>
+              <button onClick={handleNextDate} className="p-2 rounded-md hover:bg-gray-100">
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button onClick={() => setViewType("calendar")} className="p-2 rounded-md hover:bg-gray-100">
+                <Calendar className="h-4 w-4" />
+              </button>
+              <button onClick={() => setViewType("list")} className="p-2 rounded-md hover:bg-gray-100">
+                <List className="h-4 w-4" />
+              </button>
+              <button onClick={() => setViewType("history")} className="p-2 rounded-md hover:bg-gray-100">
+                <Calendar className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+          {renderWeekView()}
+        </div>
+      )}
+      {viewType === "history" && renderHistoryView()}
     </div>
   );
 };
