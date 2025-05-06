@@ -171,7 +171,7 @@ const appointments: Appointment[] = [
   }
 ];
 
-export default function AppointmentsPage() {
+const AppointmentsPage = () => {
   const [viewType, setViewType] = useState<"list" | "grid" | "calendar" | "history">("calendar");
   const [date, setDate] = useState<Date>(new Date());
   const [view, setView] = useState<'day' | 'week'>('day');
@@ -520,4 +520,6 @@ export default function AppointmentsPage() {
       </Tabs>
     </div>
   );
-}
+};
+
+export default AppointmentsPage;
