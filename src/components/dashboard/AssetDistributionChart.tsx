@@ -134,15 +134,18 @@ const AssetDistributionChart = ({ data = defaultData }: AssetDistributionProps) 
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-[250px] w-full"> {/* Augmenté la hauteur de 200px à 250px */}
+          <div className="h-[250px] w-full">
+            {/* Augmenté la hauteur de 200px à 250px */}
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}> {/* Ajouté margins explicites */}
+              <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+                {/* Ajouté margins explicites */}
                 <Pie
                   data={data}
                   cx="50%"
                   cy="50%"
                   innerRadius={45}
-                  outerRadius={80} {/* Ajusté pour mieux s'adapter à la hauteur augmentée */}
+                  outerRadius={80}
+                  /* Ajusté pour mieux s'adapter à la hauteur augmentée */
                   paddingAngle={2}
                   dataKey="value"
                   label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
@@ -161,7 +164,8 @@ const AssetDistributionChart = ({ data = defaultData }: AssetDistributionProps) 
                   verticalAlign="middle" 
                   onClick={handleClick} 
                   className="cursor-pointer"
-                  wrapperStyle={{ fontSize: '12px', paddingLeft: '10px' }} {/* Ajusté la taille et le padding */}
+                  wrapperStyle={{ fontSize: '12px', paddingLeft: '10px' }}
+                  /* Ajusté la taille et le padding */
                 />
               </PieChart>
             </ResponsiveContainer>

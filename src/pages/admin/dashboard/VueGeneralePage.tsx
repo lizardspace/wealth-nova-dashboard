@@ -217,9 +217,11 @@ const VueGeneralePage = () => {
             <CardDescription>Allocation globale du portefeuille</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]"> {/* Augmenté la hauteur de 264px à 300px */}
+            <div className="h-[300px]">
+              {/* Augmenté la hauteur de 264px à 300px */}
               <ResponsiveContainer width="100%" height="100%">
-                <RePieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}> {/* Ajout des marges */}
+                <RePieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                  {/* Ajout des marges */}
                   <Pie
                     data={classesActifs}
                     cx="50%"
@@ -255,7 +257,8 @@ const VueGeneralePage = () => {
             <CardDescription>Actions commerciales prioritaires</CardDescription>
           </CardHeader>
           <CardContent className="pt-2">
-            <ScrollArea className="h-[340px] pr-4"> {/* Augmenté la hauteur de 272px à 340px */}
+            <ScrollArea className="h-[340px] pr-4">
+              {/* Augmenté la hauteur de 272px à 340px */}
               <div className="space-y-3">
                 <OpportunityItem 
                   icon={AlertTriangle} 
@@ -316,7 +319,8 @@ const VueGeneralePage = () => {
             <CardDescription>Actions clients et transactions</CardDescription>
           </CardHeader>
           <CardContent className="pt-2">
-            <ScrollArea className="h-[340px] pr-4"> {/* Augmenté la hauteur de 272px à 340px */}
+            <ScrollArea className="h-[340px] pr-4">
+              {/* Augmenté la hauteur de 272px à 340px */}
               <div className="space-y-3">
                 {activitesRecentes.map((activite, index) => (
                   <div key={index} className="border rounded-md p-2 text-sm">
@@ -423,11 +427,13 @@ const VueGeneralePage = () => {
               Comparaison théorique/réel et épargne disponible
             </CardDescription>
           </CardHeader>
-          <CardContent className="h-[420px]"> {/* Augmenté la hauteur de 396px à 420px */}
+          <CardContent className="h-[420px]">
+            {/* Augmenté la hauteur de 396px à 420px */}
             <ResponsiveContainer width="100%" height="100%">
               <LineChart 
                 data={encoursData} 
-                margin={{ top: 20, right: 30, left: 30, bottom: 15 }} {/* Augmenté les marges */}
+                margin={{ top: 20, right: 30, left: 30, bottom: 15 }}
+                /* Augmenté les marges */
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />

@@ -148,7 +148,8 @@ const VueGlobalePage = () => {
                 Évolution des encours réels et théoriques sur la période
               </CardDescription>
             </CardHeader>
-            <CardContent className="h-[400px]"> {/* Augmenté la hauteur de 380px à 400px */}
+            <CardContent className="h-[400px]">
+              {/* Augmenté la hauteur de 380px à 400px */}
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={encoursTotalData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -175,7 +176,8 @@ const VueGlobalePage = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="h-[320px]"> {/* Augmenté la hauteur de 280px à 320px */}
+                <div className="h-[320px]">
+                  {/* Augmenté la hauteur de 280px à 320px */}
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                       <Pie
@@ -184,7 +186,8 @@ const VueGlobalePage = () => {
                         cy="50%"
                         labelLine={false}
                         label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={110} {/* Ajusté le rayon pour mieux s'adapter à la nouvelle hauteur */}
+                        outerRadius={110}
+                        /* Ajusté le rayon pour mieux s'adapter à la nouvelle hauteur */
                         fill="#8884d8"
                         dataKey="value"
                       >
@@ -197,16 +200,19 @@ const VueGlobalePage = () => {
                   </ResponsiveContainer>
                 </div>
                 
-                <div className="h-[320px]"> {/* Augmenté la hauteur de 280px à 320px */}
+                <div className="h-[320px]">
+                  {/* Augmenté la hauteur de 280px à 320px */}
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={repartitionActifs}
                       layout="vertical"
-                      margin={{ top: 20, right: 30, left: 40, bottom: 5 }} {/* Augmenté la marge gauche pour mieux afficher les étiquettes */}
+                      margin={{ top: 20, right: 30, left: 40, bottom: 5 }}
+                      /* Augmenté la marge gauche pour mieux afficher les étiquettes */
                     >
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis type="number" />
-                      <YAxis dataKey="name" type="category" width={100} /> {/* Défini une largeur fixe pour les étiquettes */}
+                      <YAxis dataKey="name" type="category" width={100} />
+                      {/* Défini une largeur fixe pour les étiquettes */}
                       <Tooltip formatter={(value) => `${value}%`} />
                       <Legend wrapperStyle={{ paddingTop: '15px' }} />
                       <Bar dataKey="value" name="Pourcentage" fill="#8B5CF6" />
