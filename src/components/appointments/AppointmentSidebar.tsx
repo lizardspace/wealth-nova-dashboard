@@ -12,8 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-type AppointmentType = 'video' | 'phone' | 'in-person';
+import { AppointmentType } from './AppointmentTypes';
 
 interface AppointmentSidebarProps {
   date: Date;
@@ -34,6 +33,12 @@ export const AppointmentSidebar: React.FC<AppointmentSidebarProps> = ({
 }) => {
   const month = date.toLocaleString('fr', { month: 'long' });
   const year = date.getFullYear();
+  
+  const handleCalendarSelect = (newDate: Date | undefined) => {
+    if (newDate) {
+      setDate(newDate);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -72,7 +77,7 @@ export const AppointmentSidebar: React.FC<AppointmentSidebarProps> = ({
           <Calendar
             mode="single"
             selected={date}
-            onSelect={(newDate) => newDate && setDate(newDate)}
+            onSelect={handleCalendarSelect}
             className="rounded-md border pointer-events-auto"
           />
           <Button 
@@ -94,7 +99,7 @@ export const AppointmentSidebar: React.FC<AppointmentSidebarProps> = ({
           <div className="space-y-2">
             <label className="text-sm font-medium">Conseiller</label>
             <Select 
-              defaultValue={selectedAdvisor} 
+              value={selectedAdvisor} 
               onValueChange={(value) => setSelectedAdvisor(value)}
             >
               <SelectTrigger>

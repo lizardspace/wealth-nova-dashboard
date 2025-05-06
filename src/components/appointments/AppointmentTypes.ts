@@ -94,6 +94,26 @@ export const events: Event[] = [
     advisor: "Marie Lambert",
     date: "05/04/2025",
     status: "completed"
+  },
+  { 
+    id: 7, 
+    title: "Planification retraite", 
+    client: "Robert Lefebvre", 
+    time: "10:00 - 11:30", 
+    type: "video",
+    advisor: "Paul Bernard",
+    date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+    status: "confirmed"
+  },
+  { 
+    id: 8, 
+    title: "Consultation fiscale", 
+    client: "Christine Dubois", 
+    time: "14:00 - 15:00", 
+    type: "in-person",
+    advisor: "Marie Lambert",
+    date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+    status: "upcoming"
   }
 ];
 
@@ -130,6 +150,22 @@ export const calendarEvents: AppointmentEvent[] = [
     time: "16:30 - 17:30", 
     type: "video",
     advisor: "Thomas Richard"
+  },
+  { 
+    id: 7, 
+    title: "Planification retraite", 
+    client: "Robert Lefebvre", 
+    time: "10:00 - 11:30", 
+    type: "video",
+    advisor: "Paul Bernard"
+  },
+  { 
+    id: 8, 
+    title: "Consultation fiscale", 
+    client: "Christine Dubois", 
+    time: "14:00 - 15:00", 
+    type: "in-person",
+    advisor: "Marie Lambert"
   }
 ];
 
@@ -164,5 +200,25 @@ export const appointments: HistoricalAppointment[] = [
     type: "in-person", 
     status: "cancelled", 
     notes: "Client indisponible" 
+  },
+  { 
+    id: 4, 
+    client: "Christine Dubois", 
+    date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }), 
+    time: "14:00 - 15:00", 
+    advisor: "Marie Lambert", 
+    type: "in-person", 
+    status: "confirmed", 
+    notes: "Rendez-vous aujourd'hui" 
+  },
+  { 
+    id: 5, 
+    client: "Robert Lefebvre", 
+    date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }), 
+    time: "10:00 - 11:30", 
+    advisor: "Paul Bernard", 
+    type: "video", 
+    status: "upcoming", 
+    notes: "Rendez-vous aujourd'hui" 
   }
 ];

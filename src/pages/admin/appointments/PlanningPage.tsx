@@ -18,7 +18,7 @@ import { AppointmentGrid } from '@/components/appointments/AppointmentGrid';
 import { CalendarView } from '@/components/appointments/CalendarView';
 import { HistoryView } from '@/components/appointments/HistoryView';
 import { AppointmentSidebar } from '@/components/appointments/AppointmentSidebar';
-import { format, addDays, subDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'date-fns';
+import { format, addDays, subDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isThisWeek, isThisMonth, isToday, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 export default function PlanningPage(): React.ReactNode {
@@ -28,6 +28,8 @@ export default function PlanningPage(): React.ReactNode {
   const [selectedAdvisor, setSelectedAdvisor] = useState<string>("tous");
   const [selectedTypes, setSelectedTypes] = useState<AppointmentType[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>(events);
+  const [activeTab, setActiveTab] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   
   const weekDays = eachDayOfInterval({
     start: startOfWeek(date, { weekStartsOn: 1 }),
@@ -38,11 +40,25 @@ export default function PlanningPage(): React.ReactNode {
   useEffect(() => {
     let filtered = [...events];
     
-    // Filter by date
-    filtered = filtered.filter(event => {
-      // In a real app, convert date strings to Date objects and compare
-      return true; // Placeholder for real date filtering
-    });
+    // Filter by date based on active tab
+    if (activeTab === "today") {
+      filtered = filtered.filter(event => {
+        const eventDate = parseDate(event.date);
+        return isToday(eventDate);
+      });
+    } else if (activeTab === "week") {
+      filtered = filtered.filter(event => {
+        const eventDate = parseDate(event.date);
+        return isThisWeek(eventDate, { weekStartsOn: 1 });
+      });
+    } else if (activeTab === "month") {
+      filtered = filtered.filter(event => {
+        const eventDate = parseDate(event.date);
+        return isThisMonth(eventDate);
+      });
+    } else if (activeTab === "upcoming") {
+      filtered = filtered.filter(event => event.status === "upcoming" || event.status === "confirmed");
+    }
     
     // Filter by advisor
     if (selectedAdvisor !== "tous") {
@@ -57,9 +73,24 @@ export default function PlanningPage(): React.ReactNode {
         selectedTypes.includes(event.type)
       );
     }
+
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(event => 
+        event.client.toLowerCase().includes(query) || 
+        event.title.toLowerCase().includes(query)
+      );
+    }
     
     setFilteredEvents(filtered);
-  }, [date, selectedAdvisor, selectedTypes]);
+  }, [date, selectedAdvisor, selectedTypes, activeTab, searchQuery]);
+
+  // Helper function to parse date strings like "15/04/2025" to Date objects
+  const parseDate = (dateString: string): Date => {
+    const [day, month, year] = dateString.split('/').map(Number);
+    return new Date(year, month - 1, day);
+  };
 
   // Toggle type filter
   const toggleTypeFilter = (type: AppointmentType) => {
@@ -88,58 +119,86 @@ export default function PlanningPage(): React.ReactNode {
     }
   };
 
-  const renderWeekView = () => (
-    <div className="overflow-auto">
-      <div className="grid grid-cols-7 gap-1 mb-2">
-        {weekDays.map((day) => (
-          <div key={day.toString()} className="text-center">
-            <div className="text-xs text-muted-foreground mb-1">
-              {format(day, 'EEE', { locale: fr })}
-            </div>
-            <div className={`text-sm font-medium rounded-full w-8 h-8 flex items-center justify-center mx-auto ${
-              isSameDay(day, new Date()) ? 
-              'bg-primary text-primary-foreground' : ''
-            }`}>
-              {format(day, 'd')}
-            </div>
-          </div>
-        ))}
-      </div>
-      
-      <div className="grid grid-cols-7 gap-1 min-h-[500px]">
-        {weekDays.map((day) => (
-          <div key={day.toString()} className="border rounded-md h-full p-1">
-            <div className="text-xs font-medium mb-2 text-center">
-              {filteredEvents.filter(e => true /* filter by date in real app */).length} évènements
-            </div>
-            <div className="space-y-1">
-              {filteredEvents
-                .filter(e => e.status === "upcoming" || e.status === "confirmed")
-                .slice(0, 2)
-                .map(event => (
-                <div 
-                  key={event.id}
-                  className={`p-1 rounded-sm text-xs truncate cursor-pointer ${
-                    event.type === 'video' ? 'bg-blue-100 border-blue-300 text-blue-800' :
-                    event.type === 'phone' ? 'bg-green-100 border-green-300 text-green-800' :
-                    'bg-purple-100 border-purple-300 text-purple-800'
-                  }`}
-                >
-                  <div className="font-medium">{event.time}</div>
-                  <div className="truncate">{event.title}</div>
-                </div>
-              ))}
-              {filteredEvents.length > 2 && (
-                <div className="text-xs text-center text-muted-foreground mt-1">
-                  +{filteredEvents.length - 2} autres
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  // Filter appointments for HistoryView
+  const filterHistoricalAppointments = (): HistoricalAppointment[] => {
+    let filtered = [...appointments];
+    
+    // Apply active tab filters
+    if (activeTab === "today") {
+      filtered = filtered.filter(app => {
+        const appDate = parseDate(app.date);
+        return isToday(appDate);
+      });
+    } else if (activeTab === "week") {
+      filtered = filtered.filter(app => {
+        const appDate = parseDate(app.date);
+        return isThisWeek(appDate, { weekStartsOn: 1 });
+      });
+    } else if (activeTab === "month") {
+      filtered = filtered.filter(app => {
+        const appDate = parseDate(app.date);
+        return isThisMonth(appDate);
+      });
+    } else if (activeTab === "upcoming") {
+      filtered = filtered.filter(app => 
+        app.status === "upcoming" || app.status === "confirmed"
+      );
+    }
+    
+    // Apply advisor filter
+    if (selectedAdvisor !== "tous") {
+      filtered = filtered.filter(app => 
+        app.advisor.toLowerCase().includes(selectedAdvisor.toLowerCase())
+      );
+    }
+    
+    // Apply type filter
+    if (selectedTypes.length > 0) {
+      filtered = filtered.filter(app => 
+        selectedTypes.includes(app.type)
+      );
+    }
+    
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(app => 
+        app.client.toLowerCase().includes(query)
+      );
+    }
+    
+    return filtered;
+  };
+
+  // Filter calendarEvents for CalendarView
+  const filterCalendarEvents = () => {
+    let filtered = [...calendarEvents];
+    
+    // Apply advisor filter
+    if (selectedAdvisor !== "tous") {
+      filtered = filtered.filter(event => 
+        event.advisor.toLowerCase().includes(selectedAdvisor.toLowerCase())
+      );
+    }
+    
+    // Apply type filter
+    if (selectedTypes.length > 0) {
+      filtered = filtered.filter(event => 
+        selectedTypes.includes(event.type)
+      );
+    }
+    
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(event => 
+        event.client.toLowerCase().includes(query) || 
+        event.title.toLowerCase().includes(query)
+      );
+    }
+    
+    return filtered;
+  };
 
   return (
     <div className="space-y-6">
@@ -175,6 +234,8 @@ export default function PlanningPage(): React.ReactNode {
               <Input
                 placeholder="Rechercher un RDV ou un client..."
                 className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
               <CalendarIcon className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
             </div>
@@ -218,7 +279,12 @@ export default function PlanningPage(): React.ReactNode {
           </div>
 
           <Card className="overflow-hidden">
-            <Tabs defaultValue="all" className="w-full">
+            <Tabs 
+              defaultValue="all" 
+              className="w-full"
+              value={activeTab}
+              onValueChange={setActiveTab}
+            >
               <div className="border-b px-4">
                 <TabsList className="h-14 gap-4">
                   <TabsTrigger value="all" className="data-[state=active]:text-primary">
@@ -240,34 +306,38 @@ export default function PlanningPage(): React.ReactNode {
               </div>
 
               <TabsContent value="all" className="mt-0">
-                {viewType === "list" ? <AppointmentList /> : 
-                 viewType === "grid" ? <AppointmentGrid /> : 
-                 viewType === "calendar" ? <CalendarView date={date} setDate={setDate} events={calendarEvents} /> :
-                 <HistoryView appointments={appointments} />}
+                {viewType === "list" ? <AppointmentList appointments={filteredEvents} /> : 
+                 viewType === "grid" ? <AppointmentGrid appointments={filteredEvents} /> : 
+                 viewType === "calendar" ? <CalendarView date={date} setDate={setDate} events={filterCalendarEvents()} /> :
+                 <HistoryView appointments={filterHistoricalAppointments()} />}
               </TabsContent>
+              
               <TabsContent value="upcoming" className="mt-0">
-                {viewType === "list" ? <AppointmentList /> : 
-                 viewType === "grid" ? <AppointmentGrid /> : 
-                 viewType === "calendar" ? <CalendarView date={date} setDate={setDate} events={calendarEvents} /> :
-                 <HistoryView appointments={appointments} />}
+                {viewType === "list" ? <AppointmentList appointments={filteredEvents} /> : 
+                 viewType === "grid" ? <AppointmentGrid appointments={filteredEvents} /> : 
+                 viewType === "calendar" ? <CalendarView date={date} setDate={setDate} events={filterCalendarEvents()} /> :
+                 <HistoryView appointments={filterHistoricalAppointments()} />}
               </TabsContent>
+              
               <TabsContent value="today" className="mt-0">
-                {viewType === "list" ? <AppointmentList /> : 
-                 viewType === "grid" ? <AppointmentGrid /> : 
-                 viewType === "calendar" ? <CalendarView date={date} setDate={setDate} events={calendarEvents} /> :
-                 <HistoryView appointments={appointments} />}
+                {viewType === "list" ? <AppointmentList appointments={filteredEvents} /> : 
+                 viewType === "grid" ? <AppointmentGrid appointments={filteredEvents} /> : 
+                 viewType === "calendar" ? <CalendarView date={date} setDate={setDate} events={filterCalendarEvents()} /> :
+                 <HistoryView appointments={filterHistoricalAppointments()} />}
               </TabsContent>
+              
               <TabsContent value="week" className="mt-0">
-                {viewType === "list" ? <AppointmentList /> : 
-                 viewType === "grid" ? <AppointmentGrid /> : 
-                 viewType === "calendar" ? <CalendarView date={date} setDate={setDate} events={calendarEvents} /> :
-                 <HistoryView appointments={appointments} />}
+                {viewType === "list" ? <AppointmentList appointments={filteredEvents} /> : 
+                 viewType === "grid" ? <AppointmentGrid appointments={filteredEvents} /> : 
+                 viewType === "calendar" ? <CalendarView date={date} setDate={setDate} events={filterCalendarEvents()} /> :
+                 <HistoryView appointments={filterHistoricalAppointments()} />}
               </TabsContent>
+              
               <TabsContent value="month" className="mt-0">
-                {viewType === "list" ? <AppointmentList /> : 
-                 viewType === "grid" ? <AppointmentGrid /> : 
-                 viewType === "calendar" ? <CalendarView date={date} setDate={setDate} events={calendarEvents} /> :
-                 <HistoryView appointments={appointments} />}
+                {viewType === "list" ? <AppointmentList appointments={filteredEvents} /> : 
+                 viewType === "grid" ? <AppointmentGrid appointments={filteredEvents} /> : 
+                 viewType === "calendar" ? <CalendarView date={date} setDate={setDate} events={filterCalendarEvents()} /> :
+                 <HistoryView appointments={filterHistoricalAppointments()} />}
               </TabsContent>
             </Tabs>
           </Card>
