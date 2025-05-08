@@ -1,32 +1,37 @@
-
 import React from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle, 
-  CardFooter
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { 
-  ArrowUpRight, 
-  ArrowDownRight, 
-  Users, 
-  Briefcase, 
-  AlertTriangle, 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import {
+  ArrowUpRight,
+  ArrowDownRight,
+  Users,
+  Briefcase,
+  AlertTriangle,
   Brain,
-  CalendarClock, 
+  CalendarClock,
   Mail,
   MessageSquare,
   BarChart,
   PieChart,
   Phone,
-  FileText
-} from "lucide-react";
-import { Progress } from "@/components/ui/progress";
+  FileText,
+} from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 import {
   BarChart as ReBarChart,
   Bar,
@@ -40,10 +45,10 @@ import {
   ResponsiveContainer,
   PieChart as RePieChart,
   Pie,
-  Cell
+  Cell,
 } from 'recharts';
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Données fictives pour le dashboard
 const clientsData = [
@@ -74,20 +79,61 @@ const alertesData = [
 const COLORS = ['#8B5CF6', '#F97316', '#D946EF', '#0EA5E9'];
 
 const activitesRecentes = [
-  { client: "Jean Dupont", action: "Souscription", date: "Aujourd'hui, 14:25", montant: "15 000€", produit: "Assurance-vie" },
-  { client: "Marie Martin", action: "Rachat partiel", date: "Aujourd'hui, 11:10", montant: "5 000€", produit: "SCPI Rendement" },
-  { client: "Antoine Fernet", action: "Adhésion", date: "Hier, 16:30", montant: "-", produit: "Abonnement Premium" },
-  { client: "Sophie Legrand", action: "Versement libre", date: "Hier, 10:15", montant: "7 500€", produit: "PER" },
-  { client: "Pierre Dubois", action: "Résiliation", date: "22/05/2025", montant: "-", produit: "Protection Revenus" },
-  { client: "Emma Blanc", action: "Souscription", date: "21/05/2025", montant: "75 000€", produit: "SCPI Européenne" },
+  {
+    client: 'Jean Dupont',
+    action: 'Souscription',
+    date: "Aujourd'hui, 14:25",
+    montant: '15 000€',
+    produit: 'Assurance-vie',
+  },
+  {
+    client: 'Marie Martin',
+    action: 'Rachat partiel',
+    date: "Aujourd'hui, 11:10",
+    montant: '5 000€',
+    produit: 'SCPI Rendement',
+  },
+  {
+    client: 'Antoine Fernet',
+    action: 'Adhésion',
+    date: 'Hier, 16:30',
+    montant: '-',
+    produit: 'Abonnement Premium',
+  },
+  {
+    client: 'Sophie Legrand',
+    action: 'Versement libre',
+    date: 'Hier, 10:15',
+    montant: '7 500€',
+    produit: 'PER',
+  },
+  {
+    client: 'Pierre Dubois',
+    action: 'Résiliation',
+    date: '22/05/2025',
+    montant: '-',
+    produit: 'Protection Revenus',
+  },
+  {
+    client: 'Emma Blanc',
+    action: 'Souscription',
+    date: '21/05/2025',
+    montant: '75 000€',
+    produit: 'SCPI Européenne',
+  },
 ];
 
 const prochainRDV = [
-  { client: "Philippe Martin", theme: "Bilan patrimonial annuel", date: "Aujourd'hui", heure: "15:30" },
-  { client: "Claire Moreau", theme: "Étude retraite", date: "Aujourd'hui", heure: "17:00" },
-  { client: "Thomas Leroy", theme: "Optimisation fiscale", date: "Demain", heure: "10:00" },
-  { client: "Nathalie Petit", theme: "Investissement locatif", date: "Demain", heure: "14:30" },
-  { client: "Julien Roux", theme: "Succession", date: "Après-demain", heure: "11:15" },
+  {
+    client: 'Philippe Martin',
+    theme: 'Bilan patrimonial annuel',
+    date: "Aujourd'hui",
+    heure: '15:30',
+  },
+  { client: 'Claire Moreau', theme: 'Étude retraite', date: "Aujourd'hui", heure: '17:00' },
+  { client: 'Thomas Leroy', theme: 'Optimisation fiscale', date: 'Demain', heure: '10:00' },
+  { client: 'Nathalie Petit', theme: 'Investissement locatif', date: 'Demain', heure: '14:30' },
+  { client: 'Julien Roux', theme: 'Succession', date: 'Après-demain', heure: '11:15' },
 ];
 
 // Données pour la répartition des classes d'actifs
@@ -100,18 +146,21 @@ const classesActifs = [
 ];
 
 const VueGeneralePage = () => {
-  const [periode, setPeriode] = React.useState("6mois");
-  
+  const [periode, setPeriode] = React.useState('6mois');
+
   // Calculs statistiques
   const encoursReelsActuel = encoursData[encoursData.length - 1].reels;
   const encoursTheoriquesActuel = encoursData[encoursData.length - 1].theoriques;
   const encoursDisponibleActuel = encoursData[encoursData.length - 1].disponible;
   const tauxConversion = (encoursReelsActuel / encoursTheoriquesActuel) * 100;
-  
+
   const clientsActuels = clientsData[clientsData.length - 1].total;
   const nouveauxClients = clientsData[clientsData.length - 1].nouveaux;
-  const tauxCroissance = ((clientsData[clientsData.length - 1].total - clientsData[clientsData.length - 2].total) / clientsData[clientsData.length - 2].total) * 100;
-  
+  const tauxCroissance =
+    ((clientsData[clientsData.length - 1].total - clientsData[clientsData.length - 2].total) /
+      clientsData[clientsData.length - 2].total) *
+    100;
+
   const totalAlertes = alertesData.reduce((sum, item) => sum + item.value, 0);
 
   return (
@@ -148,7 +197,11 @@ const VueGeneralePage = () => {
               <ArrowUpRight className="mr-1 h-4 w-4 text-emerald-500" />
               +4,2% depuis 30 jours
             </div>
-            <Button variant="link" className="p-0 h-auto text-xs mt-1" onClick={() => window.location.href = '/admin/portfolios/theoriques'}>
+            <Button
+              variant="link"
+              className="p-0 h-auto text-xs mt-1"
+              onClick={() => (window.location.href = '/admin/portfolios/theoriques')}
+            >
               Voir détails
             </Button>
           </CardContent>
@@ -166,7 +219,11 @@ const VueGeneralePage = () => {
               <ArrowUpRight className="mr-1 h-4 w-4 text-emerald-500" />
               +8,6% depuis 30 jours
             </div>
-            <Button variant="link" className="p-0 h-auto text-xs mt-1" onClick={() => window.location.href = '/admin/portfolios/reels'}>
+            <Button
+              variant="link"
+              className="p-0 h-auto text-xs mt-1"
+              onClick={() => (window.location.href = '/admin/portfolios/reels')}
+            >
               Voir détails
             </Button>
           </CardContent>
@@ -193,15 +250,17 @@ const VueGeneralePage = () => {
         <Card className="overflow-hidden">
           <CardHeader className="pb-2 bg-gradient-to-r from-purple-50 to-purple-100">
             <CardDescription>Conversion R/T</CardDescription>
-            <CardTitle className="text-2xl text-purple-700">
-              {tauxConversion.toFixed(1)}%
-            </CardTitle>
+            <CardTitle className="text-2xl text-purple-700">{tauxConversion.toFixed(1)}%</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
             <Progress value={tauxConversion} className="h-2" />
             <div className="flex justify-between text-xs text-muted-foreground mt-2">
               <span>Objectif: 75%</span>
-              <Button variant="link" className="p-0 h-auto text-xs" onClick={() => window.location.href = '/admin/portfolios/analyse'}>
+              <Button
+                variant="link"
+                className="p-0 h-auto text-xs"
+                onClick={() => (window.location.href = '/admin/portfolios/analyse')}
+              >
                 Analyser les écarts
               </Button>
             </div>
@@ -260,45 +319,45 @@ const VueGeneralePage = () => {
             <ScrollArea className="h-[340px] pr-4">
               {/* Augmenté la hauteur de 272px à 340px */}
               <div className="space-y-3">
-                <OpportunityItem 
-                  icon={AlertTriangle} 
-                  iconColor="text-amber-500" 
-                  title="42 profils incomplets" 
+                <OpportunityItem
+                  icon={AlertTriangle}
+                  iconColor="text-amber-500"
+                  title="42 profils incomplets"
                   description="Données manquantes pour recommandations"
                   action="Relancer"
-                  onClick={() => window.location.href = '/admin/alertes/profils-incomplets'}
+                  onClick={() => (window.location.href = '/admin/alertes/profils-incomplets')}
                 />
-                
-                <OpportunityItem 
-                  icon={Users} 
-                  iconColor="text-blue-500" 
-                  title="35 clients inactifs (30j+)" 
+
+                <OpportunityItem
+                  icon={Users}
+                  iconColor="text-blue-500"
+                  title="35 clients inactifs (30j+)"
                   description="Risque de désabonnement"
                   action="Contacter"
-                  onClick={() => window.location.href = '/admin/alertes/inactifs'}
+                  onClick={() => (window.location.href = '/admin/alertes/inactifs')}
                 />
-                
-                <OpportunityItem 
-                  icon={Brain} 
-                  iconColor="text-purple-500" 
-                  title="87 optimisations possibles" 
+
+                <OpportunityItem
+                  icon={Brain}
+                  iconColor="text-purple-500"
+                  title="87 optimisations possibles"
                   description="Suggestions IA pour amélioration"
                   action="Étudier"
-                  onClick={() => window.location.href = '/admin/ia/recommandations'}
+                  onClick={() => (window.location.href = '/admin/ia/recommandations')}
                 />
-                
-                <OpportunityItem 
-                  icon={BarChart} 
-                  iconColor="text-emerald-500" 
-                  title="23 clients sous-investis" 
+
+                <OpportunityItem
+                  icon={BarChart}
+                  iconColor="text-emerald-500"
+                  title="23 clients sous-investis"
                   description="Épargne disponible importante"
                   action="Proposer"
                 />
-                
-                <OpportunityItem 
-                  icon={AlertTriangle} 
-                  iconColor="text-red-500" 
-                  title="8 contrats en déséquilibre" 
+
+                <OpportunityItem
+                  icon={AlertTriangle}
+                  iconColor="text-red-500"
+                  title="8 contrats en déséquilibre"
                   description="Allocation non conforme au profil"
                   action="Réaligner"
                 />
@@ -326,10 +385,14 @@ const VueGeneralePage = () => {
                   <div key={index} className="border rounded-md p-2 text-sm">
                     <div className="flex justify-between">
                       <span className="font-medium">{activite.client}</span>
-                      <Badge 
-                        variant={activite.action === "Résiliation" ? "destructive" : 
-                                activite.action === "Rachat partiel" ? "outline" : 
-                                "default"}
+                      <Badge
+                        variant={
+                          activite.action === 'Résiliation'
+                            ? 'destructive'
+                            : activite.action === 'Rachat partiel'
+                              ? 'outline'
+                              : 'default'
+                        }
                         className="text-xs"
                       >
                         {activite.action}
@@ -337,11 +400,9 @@ const VueGeneralePage = () => {
                     </div>
                     <div className="flex justify-between mt-1 text-muted-foreground">
                       <span>{activite.produit}</span>
-                      <span>{activite.montant !== "-" && activite.montant}</span>
+                      <span>{activite.montant !== '-' && activite.montant}</span>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {activite.date}
-                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">{activite.date}</div>
                   </div>
                 ))}
               </div>
@@ -388,9 +449,7 @@ const VueGeneralePage = () => {
                       {rdv.date}, {rdv.heure}
                     </Badge>
                   </div>
-                  <div className="mt-1 text-sm text-muted-foreground">
-                    {rdv.theme}
-                  </div>
+                  <div className="mt-1 text-sm text-muted-foreground">{rdv.theme}</div>
                   <div className="mt-2 flex gap-2">
                     <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
                       <FileText className="h-3 w-3 mr-1" />
@@ -414,7 +473,11 @@ const VueGeneralePage = () => {
             </div>
           </CardContent>
           <CardFooter className="border-t pt-4">
-            <Button variant="outline" className="w-full" onClick={() => window.location.href = '/admin/rendez-vous'}>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => (window.location.href = '/admin/rendez-vous')}
+            >
               Voir le planning complet
             </Button>
           </CardFooter>
@@ -423,43 +486,41 @@ const VueGeneralePage = () => {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Évolution des encours</CardTitle>
-            <CardDescription>
-              Comparaison théorique/réel et épargne disponible
-            </CardDescription>
+            <CardDescription>Comparaison théorique/réel et épargne disponible</CardDescription>
           </CardHeader>
           <CardContent className="h-[420px]">
             {/* Augmenté la hauteur de 396px à 420px */}
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart 
-                data={encoursData} 
+              <LineChart
+                data={encoursData}
                 margin={{ top: 20, right: 30, left: 30, bottom: 15 }}
                 /* Augmenté les marges */
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip formatter={(value) => `${(Number(value) / 1000000).toFixed(2)} M€`} />
+                <Tooltip formatter={value => `${(Number(value) / 1000000).toFixed(2)} M€`} />
                 <Legend wrapperStyle={{ paddingTop: '15px' }} />
-                <Line 
-                  type="monotone" 
-                  dataKey="reels" 
-                  name="Encours réels" 
-                  stroke="#10B981" 
-                  strokeWidth={2} 
+                <Line
+                  type="monotone"
+                  dataKey="reels"
+                  name="Encours réels"
+                  stroke="#10B981"
+                  strokeWidth={2}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="theoriques" 
-                  name="Encours théoriques" 
-                  stroke="#3B82F6" 
-                  strokeWidth={2} 
+                <Line
+                  type="monotone"
+                  dataKey="theoriques"
+                  name="Encours théoriques"
+                  stroke="#3B82F6"
+                  strokeWidth={2}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="disponible" 
-                  name="Épargne disponible" 
-                  stroke="#F59E0B" 
-                  strokeWidth={2} 
+                <Line
+                  type="monotone"
+                  dataKey="disponible"
+                  name="Épargne disponible"
+                  stroke="#F59E0B"
+                  strokeWidth={2}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -471,20 +532,20 @@ const VueGeneralePage = () => {
 };
 
 // Composant pour chaque élément d'opportunité
-const OpportunityItem = ({ 
-  icon: Icon, 
-  iconColor, 
-  title, 
-  description, 
-  action, 
-  onClick 
-}: { 
-  icon: React.ElementType, 
-  iconColor: string, 
-  title: string, 
-  description: string, 
-  action: string, 
-  onClick?: () => void 
+const OpportunityItem = ({
+  icon: Icon,
+  iconColor,
+  title,
+  description,
+  action,
+  onClick,
+}: {
+  icon: React.ElementType;
+  iconColor: string;
+  title: string;
+  description: string;
+  action: string;
+  onClick?: () => void;
 }) => {
   return (
     <div className="border rounded-md p-3">

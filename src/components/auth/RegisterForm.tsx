@@ -1,10 +1,16 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -21,32 +27,32 @@ const RegisterForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       toast({
-        title: "Erreur",
-        description: "Les mots de passe ne correspondent pas",
-        variant: "destructive",
+        title: 'Erreur',
+        description: 'Les mots de passe ne correspondent pas',
+        variant: 'destructive',
       });
       return;
     }
 
     if (!acceptTerms) {
       toast({
-        title: "Erreur",
+        title: 'Erreur',
         description: "Vous devez accepter les conditions d'utilisation",
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
 
     setIsLoading(true);
-    
+
     // Simulate registration - would connect to backend in real app
     setTimeout(() => {
       toast({
-        title: "Compte créé avec succès",
-        description: "Bienvenue sur EPARNOVA",
+        title: 'Compte créé avec succès',
+        description: 'Bienvenue sur EPARNOVA',
       });
       navigate('/login');
       setIsLoading(false);
@@ -57,9 +63,7 @@ const RegisterForm = () => {
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle className="text-2xl">Créer un compte</CardTitle>
-        <CardDescription>
-          Rejoignez EPARNOVA pour gérer votre patrimoine
-        </CardDescription>
+        <CardDescription>Rejoignez EPARNOVA pour gérer votre patrimoine</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -69,7 +73,7 @@ const RegisterForm = () => {
               <Input
                 id="firstName"
                 value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                onChange={e => setFirstName(e.target.value)}
                 required
               />
             </div>
@@ -78,12 +82,12 @@ const RegisterForm = () => {
               <Input
                 id="lastName"
                 value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
+                onChange={e => setLastName(e.target.value)}
                 required
               />
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -91,63 +95,54 @@ const RegisterForm = () => {
               type="email"
               placeholder="votreemail@exemple.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               required
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="password">Mot de passe</Label>
             <Input
               id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               required
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
             <Input
               id="confirmPassword"
               type="password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={e => setConfirmPassword(e.target.value)}
               required
             />
           </div>
-          
+
           <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="terms" 
+            <Checkbox
+              id="terms"
               checked={acceptTerms}
-              onCheckedChange={(checked) => setAcceptTerms(!!checked)}
+              onCheckedChange={checked => setAcceptTerms(!!checked)}
             />
-            <Label 
-              htmlFor="terms" 
-              className="text-sm font-normal"
-            >
+            <Label htmlFor="terms" className="text-sm font-normal">
               J'accepte les{' '}
-              <Link 
-                to="/terms" 
-                className="text-eparnova-blue-light hover:underline"
-              >
+              <Link to="/terms" className="text-eparnova-blue-light hover:underline">
                 conditions d'utilisation
               </Link>{' '}
               et la{' '}
-              <Link 
-                to="/privacy" 
-                className="text-eparnova-blue-light hover:underline"
-              >
+              <Link to="/privacy" className="text-eparnova-blue-light hover:underline">
                 politique de confidentialité
               </Link>
             </Label>
           </div>
-          
-          <Button 
-            type="submit" 
-            className="w-full bg-eparnova-blue hover:bg-eparnova-blue/90" 
+
+          <Button
+            type="submit"
+            className="w-full bg-eparnova-blue hover:bg-eparnova-blue/90"
             disabled={isLoading}
           >
             {isLoading ? 'Création en cours...' : 'Créer mon compte'}

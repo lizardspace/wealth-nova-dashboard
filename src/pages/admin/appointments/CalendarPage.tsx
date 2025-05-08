@@ -1,53 +1,61 @@
-
 import React, { useState } from 'react';
-import { Calendar, Video, Users, Phone, ChevronLeft, ChevronRight, Plus, Filter } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { 
+import {
+  Calendar,
+  Video,
+  Users,
+  Phone,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Filter,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import { DayAppointments } from '@/components/appointments/DayAppointments';
 
 // Use the correct AppointmentType type for events
 const events = [
-  { 
-    id: 1, 
-    title: "Bilan patrimonial", 
-    client: "Jean Dupont", 
-    time: "09:00 - 10:00", 
-    type: "video" as const,
-    advisor: "Marie Lambert"
+  {
+    id: 1,
+    title: 'Bilan patrimonial',
+    client: 'Jean Dupont',
+    time: '09:00 - 10:00',
+    type: 'video' as const,
+    advisor: 'Marie Lambert',
   },
-  { 
-    id: 2, 
-    title: "Point mensuel", 
-    client: "Sophie Martin", 
-    time: "11:30 - 12:15", 
-    type: "phone" as const,
-    advisor: "Paul Bernard"
+  {
+    id: 2,
+    title: 'Point mensuel',
+    client: 'Sophie Martin',
+    time: '11:30 - 12:15',
+    type: 'phone' as const,
+    advisor: 'Paul Bernard',
   },
-  { 
-    id: 3, 
-    title: "Signature contrat", 
-    client: "Philippe Durand", 
-    time: "14:00 - 15:00", 
-    type: "in-person" as const,
-    advisor: "Marie Lambert"
+  {
+    id: 3,
+    title: 'Signature contrat',
+    client: 'Philippe Durand',
+    time: '14:00 - 15:00',
+    type: 'in-person' as const,
+    advisor: 'Marie Lambert',
   },
-  { 
-    id: 4, 
-    title: "Présentation stratégie", 
-    client: "Amélie Petit", 
-    time: "16:30 - 17:30", 
-    type: "video" as const,
-    advisor: "Thomas Richard"
-  }
+  {
+    id: 4,
+    title: 'Présentation stratégie',
+    client: 'Amélie Petit',
+    time: '16:30 - 17:30',
+    type: 'video' as const,
+    advisor: 'Thomas Richard',
+  },
 ];
 
 export default function CalendarPage() {
@@ -79,12 +87,14 @@ export default function CalendarPage() {
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center">
                   <Calendar className="mr-2 h-5 w-5 text-primary" />
-                  <span className="font-medium capitalize">{month} {year}</span>
+                  <span className="font-medium capitalize">
+                    {month} {year}
+                  </span>
                 </div>
                 <div className="flex">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => {
                       const newDate = new Date(date);
                       newDate.setMonth(date.getMonth() - 1);
@@ -93,8 +103,8 @@ export default function CalendarPage() {
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="icon"
                     onClick={() => {
                       const newDate = new Date(date);
@@ -109,12 +119,12 @@ export default function CalendarPage() {
               <CalendarComponent
                 mode="single"
                 selected={date}
-                onSelect={(newDate) => newDate && setDate(newDate)}
+                onSelect={newDate => newDate && setDate(newDate)}
                 className="rounded-md border pointer-events-auto"
               />
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="w-full mt-4"
                 onClick={() => setDate(new Date())}
               >
@@ -145,13 +155,22 @@ export default function CalendarPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Type</label>
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
+                  <Badge
+                    variant="outline"
+                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                  >
                     Visio
                   </Badge>
-                  <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
+                  <Badge
+                    variant="outline"
+                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                  >
                     Téléphone
                   </Badge>
-                  <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
+                  <Badge
+                    variant="outline"
+                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                  >
                     Présentiel
                   </Badge>
                 </div>
@@ -188,16 +207,16 @@ export default function CalendarPage() {
             <CardHeader className="flex flex-row items-center justify-between pb-2 pt-6">
               <CardTitle className="flex items-center">
                 <span className="font-medium">
-                  {date.toLocaleDateString('fr-FR', { 
-                    weekday: 'long', 
-                    day: 'numeric', 
-                    month: 'long', 
-                    year: 'numeric' 
+                  {date.toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
                   })}
                 </span>
               </CardTitle>
               <div className="flex items-center space-x-2">
-                <Button 
+                <Button
                   variant="outline"
                   size="sm"
                   onClick={() => {
@@ -209,7 +228,7 @@ export default function CalendarPage() {
                   <ChevronLeft className="h-4 w-4 mr-1" />
                   Précédent
                 </Button>
-                <Button 
+                <Button
                   variant="outline"
                   size="sm"
                   onClick={() => {

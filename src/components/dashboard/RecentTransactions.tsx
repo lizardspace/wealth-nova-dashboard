@@ -1,6 +1,12 @@
-
 import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { ArrowDown, ArrowUp, Clock, PlusCircle, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -47,20 +53,22 @@ const RecentTransactions = () => {
           <Clock className="w-5 h-5 mr-2 text-eparnova-blue" />
           Mouvements récents
         </CardTitle>
-        <CardDescription>
-          Dernières opérations sur vos comptes
-        </CardDescription>
+        <CardDescription>Dernières opérations sur vos comptes</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {transactions.map((transaction) => (
+          {transactions.map(transaction => (
             <div key={transaction.id} className="flex items-center justify-between py-2">
               <div className="flex items-center">
-                <div className={`p-2 rounded-full ${
-                  transaction.type === 'deposit' ? 'bg-green-100' : 
-                  transaction.type === 'withdrawal' ? 'bg-red-100' : 
-                  'bg-blue-100'
-                } mr-3`}>
+                <div
+                  className={`p-2 rounded-full ${
+                    transaction.type === 'deposit'
+                      ? 'bg-green-100'
+                      : transaction.type === 'withdrawal'
+                        ? 'bg-red-100'
+                        : 'bg-blue-100'
+                  } mr-3`}
+                >
                   {transaction.type === 'deposit' ? (
                     <ArrowDown className={`h-4 w-4 text-green-600`} />
                   ) : transaction.type === 'withdrawal' ? (
@@ -76,14 +84,20 @@ const RecentTransactions = () => {
                   </div>
                 </div>
               </div>
-              <div className={`font-medium ${
-                transaction.type === 'deposit' ? 'text-green-600' : 
-                transaction.type === 'withdrawal' ? 'text-red-600' : 
-                'text-blue-600'
-              }`}>
-                {transaction.type === 'deposit' ? '+' : 
-                 transaction.type === 'withdrawal' ? '-' : 
-                 '+'}
+              <div
+                className={`font-medium ${
+                  transaction.type === 'deposit'
+                    ? 'text-green-600'
+                    : transaction.type === 'withdrawal'
+                      ? 'text-red-600'
+                      : 'text-blue-600'
+                }`}
+              >
+                {transaction.type === 'deposit'
+                  ? '+'
+                  : transaction.type === 'withdrawal'
+                    ? '-'
+                    : '+'}
                 {transaction.amount.toLocaleString('fr-FR')} €
               </div>
             </div>

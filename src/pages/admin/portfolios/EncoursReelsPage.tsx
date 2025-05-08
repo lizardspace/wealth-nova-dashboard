@@ -1,16 +1,15 @@
-
 import React, { useState } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import {
   LineChart,
   Line,
@@ -30,12 +29,54 @@ import { Search, FileDown, ArrowUpDown } from 'lucide-react';
 
 // Données fictives pour les encours réels
 const encoursData = [
-  { mois: 'Jan', assuranceVie: 580000, per: 320000, immobilier: 120000, scpi: 180000, autre: 50000 },
-  { mois: 'Fév', assuranceVie: 610000, per: 340000, immobilier: 120000, scpi: 185000, autre: 55000 },
-  { mois: 'Mars', assuranceVie: 650000, per: 370000, immobilier: 120000, scpi: 195000, autre: 65000 },
-  { mois: 'Avr', assuranceVie: 680000, per: 390000, immobilier: 120000, scpi: 210000, autre: 80000 },
-  { mois: 'Mai', assuranceVie: 720000, per: 420000, immobilier: 120000, scpi: 225000, autre: 95000 },
-  { mois: 'Juin', assuranceVie: 750000, per: 460000, immobilier: 120000, scpi: 240000, autre: 120000 },
+  {
+    mois: 'Jan',
+    assuranceVie: 580000,
+    per: 320000,
+    immobilier: 120000,
+    scpi: 180000,
+    autre: 50000,
+  },
+  {
+    mois: 'Fév',
+    assuranceVie: 610000,
+    per: 340000,
+    immobilier: 120000,
+    scpi: 185000,
+    autre: 55000,
+  },
+  {
+    mois: 'Mars',
+    assuranceVie: 650000,
+    per: 370000,
+    immobilier: 120000,
+    scpi: 195000,
+    autre: 65000,
+  },
+  {
+    mois: 'Avr',
+    assuranceVie: 680000,
+    per: 390000,
+    immobilier: 120000,
+    scpi: 210000,
+    autre: 80000,
+  },
+  {
+    mois: 'Mai',
+    assuranceVie: 720000,
+    per: 420000,
+    immobilier: 120000,
+    scpi: 225000,
+    autre: 95000,
+  },
+  {
+    mois: 'Juin',
+    assuranceVie: 750000,
+    per: 460000,
+    immobilier: 120000,
+    scpi: 240000,
+    autre: 120000,
+  },
 ];
 
 // Données pour la répartition par actif
@@ -49,42 +90,90 @@ const repartitionData = [
 
 // Données pour les clients
 const clientsData = [
-  { id: 1, nom: "Dupont", prenom: "Jean", assuranceVie: 180000, per: 120000, scpi: 50000, autre: 0, total: 350000 },
-  { id: 2, nom: "Martin", prenom: "Sophie", assuranceVie: 250000, per: 80000, scpi: 60000, autre: 30000, total: 420000 },
-  { id: 3, nom: "Bernard", prenom: "Pierre", assuranceVie: 110000, per: 40000, scpi: 30000, autre: 0, total: 180000 },
-  { id: 4, nom: "Petit", prenom: "Marie", assuranceVie: 290000, per: 150000, scpi: 70000, autre: 40000, total: 550000 },
-  { id: 5, nom: "Robert", prenom: "Antoine", assuranceVie: 200000, per: 110000, scpi: 50000, autre: 40000, total: 400000 },
+  {
+    id: 1,
+    nom: 'Dupont',
+    prenom: 'Jean',
+    assuranceVie: 180000,
+    per: 120000,
+    scpi: 50000,
+    autre: 0,
+    total: 350000,
+  },
+  {
+    id: 2,
+    nom: 'Martin',
+    prenom: 'Sophie',
+    assuranceVie: 250000,
+    per: 80000,
+    scpi: 60000,
+    autre: 30000,
+    total: 420000,
+  },
+  {
+    id: 3,
+    nom: 'Bernard',
+    prenom: 'Pierre',
+    assuranceVie: 110000,
+    per: 40000,
+    scpi: 30000,
+    autre: 0,
+    total: 180000,
+  },
+  {
+    id: 4,
+    nom: 'Petit',
+    prenom: 'Marie',
+    assuranceVie: 290000,
+    per: 150000,
+    scpi: 70000,
+    autre: 40000,
+    total: 550000,
+  },
+  {
+    id: 5,
+    nom: 'Robert',
+    prenom: 'Antoine',
+    assuranceVie: 200000,
+    per: 110000,
+    scpi: 50000,
+    autre: 40000,
+    total: 400000,
+  },
 ];
 
 const COLORS = ['#8B5CF6', '#D946EF', '#F97316', '#0EA5E9', '#22D3EE'];
 
 const EncoursReelsPage = () => {
-  const [periode, setPeriode] = useState("6mois");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortColumn, setSortColumn] = useState("total");
-  const [sortDirection, setSortDirection] = useState("desc");
+  const [periode, setPeriode] = useState('6mois');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortColumn, setSortColumn] = useState('total');
+  const [sortDirection, setSortDirection] = useState('desc');
 
   // Calcul du total des encours
   const totalEncours = repartitionData.reduce((sum, item) => sum + item.value, 0);
-  
+
   // Préparation des données pour l'affichage des tableaux
-  const formattedClients = [...clientsData].sort((a, b) => {
-    if (sortDirection === "asc") {
-      return a[sortColumn as keyof typeof a] > b[sortColumn as keyof typeof b] ? 1 : -1;
-    } else {
-      return a[sortColumn as keyof typeof a] < b[sortColumn as keyof typeof b] ? 1 : -1;
-    }
-  }).filter(client => 
-    client.nom.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    client.prenom.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const formattedClients = [...clientsData]
+    .sort((a, b) => {
+      if (sortDirection === 'asc') {
+        return a[sortColumn as keyof typeof a] > b[sortColumn as keyof typeof b] ? 1 : -1;
+      } else {
+        return a[sortColumn as keyof typeof a] < b[sortColumn as keyof typeof b] ? 1 : -1;
+      }
+    })
+    .filter(
+      client =>
+        client.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        client.prenom.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
   const handleSort = (column: string) => {
     if (sortColumn === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setSortColumn(column);
-      setSortDirection("desc");
+      setSortDirection('desc');
     }
   };
 
@@ -122,33 +211,27 @@ const EncoursReelsPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-sm text-muted-foreground">
-              +14,2% depuis le début de l'année
-            </div>
+            <div className="text-sm text-muted-foreground">+14,2% depuis le début de l'année</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Clients avec encours</CardDescription>
             <CardTitle className="text-2xl">125</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-sm text-muted-foreground">
-              +8 nouveaux ce mois-ci
-            </div>
+            <div className="text-sm text-muted-foreground">+8 nouveaux ce mois-ci</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Encours moyen par client</CardDescription>
             <CardTitle className="text-2xl">135 600 €</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-sm text-muted-foreground">
-              +5,5% depuis le dernier trimestre
-            </div>
+            <div className="text-sm text-muted-foreground">+5,5% depuis le dernier trimestre</div>
           </CardContent>
         </Card>
       </div>
@@ -160,7 +243,7 @@ const EncoursReelsPage = () => {
           <TabsTrigger value="repartition">Répartition</TabsTrigger>
           <TabsTrigger value="clients">Détail par client</TabsTrigger>
         </TabsList>
-        
+
         {/* Onglet 1: Évolution temporelle */}
         <TabsContent value="evolution">
           <Card>
@@ -176,27 +259,49 @@ const EncoursReelsPage = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="mois" />
                   <YAxis />
-                  <Tooltip formatter={(value) => `${(value as number / 1000).toFixed(0)} K€`} />
+                  <Tooltip formatter={value => `${((value as number) / 1000).toFixed(0)} K€`} />
                   <Legend />
-                  <Line type="monotone" dataKey="assuranceVie" name="Assurance Vie" stroke="#8B5CF6" strokeWidth={2} />
+                  <Line
+                    type="monotone"
+                    dataKey="assuranceVie"
+                    name="Assurance Vie"
+                    stroke="#8B5CF6"
+                    strokeWidth={2}
+                  />
                   <Line type="monotone" dataKey="per" name="PER" stroke="#D946EF" strokeWidth={2} />
-                  <Line type="monotone" dataKey="immobilier" name="Immobilier" stroke="#F97316" strokeWidth={2} />
-                  <Line type="monotone" dataKey="scpi" name="SCPI" stroke="#0EA5E9" strokeWidth={2} />
-                  <Line type="monotone" dataKey="autre" name="Autre" stroke="#22D3EE" strokeWidth={2} />
+                  <Line
+                    type="monotone"
+                    dataKey="immobilier"
+                    name="Immobilier"
+                    stroke="#F97316"
+                    strokeWidth={2}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="scpi"
+                    name="SCPI"
+                    stroke="#0EA5E9"
+                    strokeWidth={2}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="autre"
+                    name="Autre"
+                    stroke="#22D3EE"
+                    strokeWidth={2}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         {/* Onglet 2: Répartition */}
         <TabsContent value="repartition">
           <Card>
             <CardHeader>
               <CardTitle>Répartition des encours réels par produit</CardTitle>
-              <CardDescription>
-                Distribution des actifs sous gestion Eparnova
-              </CardDescription>
+              <CardDescription>Distribution des actifs sous gestion Eparnova</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -217,11 +322,11 @@ const EncoursReelsPage = () => {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(value) => `${(value as number / 1000).toFixed(0)} K€`} />
+                      <Tooltip formatter={value => `${((value as number) / 1000).toFixed(0)} K€`} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
-                
+
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
@@ -232,7 +337,7 @@ const EncoursReelsPage = () => {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis type="number" />
                       <YAxis dataKey="name" type="category" />
-                      <Tooltip formatter={(value) => `${(value as number / 1000).toFixed(0)} K€`} />
+                      <Tooltip formatter={value => `${((value as number) / 1000).toFixed(0)} K€`} />
                       <Bar dataKey="value" name="Montant" fill="#8B5CF6" />
                     </BarChart>
                   </ResponsiveContainer>
@@ -241,7 +346,7 @@ const EncoursReelsPage = () => {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         {/* Onglet 3: Liste clients */}
         <TabsContent value="clients">
           <Card>
@@ -249,9 +354,7 @@ const EncoursReelsPage = () => {
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
                 <div>
                   <CardTitle>Encours réels par client</CardTitle>
-                  <CardDescription>
-                    Détail des encours sous gestion par client
-                  </CardDescription>
+                  <CardDescription>Détail des encours sous gestion par client</CardDescription>
                 </div>
                 <div className="relative">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -259,7 +362,7 @@ const EncoursReelsPage = () => {
                     placeholder="Rechercher un client..."
                     className="pl-8 w-full md:w-auto"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={e => setSearchTerm(e.target.value)}
                   />
                 </div>
               </div>
@@ -270,7 +373,7 @@ const EncoursReelsPage = () => {
                   <thead>
                     <tr className="border-b">
                       <th className="text-left py-3 px-4">Client</th>
-                      <th 
+                      <th
                         className="text-right py-3 px-4 cursor-pointer hover:bg-muted/50"
                         onClick={() => handleSort('assuranceVie')}
                       >
@@ -279,7 +382,7 @@ const EncoursReelsPage = () => {
                           <ArrowUpDown className="ml-1 h-3 w-3" />
                         </div>
                       </th>
-                      <th 
+                      <th
                         className="text-right py-3 px-4 cursor-pointer hover:bg-muted/50"
                         onClick={() => handleSort('per')}
                       >
@@ -288,7 +391,7 @@ const EncoursReelsPage = () => {
                           <ArrowUpDown className="ml-1 h-3 w-3" />
                         </div>
                       </th>
-                      <th 
+                      <th
                         className="text-right py-3 px-4 cursor-pointer hover:bg-muted/50"
                         onClick={() => handleSort('scpi')}
                       >
@@ -297,7 +400,7 @@ const EncoursReelsPage = () => {
                           <ArrowUpDown className="ml-1 h-3 w-3" />
                         </div>
                       </th>
-                      <th 
+                      <th
                         className="text-right py-3 px-4 cursor-pointer hover:bg-muted/50"
                         onClick={() => handleSort('autre')}
                       >
@@ -306,7 +409,7 @@ const EncoursReelsPage = () => {
                           <ArrowUpDown className="ml-1 h-3 w-3" />
                         </div>
                       </th>
-                      <th 
+                      <th
                         className="text-right py-3 px-4 cursor-pointer hover:bg-muted/50"
                         onClick={() => handleSort('total')}
                       >
@@ -318,25 +421,45 @@ const EncoursReelsPage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {formattedClients.map((client) => (
+                    {formattedClients.map(client => (
                       <tr key={client.id} className="border-b hover:bg-muted/50">
                         <td className="py-3 px-4 font-medium">
                           {client.prenom} {client.nom}
                         </td>
                         <td className="text-right py-3 px-4">
-                          {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(client.assuranceVie)}
+                          {new Intl.NumberFormat('fr-FR', {
+                            style: 'currency',
+                            currency: 'EUR',
+                            maximumFractionDigits: 0,
+                          }).format(client.assuranceVie)}
                         </td>
                         <td className="text-right py-3 px-4">
-                          {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(client.per)}
+                          {new Intl.NumberFormat('fr-FR', {
+                            style: 'currency',
+                            currency: 'EUR',
+                            maximumFractionDigits: 0,
+                          }).format(client.per)}
                         </td>
                         <td className="text-right py-3 px-4">
-                          {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(client.scpi)}
+                          {new Intl.NumberFormat('fr-FR', {
+                            style: 'currency',
+                            currency: 'EUR',
+                            maximumFractionDigits: 0,
+                          }).format(client.scpi)}
                         </td>
                         <td className="text-right py-3 px-4">
-                          {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(client.autre)}
+                          {new Intl.NumberFormat('fr-FR', {
+                            style: 'currency',
+                            currency: 'EUR',
+                            maximumFractionDigits: 0,
+                          }).format(client.autre)}
                         </td>
                         <td className="text-right py-3 px-4 font-medium text-blue-600">
-                          {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(client.total)}
+                          {new Intl.NumberFormat('fr-FR', {
+                            style: 'currency',
+                            currency: 'EUR',
+                            maximumFractionDigits: 0,
+                          }).format(client.total)}
                         </td>
                       </tr>
                     ))}
@@ -345,29 +468,41 @@ const EncoursReelsPage = () => {
                     <tr className="bg-muted/50">
                       <td className="py-3 px-4 font-medium">TOTAL</td>
                       <td className="text-right py-3 px-4 font-medium">
-                        {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(
+                        {new Intl.NumberFormat('fr-FR', {
+                          style: 'currency',
+                          currency: 'EUR',
+                          maximumFractionDigits: 0,
+                        }).format(
                           formattedClients.reduce((sum, client) => sum + client.assuranceVie, 0)
                         )}
                       </td>
                       <td className="text-right py-3 px-4 font-medium">
-                        {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(
-                          formattedClients.reduce((sum, client) => sum + client.per, 0)
-                        )}
+                        {new Intl.NumberFormat('fr-FR', {
+                          style: 'currency',
+                          currency: 'EUR',
+                          maximumFractionDigits: 0,
+                        }).format(formattedClients.reduce((sum, client) => sum + client.per, 0))}
                       </td>
                       <td className="text-right py-3 px-4 font-medium">
-                        {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(
-                          formattedClients.reduce((sum, client) => sum + client.scpi, 0)
-                        )}
+                        {new Intl.NumberFormat('fr-FR', {
+                          style: 'currency',
+                          currency: 'EUR',
+                          maximumFractionDigits: 0,
+                        }).format(formattedClients.reduce((sum, client) => sum + client.scpi, 0))}
                       </td>
                       <td className="text-right py-3 px-4 font-medium">
-                        {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(
-                          formattedClients.reduce((sum, client) => sum + client.autre, 0)
-                        )}
+                        {new Intl.NumberFormat('fr-FR', {
+                          style: 'currency',
+                          currency: 'EUR',
+                          maximumFractionDigits: 0,
+                        }).format(formattedClients.reduce((sum, client) => sum + client.autre, 0))}
                       </td>
                       <td className="text-right py-3 px-4 font-medium text-blue-600">
-                        {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(
-                          formattedClients.reduce((sum, client) => sum + client.total, 0)
-                        )}
+                        {new Intl.NumberFormat('fr-FR', {
+                          style: 'currency',
+                          currency: 'EUR',
+                          maximumFractionDigits: 0,
+                        }).format(formattedClients.reduce((sum, client) => sum + client.total, 0))}
                       </td>
                     </tr>
                   </tfoot>

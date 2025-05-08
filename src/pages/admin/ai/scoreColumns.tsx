@@ -1,9 +1,8 @@
-
-import { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { TrendingDown, TrendingUp, Minus } from "lucide-react";
+import { ColumnDef } from '@tanstack/react-table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { TrendingDown, TrendingUp, Minus } from 'lucide-react';
 
 export type ClientScore = {
   id: string;
@@ -18,30 +17,30 @@ export type ClientScore = {
 
 export const columns: ColumnDef<ClientScore>[] = [
   {
-    accessorKey: "client",
-    header: "Client",
+    accessorKey: 'client',
+    header: 'Client',
     cell: ({ row }) => (
       <Link
         to={`/admin/ia/scores/${row.original.id}`}
         className="font-medium text-primary hover:underline"
       >
-        {row.getValue("client")}
+        {row.getValue('client')}
       </Link>
     ),
   },
   {
-    accessorKey: "score",
-    header: "Score",
+    accessorKey: 'score',
+    header: 'Score',
   },
   {
-    accessorKey: "lastUpdate",
-    header: "Dernière mise à jour",
+    accessorKey: 'lastUpdate',
+    header: 'Dernière mise à jour',
   },
   {
-    accessorKey: "evolution",
-    header: "Évolution",
+    accessorKey: 'evolution',
+    header: 'Évolution',
     cell: ({ row }) => {
-      const evolution = row.getValue("evolution") as string;
+      const evolution = row.getValue('evolution') as string;
       const value = parseInt(evolution);
       return (
         <div className="flex items-center">
@@ -58,21 +57,21 @@ export const columns: ColumnDef<ClientScore>[] = [
     },
   },
   {
-    accessorKey: "riskProfile",
-    header: "Profil de risque",
+    accessorKey: 'riskProfile',
+    header: 'Profil de risque',
   },
   {
-    accessorKey: "status",
-    header: "Statut",
+    accessorKey: 'status',
+    header: 'Statut',
     cell: ({ row }) => {
-      const status = row.getValue("status") as string;
+      const status = row.getValue('status') as string;
       return (
-        <Badge 
-          variant={status === "stable" ? "outline" : 
-                 status === "declining" ? "destructive" : "default"}
+        <Badge
+          variant={
+            status === 'stable' ? 'outline' : status === 'declining' ? 'destructive' : 'default'
+          }
         >
-          {status === "stable" ? "Stable" : 
-           status === "declining" ? "En baisse" : "En hausse"}
+          {status === 'stable' ? 'Stable' : status === 'declining' ? 'En baisse' : 'En hausse'}
         </Badge>
       );
     },

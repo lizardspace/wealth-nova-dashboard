@@ -1,11 +1,20 @@
-
-import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
-import { Button } from "@/components/ui/button";
-import { Download, TrendingUp, TrendingDown } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+} from 'recharts';
+import { Button } from '@/components/ui/button';
+import { Download, TrendingUp, TrendingDown } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 // Sample data for the charts
 const encoursMockData = [
@@ -24,12 +33,12 @@ const encoursMockData = [
 ];
 
 const assetClassData = [
-  { name: "Immobilier", reel: 250000, theorique: 450000 },
-  { name: "Assurance Vie", reel: 180000, theorique: 210000 },
-  { name: "PER", reel: 120000, theorique: 150000 },
-  { name: "Liquidités", reel: 90000, theorique: 180000 },
-  { name: "Actions", reel: 50000, theorique: 80000 },
-  { name: "SCPI", reel: 30000, theorique: 40000 },
+  { name: 'Immobilier', reel: 250000, theorique: 450000 },
+  { name: 'Assurance Vie', reel: 180000, theorique: 210000 },
+  { name: 'PER', reel: 120000, theorique: 150000 },
+  { name: 'Liquidités', reel: 90000, theorique: 180000 },
+  { name: 'Actions', reel: 50000, theorique: 80000 },
+  { name: 'SCPI', reel: 30000, theorique: 40000 },
 ];
 
 const formatCurrency = (value: number) => {
@@ -37,7 +46,7 @@ const formatCurrency = (value: number) => {
     style: 'currency',
     currency: 'EUR',
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0
+    maximumFractionDigits: 0,
   }).format(value);
 };
 
@@ -45,7 +54,12 @@ const EncoursPage = () => {
   const totalReel = encoursMockData[encoursMockData.length - 1].reel;
   const totalTheorique = encoursMockData[encoursMockData.length - 1].theorique;
   const conversionRate = Math.round((totalReel / totalTheorique) * 100);
-  const evolutionMensuelle = Math.round(((encoursMockData[encoursMockData.length - 1].reel - encoursMockData[encoursMockData.length - 2].reel) / encoursMockData[encoursMockData.length - 2].reel) * 100);
+  const evolutionMensuelle = Math.round(
+    ((encoursMockData[encoursMockData.length - 1].reel -
+      encoursMockData[encoursMockData.length - 2].reel) /
+      encoursMockData[encoursMockData.length - 2].reel) *
+      100
+  );
 
   return (
     <div className="space-y-6">
@@ -70,8 +84,7 @@ const EncoursPage = () => {
           </CardHeader>
           <CardContent>
             <div className="flex items-center text-sm text-green-600 font-medium">
-              <TrendingUp className="mr-1 h-4 w-4" />
-              +{evolutionMensuelle}% par mois
+              <TrendingUp className="mr-1 h-4 w-4" />+{evolutionMensuelle}% par mois
             </div>
           </CardContent>
         </Card>
@@ -82,9 +95,7 @@ const EncoursPage = () => {
             <CardTitle className="text-2xl">{formatCurrency(totalTheorique)}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-sm text-muted-foreground">
-              Potentiel de conversion élevé
-            </div>
+            <div className="text-sm text-muted-foreground">Potentiel de conversion élevé</div>
           </CardContent>
         </Card>
 
@@ -107,9 +118,7 @@ const EncoursPage = () => {
             <CardTitle className="text-2xl">28</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-sm text-muted-foreground">
-              Basées sur l'analyse des encours
-            </div>
+            <div className="text-sm text-muted-foreground">Basées sur l'analyse des encours</div>
           </CardContent>
         </Card>
       </div>
@@ -118,38 +127,38 @@ const EncoursPage = () => {
         <Card className="md:col-span-4">
           <CardHeader>
             <CardTitle>Évolution sur 12 mois</CardTitle>
-            <CardDescription>
-              Comparaison des encours réels et théoriques
-            </CardDescription>
+            <CardDescription>Comparaison des encours réels et théoriques</CardDescription>
           </CardHeader>
           <CardContent className="h-[400px]">
-            <ChartContainer config={{
-              reel: { color: "#8B5CF6" },
-              theorique: { color: "#D1D5DB" },
-            }}>
+            <ChartContainer
+              config={{
+                reel: { color: '#8B5CF6' },
+                theorique: { color: '#D1D5DB' },
+              }}
+            >
               <LineChart data={encoursMockData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.4} />
                 <XAxis dataKey="month" />
-                <YAxis tickFormatter={(value) => `${Math.round(value / 1000)}k€`} />
+                <YAxis tickFormatter={value => `${Math.round(value / 1000)}k€`} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  name="Encours réel" 
-                  dataKey="reel" 
-                  stroke="var(--color-reel)" 
-                  strokeWidth={2} 
-                  dot={{ r: 4 }} 
-                  activeDot={{ r: 6 }} 
+                <Line
+                  type="monotone"
+                  name="Encours réel"
+                  dataKey="reel"
+                  stroke="var(--color-reel)"
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
                 />
-                <Line 
-                  type="monotone" 
-                  name="Encours théorique" 
-                  dataKey="theorique" 
-                  stroke="var(--color-theorique)" 
-                  strokeWidth={2} 
-                  strokeDasharray="5 5" 
-                  dot={{ r: 4 }} 
+                <Line
+                  type="monotone"
+                  name="Encours théorique"
+                  dataKey="theorique"
+                  stroke="var(--color-theorique)"
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  dot={{ r: 4 }}
                 />
               </LineChart>
             </ChartContainer>
@@ -159,23 +168,32 @@ const EncoursPage = () => {
         <Card className="md:col-span-3">
           <CardHeader>
             <CardTitle>Répartition par classe d'actif</CardTitle>
-            <CardDescription>
-              Distribution des encours par type d'investissement
-            </CardDescription>
+            <CardDescription>Distribution des encours par type d'investissement</CardDescription>
           </CardHeader>
           <CardContent className="h-[400px]">
-            <ChartContainer config={{
-              reel: { color: "#8B5CF6" },
-              theorique: { color: "#D1D5DB" },
-            }}>
-              <BarChart data={assetClassData} layout="vertical" margin={{ top: 5, right: 30, left: 60, bottom: 5 }}>
+            <ChartContainer
+              config={{
+                reel: { color: '#8B5CF6' },
+                theorique: { color: '#D1D5DB' },
+              }}
+            >
+              <BarChart
+                data={assetClassData}
+                layout="vertical"
+                margin={{ top: 5, right: 30, left: 60, bottom: 5 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.4} />
-                <XAxis type="number" tickFormatter={(value) => `${Math.round(value / 1000)}k€`} />
+                <XAxis type="number" tickFormatter={value => `${Math.round(value / 1000)}k€`} />
                 <YAxis type="category" dataKey="name" width={80} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Legend />
                 <Bar name="Encours réel" dataKey="reel" fill="var(--color-reel)" barSize={20} />
-                <Bar name="Encours théorique" dataKey="theorique" fill="var(--color-theorique)" barSize={20} />
+                <Bar
+                  name="Encours théorique"
+                  dataKey="theorique"
+                  fill="var(--color-theorique)"
+                  barSize={20}
+                />
               </BarChart>
             </ChartContainer>
           </CardContent>
@@ -186,7 +204,8 @@ const EncoursPage = () => {
         <TrendingUp className="h-4 w-4" />
         <AlertTitle>Opportunités de conversion</AlertTitle>
         <AlertDescription>
-          Les encours théoriques dépassent de 26% les encours réels. Principal potentiel identifié : la classe "Immobilier" (écart de 200 k€).
+          Les encours théoriques dépassent de 26% les encours réels. Principal potentiel identifié :
+          la classe "Immobilier" (écart de 200 k€).
         </AlertDescription>
       </Alert>
     </div>

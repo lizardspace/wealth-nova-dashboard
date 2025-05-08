@@ -1,15 +1,8 @@
-
 // src/pages/admin/tools/ConditionalRulesPage.tsx
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Plus, Filter, Code, Save } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Plus, Filter, Code, Save } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -18,38 +11,38 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { DataTable } from "@/components/ui/data-table";
-import { columns, Rule } from "./ruleColumns";
+} from '@/components/ui/select';
+import { DataTable } from '@/components/ui/data-table';
+import { columns, Rule } from './ruleColumns';
 
 const rules: Rule[] = [
   {
-    id: "1",
-    name: "Afficher PER pour clients +50 ans",
-    condition: "client.age > 50",
-    target: "product:id=per",
+    id: '1',
+    name: 'Afficher PER pour clients +50 ans',
+    condition: 'client.age > 50',
+    target: 'product:id=per',
   },
   {
-    id: "2",
-    name: "Afficher SCPI pour patrimoine >100k",
-    condition: "client.patrimoine > 100000",
-    target: "product:id=scpi",
+    id: '2',
+    name: 'Afficher SCPI pour patrimoine >100k',
+    condition: 'client.patrimoine > 100000',
+    target: 'product:id=scpi',
   },
   {
-    id: "3",
-    name: "Afficher produits structurés pour profil risque élevé",
+    id: '3',
+    name: 'Afficher produits structurés pour profil risque élevé',
     condition: "client.profilRisque === 'Dynamique'",
-    target: "product:category=structuré",
+    target: 'product:category=structuré',
   },
 ];
 
@@ -71,7 +64,8 @@ export default function ConditionalRulesPage() {
             <DialogHeader>
               <DialogTitle>Créer une nouvelle règle conditionnelle</DialogTitle>
               <DialogDescription>
-                Les règles conditionnelles déterminent l'affichage des produits selon des critères client.
+                Les règles conditionnelles déterminent l'affichage des produits selon des critères
+                client.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
@@ -79,11 +73,7 @@ export default function ConditionalRulesPage() {
                 <Label htmlFor="name" className="text-right">
                   Nom
                 </Label>
-                <Input
-                  id="name"
-                  placeholder="Nom de la règle"
-                  className="col-span-3"
-                />
+                <Input id="name" placeholder="Nom de la règle" className="col-span-3" />
               </div>
 
               <div className="grid grid-cols-4 items-center gap-4">
@@ -124,7 +114,9 @@ export default function ConditionalRulesPage() {
                     className="min-h-[100px]"
                   />
                   <div className="text-sm text-muted-foreground">
-                    Utilisez la syntaxe JavaScript pour définir les conditions. Variables disponibles: client.age, client.patrimoine, client.profilRisque, client.score, etc.
+                    Utilisez la syntaxe JavaScript pour définir les conditions. Variables
+                    disponibles: client.age, client.patrimoine, client.profilRisque, client.score,
+                    etc.
                   </div>
                 </div>
               </div>
@@ -162,7 +154,8 @@ export default function ConditionalRulesPage() {
         <CardHeader>
           <CardTitle>Liste des règles conditionnelles</CardTitle>
           <CardDescription>
-            Gérez les règles qui déterminent quels produits sont affichés à quels clients selon leurs caractéristiques.
+            Gérez les règles qui déterminent quels produits sont affichés à quels clients selon
+            leurs caractéristiques.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -172,8 +165,9 @@ export default function ConditionalRulesPage() {
               <div>
                 <h3 className="text-lg font-medium">Comment fonctionnent les règles?</h3>
                 <p className="text-sm text-muted-foreground">
-                  Les règles conditionnelles permettent d'afficher ou masquer des produits, simulateurs ou sections selon le profil du client.
-                  Utilisez des expressions comme <code>{"client.age > 50"}</code> ou <code>{"client.patrimoine > 100000"}</code>.
+                  Les règles conditionnelles permettent d'afficher ou masquer des produits,
+                  simulateurs ou sections selon le profil du client. Utilisez des expressions comme{' '}
+                  <code>{'client.age > 50'}</code> ou <code>{'client.patrimoine > 100000'}</code>.
                 </p>
               </div>
             </div>
@@ -199,12 +193,7 @@ export default function ConditionalRulesPage() {
                   <Label htmlFor="client-age" className="text-right">
                     Âge
                   </Label>
-                  <Input
-                    id="client-age"
-                    type="number"
-                    defaultValue="45"
-                    className="col-span-3"
-                  />
+                  <Input id="client-age" type="number" defaultValue="45" className="col-span-3" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="client-patrimoine" className="text-right">
@@ -236,12 +225,7 @@ export default function ConditionalRulesPage() {
                   <Label htmlFor="client-score" className="text-right">
                     Score IA
                   </Label>
-                  <Input
-                    id="client-score"
-                    type="number"
-                    defaultValue="65"
-                    className="col-span-3"
-                  />
+                  <Input id="client-score" type="number" defaultValue="65" className="col-span-3" />
                 </div>
                 <div className="flex justify-end">
                   <Button>

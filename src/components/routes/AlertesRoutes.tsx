@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import AlertesDashboardPage from '../../pages/admin/alertes/AlertesDashboardPage';
@@ -12,8 +11,14 @@ const AlertesRoutes = () => {
       <Route path="/" element={<AlertesDashboardPage />} />
       <Route path="/inactifs" element={<InactiveClientsPage />} />
       <Route path="/profils-incomplets" element={<IncompleteProfilesPage />} />
-      <Route path="/projets-en-cours" element={<AdminPlaceholder title="Projets non finalisés" />} />
-      <Route path="/gains-potentiels" element={<AdminPlaceholder title="Optimisations non activées" />} />
+      <Route
+        path="/projets-en-cours"
+        element={<AdminPlaceholder title="Projets non finalisés" />}
+      />
+      <Route
+        path="/gains-potentiels"
+        element={<AdminPlaceholder title="Optimisations non activées" />}
+      />
     </Routes>
   );
 };

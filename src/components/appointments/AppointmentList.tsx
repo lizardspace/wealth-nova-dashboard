@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Eye, Video, Users, Phone } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableBody,
@@ -10,8 +9,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Link } from "react-router-dom";
+} from '@/components/ui/table';
+import { Link } from 'react-router-dom';
 import { Event } from './AppointmentTypes';
 
 interface AppointmentListProps {
@@ -35,10 +34,13 @@ export function AppointmentList({ appointments = [] }: AppointmentListProps) {
         </TableHeader>
         <TableBody>
           {appointments.length > 0 ? (
-            appointments.map((appointment) => (
+            appointments.map(appointment => (
               <TableRow key={appointment.id}>
                 <TableCell>
-                  <Link to={`/admin/clients/${appointment.id}`} className="font-medium text-primary hover:underline">
+                  <Link
+                    to={`/admin/clients/${appointment.id}`}
+                    className="font-medium text-primary hover:underline"
+                  >
                     {appointment.client}
                   </Link>
                 </TableCell>
@@ -46,12 +48,12 @@ export function AppointmentList({ appointments = [] }: AppointmentListProps) {
                 <TableCell>{appointment.time}</TableCell>
                 <TableCell>
                   <div className="flex items-center">
-                    {appointment.type === "video" ? (
+                    {appointment.type === 'video' ? (
                       <>
                         <div className="mr-2 h-2 w-2 rounded-full bg-blue-500" />
                         <span>Visio</span>
                       </>
-                    ) : appointment.type === "phone" ? (
+                    ) : appointment.type === 'phone' ? (
                       <>
                         <div className="mr-2 h-2 w-2 rounded-full bg-green-500" />
                         <span>Téléphone</span>
@@ -68,20 +70,20 @@ export function AppointmentList({ appointments = [] }: AppointmentListProps) {
                 <TableCell>
                   <Badge
                     variant={
-                      appointment.status === "confirmed" || appointment.status === "upcoming" 
-                        ? "outline" 
-                        : appointment.status === "cancelled" 
-                        ? "destructive" 
-                        : "secondary"
+                      appointment.status === 'confirmed' || appointment.status === 'upcoming'
+                        ? 'outline'
+                        : appointment.status === 'cancelled'
+                          ? 'destructive'
+                          : 'secondary'
                     }
                   >
-                    {appointment.status === "confirmed" || appointment.status === "upcoming" 
-                      ? "Confirmé" 
-                      : appointment.status === "cancelled" 
-                      ? "Annulé" 
-                      : appointment.status === "completed" 
-                      ? "Terminé" 
-                      : "À confirmer"}
+                    {appointment.status === 'confirmed' || appointment.status === 'upcoming'
+                      ? 'Confirmé'
+                      : appointment.status === 'cancelled'
+                        ? 'Annulé'
+                        : appointment.status === 'completed'
+                          ? 'Terminé'
+                          : 'À confirmer'}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">

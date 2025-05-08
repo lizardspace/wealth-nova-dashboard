@@ -1,10 +1,16 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 
 const LoginForm = () => {
@@ -17,14 +23,14 @@ const LoginForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     // Simulate authentication - would connect to backend in real app
     setTimeout(() => {
       // Mock successful login for demo
       localStorage.setItem('isAuthenticated', 'true');
       toast({
-        title: "Connexion réussie",
-        description: "Bienvenue sur votre espace EPARNOVA",
+        title: 'Connexion réussie',
+        description: 'Bienvenue sur votre espace EPARNOVA',
       });
       navigate('/');
       setIsLoading(false);
@@ -35,9 +41,7 @@ const LoginForm = () => {
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle className="text-2xl">Connexion</CardTitle>
-        <CardDescription>
-          Accédez à votre espace EPARNOVA
-        </CardDescription>
+        <CardDescription>Accédez à votre espace EPARNOVA</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -48,15 +52,15 @@ const LoginForm = () => {
               type="email"
               placeholder="votreemail@exemple.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               required
             />
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password">Mot de passe</Label>
-              <Link 
-                to="/forgot-password" 
+              <Link
+                to="/forgot-password"
                 className="text-xs text-eparnova-blue-light hover:underline"
               >
                 Mot de passe oublié?
@@ -66,13 +70,13 @@ const LoginForm = () => {
               id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               required
             />
           </div>
-          <Button 
-            type="submit" 
-            className="w-full bg-eparnova-blue hover:bg-eparnova-blue/90" 
+          <Button
+            type="submit"
+            className="w-full bg-eparnova-blue hover:bg-eparnova-blue/90"
             disabled={isLoading}
           >
             {isLoading ? 'Connexion en cours...' : 'Se connecter'}

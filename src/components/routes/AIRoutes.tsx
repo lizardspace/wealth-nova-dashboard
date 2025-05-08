@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import ScoresPage from '../../pages/admin/ai/ScoresPage';
@@ -14,9 +13,15 @@ const AIRoutes = () => {
       <Route path="/scores" element={<ScoresPage />} />
       <Route path="/scores/:clientId" element={<ClientScorePage />} />
       <Route path="/recommandations" element={<RecommendationsPage />} />
-      <Route path="/recommandations/:id" element={<AdminPlaceholder title="Détail recommandation" />} />
+      <Route
+        path="/recommandations/:id"
+        element={<AdminPlaceholder title="Détail recommandation" />}
+      />
       <Route path="/suivi-interactions" element={<InteractionTrackingPage />} />
-      <Route path="/suivi-interactions/:id" element={<AdminPlaceholder title="Détail interaction" />} />
+      <Route
+        path="/suivi-interactions/:id"
+        element={<AdminPlaceholder title="Détail interaction" />}
+      />
     </Routes>
   );
 };

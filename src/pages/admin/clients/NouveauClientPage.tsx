@@ -1,16 +1,15 @@
-
 import React from 'react';
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -19,47 +18,44 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
+} from '@/components/ui/form';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
 
 // Schéma de validation
 const formSchema = z.object({
   // Informations Personnelles
-  civilite: z.string().min(1, { message: "Veuillez sélectionner une civilité" }),
-  nom: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères" }),
-  prenom: z.string().min(2, { message: "Le prénom doit contenir au moins 2 caractères" }),
-  dateNaissance: z.string().min(1, { message: "Veuillez saisir une date de naissance" }),
-  email: z.string().email({ message: "Veuillez saisir une adresse email valide" }),
-  telephone: z.string().min(10, { message: "Veuillez saisir un numéro de téléphone valide" }),
-  
+  civilite: z.string().min(1, { message: 'Veuillez sélectionner une civilité' }),
+  nom: z.string().min(2, { message: 'Le nom doit contenir au moins 2 caractères' }),
+  prenom: z.string().min(2, { message: 'Le prénom doit contenir au moins 2 caractères' }),
+  dateNaissance: z.string().min(1, { message: 'Veuillez saisir une date de naissance' }),
+  email: z.string().email({ message: 'Veuillez saisir une adresse email valide' }),
+  telephone: z.string().min(10, { message: 'Veuillez saisir un numéro de téléphone valide' }),
+
   // Adresse
   adresse: z.string().min(5, { message: "L'adresse doit contenir au moins 5 caractères" }),
-  codePostal: z.string().min(5, { message: "Veuillez saisir un code postal valide" }),
-  ville: z.string().min(2, { message: "Veuillez saisir une ville" }),
-  
+  codePostal: z.string().min(5, { message: 'Veuillez saisir un code postal valide' }),
+  ville: z.string().min(2, { message: 'Veuillez saisir une ville' }),
+
   // Situation
-  situationFamiliale: z.string().min(1, { message: "Veuillez sélectionner une situation familiale" }),
+  situationFamiliale: z
+    .string()
+    .min(1, { message: 'Veuillez sélectionner une situation familiale' }),
   nombreEnfants: z.string().min(1, { message: "Veuillez indiquer le nombre d'enfants" }),
-  profession: z.string().min(2, { message: "Veuillez indiquer votre profession" }),
-  
+  profession: z.string().min(2, { message: 'Veuillez indiquer votre profession' }),
+
   // Informations financières
-  revenuAnnuel: z.string().min(1, { message: "Veuillez saisir un revenu annuel" }),
-  patrimoineEstime: z.string().min(1, { message: "Veuillez saisir un patrimoine estimé" })
+  revenuAnnuel: z.string().min(1, { message: 'Veuillez saisir un revenu annuel' }),
+  patrimoineEstime: z.string().min(1, { message: 'Veuillez saisir un patrimoine estimé' }),
 });
 
 const NouveauClientPage = () => {
@@ -67,27 +63,27 @@ const NouveauClientPage = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      civilite: "",
-      nom: "",
-      prenom: "",
-      dateNaissance: "",
-      email: "",
-      telephone: "",
-      adresse: "",
-      codePostal: "",
-      ville: "",
-      situationFamiliale: "",
-      nombreEnfants: "0",
-      profession: "",
-      revenuAnnuel: "",
-      patrimoineEstime: ""
-    }
+      civilite: '',
+      nom: '',
+      prenom: '',
+      dateNaissance: '',
+      email: '',
+      telephone: '',
+      adresse: '',
+      codePostal: '',
+      ville: '',
+      situationFamiliale: '',
+      nombreEnfants: '0',
+      profession: '',
+      revenuAnnuel: '',
+      patrimoineEstime: '',
+    },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
     toast({
-      title: "Client créé avec succès",
+      title: 'Client créé avec succès',
       description: `${values.prenom} ${values.nom} a été ajouté à la base de données.`,
     });
   }
@@ -113,9 +109,7 @@ const NouveauClientPage = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Informations personnelles</CardTitle>
-                  <CardDescription>
-                    Saisissez les informations de base du client.
-                  </CardDescription>
+                  <CardDescription>Saisissez les informations de base du client.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -218,9 +212,7 @@ const NouveauClientPage = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Adresse</CardTitle>
-                  <CardDescription>
-                    Saisissez l'adresse complète du client.
-                  </CardDescription>
+                  <CardDescription>Saisissez l'adresse complète du client.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <FormField
@@ -368,9 +360,7 @@ const NouveauClientPage = () => {
                           <FormControl>
                             <Input placeholder="Revenu annuel" type="number" {...field} />
                           </FormControl>
-                          <FormDescription>
-                            Revenu annuel net avant impôts
-                          </FormDescription>
+                          <FormDescription>Revenu annuel net avant impôts</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -384,9 +374,7 @@ const NouveauClientPage = () => {
                           <FormControl>
                             <Input placeholder="Patrimoine estimé" type="number" {...field} />
                           </FormControl>
-                          <FormDescription>
-                            Estimation globale du patrimoine
-                          </FormDescription>
+                          <FormDescription>Estimation globale du patrimoine</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}

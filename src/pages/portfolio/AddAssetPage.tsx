@@ -1,11 +1,16 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 
@@ -16,8 +21,8 @@ const AddAssetPage = () => {
   const handleAddAsset = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
-      title: "Actif ajouté avec succès",
-      description: "Votre nouvel actif a été ajouté à votre portefeuille.",
+      title: 'Actif ajouté avec succès',
+      description: 'Votre nouvel actif a été ajouté à votre portefeuille.',
     });
     navigate('/portfolio');
   };
@@ -26,7 +31,9 @@ const AddAssetPage = () => {
     <div className="space-y-6">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-eparnova-blue">Ajouter un actif</h1>
-        <p className="text-muted-foreground mt-1">Enrichissez votre portefeuille avec un nouvel investissement</p>
+        <p className="text-muted-foreground mt-1">
+          Enrichissez votre portefeuille avec un nouvel investissement
+        </p>
       </div>
 
       <Card className="max-w-3xl mx-auto">
@@ -89,11 +96,16 @@ const AddAssetPage = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="asset-description">Description</Label>
-                  <Input id="asset-description" placeholder="Description de votre actif (optionnel)" />
+                  <Input
+                    id="asset-description"
+                    placeholder="Description de votre actif (optionnel)"
+                  />
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4">
-                  <Button variant="outline" onClick={() => navigate('/portfolio')}>Annuler</Button>
+                  <Button variant="outline" onClick={() => navigate('/portfolio')}>
+                    Annuler
+                  </Button>
                   <Button type="submit">Ajouter l'actif</Button>
                 </div>
               </form>
@@ -104,7 +116,7 @@ const AddAssetPage = () => {
                 <p>Formulaire d'ajout d'actif immobilier</p>
               </div>
             </TabsContent>
-            
+
             <TabsContent value="other">
               <div className="p-8 text-center text-muted-foreground">
                 <p>Formulaire d'ajout d'actif alternatif</p>

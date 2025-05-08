@@ -1,10 +1,27 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, PieChart, XAxis, YAxis, Bar, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  BarChart,
+  PieChart,
+  XAxis,
+  YAxis,
+  Bar,
+  Pie,
+  Cell,
+  Legend,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 import { ChartPie, ChartBar, CalendarRange } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 // Données d'exemple
 const SAMPLE_ASSET_CLASS_DATA = [
@@ -66,16 +83,16 @@ const AnalysePage = () => {
 
   const chartConfig = {
     reel: {
-      label: "Encours réel",
-      theme: { light: "#0A2463", dark: "#0A2463" },
+      label: 'Encours réel',
+      theme: { light: '#0A2463', dark: '#0A2463' },
     },
     theorique: {
-      label: "Encours théorique",
-      theme: { light: "#E6AF2E", dark: "#E6AF2E" },
+      label: 'Encours théorique',
+      theme: { light: '#E6AF2E', dark: '#E6AF2E' },
     },
   };
 
-  const currentData = drilldownCategory 
+  const currentData = drilldownCategory
     ? SAMPLE_DETAILED_DATA[drilldownCategory as keyof typeof SAMPLE_DETAILED_DATA] || []
     : SAMPLE_ASSET_CLASS_DATA;
 
@@ -148,9 +165,9 @@ const AnalysePage = () => {
           <Card className="min-h-[750px]">
             <CardHeader>
               <CardTitle className="text-2xl">
-                {drilldownCategory 
+                {drilldownCategory
                   ? `Détail ${drilldownCategory}`
-                  : 'Répartition par Classe d\'Actifs'}
+                  : "Répartition par Classe d'Actifs"}
               </CardTitle>
               <CardDescription className="text-lg">
                 {drilldownCategory
@@ -163,12 +180,12 @@ const AnalysePage = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart margin={{ top: 20, right: 20, bottom: 140, left: 20 }}>
                     <Tooltip content={<ChartTooltipContent />} />
-                    <Legend 
-                      layout="horizontal" 
+                    <Legend
+                      layout="horizontal"
                       verticalAlign="bottom"
-                      wrapperStyle={{ 
+                      wrapperStyle={{
                         paddingTop: '40px',
-                        bottom: '40px'
+                        bottom: '40px',
                       }}
                     />
                     <Pie
@@ -211,52 +228,45 @@ const AnalysePage = () => {
           <Card className="min-h-[800px]">
             <CardHeader>
               <CardTitle className="text-2xl">Comparaison Détaillée</CardTitle>
-              <CardDescription className="text-lg">Écarts entre encours réel et théorique</CardDescription>
+              <CardDescription className="text-lg">
+                Écarts entre encours réel et théorique
+              </CardDescription>
             </CardHeader>
             <CardContent className="h-[700px] pt-6">
               <ChartContainer config={chartConfig}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart 
+                  <BarChart
                     data={currentData}
-                    margin={{ 
+                    margin={{
                       top: 40,
                       right: 40,
                       left: 80,
-                      bottom: 160
+                      bottom: 160,
                     }}
                     layout="vertical"
                   >
-                    <XAxis 
-                      type="number" 
-                      tickFormatter={formatEuro}
-                      tick={{ fontSize: 14 }}
-                    />
-                    <YAxis 
-                      type="category" 
-                      dataKey="name" 
-                      width={160}
-                      tick={{ fontSize: 14 }}
-                    />
+                    <XAxis type="number" tickFormatter={formatEuro} tick={{ fontSize: 14 }} />
+                    <YAxis type="category" dataKey="name" width={160} tick={{ fontSize: 14 }} />
                     <Tooltip content={<ChartTooltipContent />} />
-                    <Legend 
-                      layout="horizontal" 
+                    <Legend
+                      layout="horizontal"
                       verticalAlign="bottom"
-                      wrapperStyle={{ 
+                      wrapperStyle={{
                         paddingTop: '60px',
-                        bottom: '60px'
+                        bottom: '60px',
                       }}
                     />
-                    <Bar 
-                      dataKey="reel" 
-                      name="Encours réel" 
-                      fill="#0A2463" 
+                    <Bar
+                      dataKey="reel"
+                      name="Encours réel"
+                      fill="#0A2463"
                       radius={[0, 4, 4, 0]}
                       barSize={30}
                     />
-                    <Bar 
-                      dataKey="theorique" 
-                      name="Encours théorique" 
-                      fill="#E6AF2E" 
+                    <Bar
+                      dataKey="theorique"
+                      name="Encours théorique"
+                      fill="#E6AF2E"
                       radius={[0, 4, 4, 0]}
                       barSize={30}
                     />
@@ -277,40 +287,32 @@ const AnalysePage = () => {
             <CardContent className="h-[650px] pt-6">
               <ChartContainer config={chartConfig}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart 
+                  <BarChart
                     data={SAMPLE_EVOLUTION_DATA}
                     margin={{ top: 20, right: 30, left: 20, bottom: 140 }}
                   >
-                    <XAxis 
+                    <XAxis
                       dataKey="mois"
                       angle={-45}
                       textAnchor="end"
                       height={80}
                       tick={{ fontSize: 12 }}
                     />
-                    <YAxis 
-                      tickFormatter={formatEuro}
-                      tick={{ fontSize: 12 }}
-                    />
+                    <YAxis tickFormatter={formatEuro} tick={{ fontSize: 12 }} />
                     <Tooltip content={<ChartTooltipContent />} />
-                    <Legend 
-                      layout="horizontal" 
+                    <Legend
+                      layout="horizontal"
                       verticalAlign="bottom"
-                      wrapperStyle={{ 
+                      wrapperStyle={{
                         paddingTop: '40px',
-                        bottom: '40px'
+                        bottom: '40px',
                       }}
                     />
-                    <Bar 
-                      dataKey="reel" 
-                      name="Encours réel" 
-                      fill="#0A2463" 
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar 
-                      dataKey="theorique" 
-                      name="Encours théorique" 
-                      fill="#E6AF2E" 
+                    <Bar dataKey="reel" name="Encours réel" fill="#0A2463" radius={[4, 4, 0, 0]} />
+                    <Bar
+                      dataKey="theorique"
+                      name="Encours théorique"
+                      fill="#E6AF2E"
                       radius={[4, 4, 0, 0]}
                     />
                   </BarChart>
@@ -325,7 +327,9 @@ const AnalysePage = () => {
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle className="text-2xl">Analyse et Recommandations</CardTitle>
-                  <CardDescription className="text-lg">Insights basés sur les données</CardDescription>
+                  <CardDescription className="text-lg">
+                    Insights basés sur les données
+                  </CardDescription>
                 </div>
                 <CalendarRange className="h-6 w-6 text-muted-foreground" />
               </div>

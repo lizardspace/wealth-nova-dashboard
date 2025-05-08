@@ -6,19 +6,19 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, MoreHorizontal, FileDown } from "lucide-react";
+} from '@/components/ui/dropdown-menu';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Eye, MoreHorizontal, FileDown } from 'lucide-react';
 
 type Appointment = {
   id: number;
@@ -26,92 +26,92 @@ type Appointment = {
   date: string;
   time: string;
   advisor: string;
-  type: "video" | "phone" | "in-person";
-  status: "completed" | "cancelled" | "rescheduled";
+  type: 'video' | 'phone' | 'in-person';
+  status: 'completed' | 'cancelled' | 'rescheduled';
   notes?: string;
 };
 
 const appointments: Appointment[] = [
   {
     id: 1,
-    client: "Jean Dupont",
-    date: "15/04/2025",
-    time: "14:00 - 15:00",
-    advisor: "Marie Lambert",
-    type: "video",
-    status: "completed",
-    notes: "Discussion sur la stratégie d'investissement"
+    client: 'Jean Dupont',
+    date: '15/04/2025',
+    time: '14:00 - 15:00',
+    advisor: 'Marie Lambert',
+    type: 'video',
+    status: 'completed',
+    notes: "Discussion sur la stratégie d'investissement",
   },
   {
     id: 2,
-    client: "Sophie Martin",
-    date: "14/04/2025",
-    time: "10:30 - 11:15",
-    advisor: "Paul Bernard",
-    type: "phone",
-    status: "completed",
-    notes: "Point sur l'assurance vie"
+    client: 'Sophie Martin',
+    date: '14/04/2025',
+    time: '10:30 - 11:15',
+    advisor: 'Paul Bernard',
+    type: 'phone',
+    status: 'completed',
+    notes: "Point sur l'assurance vie",
   },
   {
     id: 3,
-    client: "Michel Lefebvre",
-    date: "12/04/2025",
-    time: "09:00 - 10:00",
-    advisor: "Marie Lambert",
-    type: "in-person",
-    status: "cancelled",
-    notes: "Client indisponible"
+    client: 'Michel Lefebvre',
+    date: '12/04/2025',
+    time: '09:00 - 10:00',
+    advisor: 'Marie Lambert',
+    type: 'in-person',
+    status: 'cancelled',
+    notes: 'Client indisponible',
   },
   {
     id: 4,
-    client: "Camille Dubois",
-    date: "10/04/2025",
-    time: "16:00 - 17:00",
-    advisor: "Thomas Richard",
-    type: "video",
-    status: "completed",
-    notes: "Préparation retraite"
+    client: 'Camille Dubois',
+    date: '10/04/2025',
+    time: '16:00 - 17:00',
+    advisor: 'Thomas Richard',
+    type: 'video',
+    status: 'completed',
+    notes: 'Préparation retraite',
   },
   {
     id: 5,
-    client: "Philippe Moreau",
-    date: "08/04/2025",
-    time: "11:00 - 12:00",
-    advisor: "Paul Bernard",
-    type: "phone",
-    status: "rescheduled",
-    notes: "Reporté au 15/05/2025"
+    client: 'Philippe Moreau',
+    date: '08/04/2025',
+    time: '11:00 - 12:00',
+    advisor: 'Paul Bernard',
+    type: 'phone',
+    status: 'rescheduled',
+    notes: 'Reporté au 15/05/2025',
   },
   {
     id: 6,
-    client: "Isabelle Petit",
-    date: "05/04/2025",
-    time: "14:30 - 15:30",
-    advisor: "Marie Lambert",
-    type: "in-person",
-    status: "completed",
-    notes: "Signature du contrat d'assurance"
+    client: 'Isabelle Petit',
+    date: '05/04/2025',
+    time: '14:30 - 15:30',
+    advisor: 'Marie Lambert',
+    type: 'in-person',
+    status: 'completed',
+    notes: "Signature du contrat d'assurance",
   },
   {
     id: 7,
-    client: "Laurent Roux",
-    date: "03/04/2025",
-    time: "09:30 - 10:30",
-    advisor: "Thomas Richard",
-    type: "video",
-    status: "completed",
-    notes: "Explication des options de placement"
+    client: 'Laurent Roux',
+    date: '03/04/2025',
+    time: '09:30 - 10:30',
+    advisor: 'Thomas Richard',
+    type: 'video',
+    status: 'completed',
+    notes: 'Explication des options de placement',
   },
   {
     id: 8,
-    client: "Nicole Blanc",
-    date: "01/04/2025",
-    time: "15:00 - 16:00",
-    advisor: "Paul Bernard",
-    type: "phone",
-    status: "cancelled",
-    notes: "Client malade"
-  }
+    client: 'Nicole Blanc',
+    date: '01/04/2025',
+    time: '15:00 - 16:00',
+    advisor: 'Paul Bernard',
+    type: 'phone',
+    status: 'cancelled',
+    notes: 'Client malade',
+  },
 ];
 
 const HistoriquePage = () => {
@@ -139,7 +139,9 @@ const HistoriquePage = () => {
             <CardTitle className="text-sm font-medium">Rendez-vous complétés</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{appointments.filter(a => a.status === "completed").length}</div>
+            <div className="text-2xl font-bold">
+              {appointments.filter(a => a.status === 'completed').length}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -147,7 +149,9 @@ const HistoriquePage = () => {
             <CardTitle className="text-sm font-medium">Annulations</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{appointments.filter(a => a.status === "cancelled").length}</div>
+            <div className="text-2xl font-bold">
+              {appointments.filter(a => a.status === 'cancelled').length}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -173,7 +177,7 @@ const HistoriquePage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {appointments.map((appointment) => (
+              {appointments.map(appointment => (
                 <TableRow key={appointment.id}>
                   <TableCell className="font-medium">{appointment.client}</TableCell>
                   <TableCell>{appointment.date}</TableCell>
@@ -181,9 +185,9 @@ const HistoriquePage = () => {
                   <TableCell>{appointment.advisor}</TableCell>
                   <TableCell>
                     <div className="flex items-center">
-                      {appointment.type === "video" ? (
+                      {appointment.type === 'video' ? (
                         <span>Visioconférence</span>
-                      ) : appointment.type === "phone" ? (
+                      ) : appointment.type === 'phone' ? (
                         <span>Téléphone</span>
                       ) : (
                         <span>Présentiel</span>
@@ -193,18 +197,18 @@ const HistoriquePage = () => {
                   <TableCell>
                     <Badge
                       variant={
-                        appointment.status === "completed"
-                          ? "outline"
-                          : appointment.status === "rescheduled"
-                          ? "secondary"
-                          : "destructive"
+                        appointment.status === 'completed'
+                          ? 'outline'
+                          : appointment.status === 'rescheduled'
+                            ? 'secondary'
+                            : 'destructive'
                       }
                     >
-                      {appointment.status === "completed"
-                        ? "Terminé"
-                        : appointment.status === "cancelled"
-                        ? "Annulé"
-                        : "Reporté"}
+                      {appointment.status === 'completed'
+                        ? 'Terminé'
+                        : appointment.status === 'cancelled'
+                          ? 'Annulé'
+                          : 'Reporté'}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -244,8 +248,8 @@ const HistoriquePage = () => {
             </TableHeader>
             <TableBody>
               {appointments
-                .filter((appointment) => appointment.status === "completed")
-                .map((appointment) => (
+                .filter(appointment => appointment.status === 'completed')
+                .map(appointment => (
                   <TableRow key={appointment.id}>
                     <TableCell className="font-medium">{appointment.client}</TableCell>
                     <TableCell>{appointment.date}</TableCell>
@@ -253,9 +257,9 @@ const HistoriquePage = () => {
                     <TableCell>{appointment.advisor}</TableCell>
                     <TableCell>
                       <div className="flex items-center">
-                        {appointment.type === "video" ? (
+                        {appointment.type === 'video' ? (
                           <span>Visioconférence</span>
-                        ) : appointment.type === "phone" ? (
+                        ) : appointment.type === 'phone' ? (
                           <span>Téléphone</span>
                         ) : (
                           <span>Présentiel</span>
@@ -263,11 +267,7 @@ const HistoriquePage = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant="outline"
-                      >
-                        Terminé
-                      </Badge>
+                      <Badge variant="outline">Terminé</Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -306,8 +306,8 @@ const HistoriquePage = () => {
             </TableHeader>
             <TableBody>
               {appointments
-                .filter((appointment) => appointment.status === "cancelled")
-                .map((appointment) => (
+                .filter(appointment => appointment.status === 'cancelled')
+                .map(appointment => (
                   <TableRow key={appointment.id}>
                     <TableCell className="font-medium">{appointment.client}</TableCell>
                     <TableCell>{appointment.date}</TableCell>
@@ -315,9 +315,9 @@ const HistoriquePage = () => {
                     <TableCell>{appointment.advisor}</TableCell>
                     <TableCell>
                       <div className="flex items-center">
-                        {appointment.type === "video" ? (
+                        {appointment.type === 'video' ? (
                           <span>Visioconférence</span>
-                        ) : appointment.type === "phone" ? (
+                        ) : appointment.type === 'phone' ? (
                           <span>Téléphone</span>
                         ) : (
                           <span>Présentiel</span>
@@ -325,11 +325,7 @@ const HistoriquePage = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant="destructive"
-                      >
-                        Annulé
-                      </Badge>
+                      <Badge variant="destructive">Annulé</Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -368,8 +364,8 @@ const HistoriquePage = () => {
             </TableHeader>
             <TableBody>
               {appointments
-                .filter((appointment) => appointment.status === "rescheduled")
-                .map((appointment) => (
+                .filter(appointment => appointment.status === 'rescheduled')
+                .map(appointment => (
                   <TableRow key={appointment.id}>
                     <TableCell className="font-medium">{appointment.client}</TableCell>
                     <TableCell>{appointment.date}</TableCell>
@@ -377,9 +373,9 @@ const HistoriquePage = () => {
                     <TableCell>{appointment.advisor}</TableCell>
                     <TableCell>
                       <div className="flex items-center">
-                        {appointment.type === "video" ? (
+                        {appointment.type === 'video' ? (
                           <span>Visioconférence</span>
-                        ) : appointment.type === "phone" ? (
+                        ) : appointment.type === 'phone' ? (
                           <span>Téléphone</span>
                         ) : (
                           <span>Présentiel</span>
@@ -387,11 +383,7 @@ const HistoriquePage = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant="secondary"
-                      >
-                        Reporté
-                      </Badge>
+                      <Badge variant="secondary">Reporté</Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>

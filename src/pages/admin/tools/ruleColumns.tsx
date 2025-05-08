@@ -1,6 +1,6 @@
 // src/pages/admin/tools/ruleColumns.tsx
-import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
+import { ColumnDef } from '@tanstack/react-table';
+import { Button } from '@/components/ui/button';
 
 export type Rule = {
   id: string;
@@ -11,29 +11,25 @@ export type Rule = {
 
 export const columns: ColumnDef<Rule>[] = [
   {
-    accessorKey: "name",
-    header: "Nom de la règle",
+    accessorKey: 'name',
+    header: 'Nom de la règle',
   },
   {
-    accessorKey: "condition",
-    header: "Condition",
+    accessorKey: 'condition',
+    header: 'Condition',
     cell: ({ row }) => (
-      <code className="bg-muted px-2 py-1 rounded-md text-sm">
-        {row.getValue("condition")}
-      </code>
+      <code className="bg-muted px-2 py-1 rounded-md text-sm">{row.getValue('condition')}</code>
     ),
   },
   {
-    accessorKey: "target",
-    header: "Cible",
+    accessorKey: 'target',
+    header: 'Cible',
     cell: ({ row }) => (
-      <code className="bg-muted px-2 py-1 rounded-md text-sm">
-        {row.getValue("target")}
-      </code>
+      <code className="bg-muted px-2 py-1 rounded-md text-sm">{row.getValue('target')}</code>
     ),
   },
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => (
       <div className="space-x-2">
         <Button variant="outline" size="sm">

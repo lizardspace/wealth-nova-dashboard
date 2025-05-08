@@ -1,20 +1,26 @@
-
 // src/pages/admin/alertes/InactiveClientsPage.tsx
-import { UserX, Search, Clock, Calendar, Mail, Phone, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
-import { DataTable } from "@/components/ui/data-table";
-import { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
+import { UserX, Search, Clock, Calendar, Mail, Phone, Filter } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+  CardFooter,
+} from '@/components/ui/card';
+import { DataTable } from '@/components/ui/data-table';
+import { ColumnDef } from '@tanstack/react-table';
+import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 type InactiveClient = {
   id: string;
@@ -24,89 +30,87 @@ type InactiveClient = {
   lastContact: string;
   inactiveDays: number;
   portfolio: number;
-  status: "critical" | "warning" | "notice";
+  status: 'critical' | 'warning' | 'notice';
 };
 
 const clients: InactiveClient[] = [
   {
-    id: "1",
-    name: "Dupont Jean",
-    email: "jean.dupont@email.com",
-    phone: "06 12 34 56 78",
-    lastContact: "15/11/2023",
+    id: '1',
+    name: 'Dupont Jean',
+    email: 'jean.dupont@email.com',
+    phone: '06 12 34 56 78',
+    lastContact: '15/11/2023',
     inactiveDays: 180,
     portfolio: 120000,
-    status: "critical",
+    status: 'critical',
   },
   {
-    id: "2",
-    name: "Martin Sophie",
-    email: "sophie.martin@email.com",
-    phone: "06 23 45 67 89",
-    lastContact: "10/01/2024",
+    id: '2',
+    name: 'Martin Sophie',
+    email: 'sophie.martin@email.com',
+    phone: '06 23 45 67 89',
+    lastContact: '10/01/2024',
     inactiveDays: 120,
     portfolio: 85000,
-    status: "warning",
+    status: 'warning',
   },
   {
-    id: "3",
-    name: "Bernard Pierre",
-    email: "pierre.bernard@email.com",
-    phone: "06 34 56 78 90",
-    lastContact: "05/02/2024",
+    id: '3',
+    name: 'Bernard Pierre',
+    email: 'pierre.bernard@email.com',
+    phone: '06 34 56 78 90',
+    lastContact: '05/02/2024',
     inactiveDays: 90,
     portfolio: 250000,
-    status: "notice",
+    status: 'notice',
   },
   {
-    id: "4",
-    name: "Petit Marie",
-    email: "marie.petit@email.com",
-    phone: "06 45 67 89 01",
-    lastContact: "20/12/2023",
+    id: '4',
+    name: 'Petit Marie',
+    email: 'marie.petit@email.com',
+    phone: '06 45 67 89 01',
+    lastContact: '20/12/2023',
     inactiveDays: 140,
     portfolio: 175000,
-    status: "warning",
+    status: 'warning',
   },
   {
-    id: "5",
-    name: "Dubois Thomas",
-    email: "thomas.dubois@email.com",
-    phone: "06 56 78 90 12",
-    lastContact: "01/10/2023",
+    id: '5',
+    name: 'Dubois Thomas',
+    email: 'thomas.dubois@email.com',
+    phone: '06 56 78 90 12',
+    lastContact: '01/10/2023',
     inactiveDays: 200,
     portfolio: 320000,
-    status: "critical",
+    status: 'critical',
   },
 ];
 
 const columns: ColumnDef<InactiveClient>[] = [
   {
-    accessorKey: "name",
-    header: "Client",
+    accessorKey: 'name',
+    header: 'Client',
     cell: ({ row }) => (
       <div>
         <Link
           to={`/admin/clients/${row.original.id}`}
           className="font-medium hover:underline text-primary"
         >
-          {row.getValue("name")}
+          {row.getValue('name')}
         </Link>
-        <p className="text-xs text-muted-foreground">
-          ID: {row.original.id}
-        </p>
+        <p className="text-xs text-muted-foreground">ID: {row.original.id}</p>
       </div>
     ),
   },
   {
-    accessorKey: "lastContact",
-    header: "Dernier contact",
+    accessorKey: 'lastContact',
+    header: 'Dernier contact',
   },
   {
-    accessorKey: "inactiveDays",
+    accessorKey: 'inactiveDays',
     header: "Jours d'inactivité",
     cell: ({ row }) => {
-      const days = row.getValue("inactiveDays") as number;
+      const days = row.getValue('inactiveDays') as number;
       return (
         <div className="flex items-center">
           <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
@@ -116,43 +120,35 @@ const columns: ColumnDef<InactiveClient>[] = [
     },
   },
   {
-    accessorKey: "portfolio",
-    header: "Encours",
+    accessorKey: 'portfolio',
+    header: 'Encours',
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("portfolio"));
-      const formatted = new Intl.NumberFormat("fr-FR", {
-        style: "currency",
-        currency: "EUR",
+      const amount = parseFloat(row.getValue('portfolio'));
+      const formatted = new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'EUR',
       }).format(amount);
       return formatted;
     },
   },
   {
-    accessorKey: "status",
-    header: "Statut",
+    accessorKey: 'status',
+    header: 'Statut',
     cell: ({ row }) => {
-      const status = row.getValue("status") as InactiveClient["status"];
+      const status = row.getValue('status') as InactiveClient['status'];
       return (
         <Badge
           variant={
-            status === "critical"
-              ? "destructive"
-              : status === "warning"
-              ? "default"
-              : "outline"
+            status === 'critical' ? 'destructive' : status === 'warning' ? 'default' : 'outline'
           }
         >
-          {status === "critical"
-            ? "Critique"
-            : status === "warning"
-            ? "Attention"
-            : "À surveiller"}
+          {status === 'critical' ? 'Critique' : status === 'warning' ? 'Attention' : 'À surveiller'}
         </Badge>
       );
     },
   },
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => (
       <div className="flex space-x-2">
         <Button variant="ghost" size="icon">
@@ -189,10 +185,7 @@ export default function InactiveClientsPage() {
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher un client inactif..."
-            className="pl-8"
-          />
+          <Input placeholder="Rechercher un client inactif..." className="pl-8" />
         </div>
         <div className="flex gap-2">
           <Select defaultValue="all">
@@ -228,7 +221,7 @@ export default function InactiveClientsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-red-500">
-              {clients.filter((c) => c.status === "critical").length}
+              {clients.filter(c => c.status === 'critical').length}
             </div>
           </CardContent>
         </Card>
@@ -239,7 +232,7 @@ export default function InactiveClientsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-amber-500">
-              {clients.filter((c) => c.status === "warning").length}
+              {clients.filter(c => c.status === 'warning').length}
             </div>
           </CardContent>
         </Card>
@@ -250,7 +243,7 @@ export default function InactiveClientsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-blue-500">
-              {clients.filter((c) => c.status === "notice").length}
+              {clients.filter(c => c.status === 'notice').length}
             </div>
           </CardContent>
         </Card>
@@ -267,9 +260,7 @@ export default function InactiveClientsPage() {
           <DataTable columns={columns} data={clients} />
         </CardContent>
         <CardFooter className="flex justify-between">
-          <p className="text-sm text-muted-foreground">
-            Total: {clients.length} clients inactifs
-          </p>
+          <p className="text-sm text-muted-foreground">Total: {clients.length} clients inactifs</p>
           <Button variant="outline">Exporter la liste</Button>
         </CardFooter>
       </Card>
@@ -280,8 +271,9 @@ export default function InactiveClientsPage() {
           <div>
             <h3 className="font-medium">Suivi des clients inactifs</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Les clients sont considérés comme inactifs après 60 jours sans interaction (visite du portail, email, appel, rendez-vous).
-              Des rappels automatiques peuvent être configurés pour les clients critiques.
+              Les clients sont considérés comme inactifs après 60 jours sans interaction (visite du
+              portail, email, appel, rendez-vous). Des rappels automatiques peuvent être configurés
+              pour les clients critiques.
             </p>
           </div>
         </div>

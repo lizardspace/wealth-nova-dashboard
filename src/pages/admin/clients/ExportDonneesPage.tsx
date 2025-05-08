@@ -1,33 +1,19 @@
-
 import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
-} from "@/components/ui/select";
-import { 
-  FileText,
-  Download,
-  Filter,
-  UserPlus,
-  Users,
-  FilePlus
-} from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+  SelectValue,
+} from '@/components/ui/select';
+import { FileText, Download, Filter, UserPlus, Users, FilePlus } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Types et données fictives
 type FieldCategory = 'personal' | 'financial' | 'fiscal' | 'products' | 'simulations' | 'scores';
@@ -50,7 +36,7 @@ const exportFields: ExportField[] = [
   { id: 'profession', label: 'Profession', category: 'personal', selected: false },
   { id: 'situationFamiliale', label: 'Situation familiale', category: 'personal', selected: false },
   { id: 'enfantsACharge', label: 'Enfants à charge', category: 'personal', selected: false },
-  
+
   // Données financières
   { id: 'patrimoineGlobal', label: 'Patrimoine global', category: 'financial', selected: true },
   { id: 'actifs', label: 'Total des actifs', category: 'financial', selected: true },
@@ -61,50 +47,90 @@ const exportFields: ExportField[] = [
   { id: 'epargneRetraite', label: 'Épargne retraite', category: 'financial', selected: false },
   { id: 'assuranceVie', label: 'Assurance vie', category: 'financial', selected: false },
   { id: 'creditImmobilier', label: 'Crédits immobiliers', category: 'financial', selected: false },
-  { id: 'creditConsommation', label: 'Crédits à la consommation', category: 'financial', selected: false },
+  {
+    id: 'creditConsommation',
+    label: 'Crédits à la consommation',
+    category: 'financial',
+    selected: false,
+  },
   { id: 'revenusAnnuels', label: 'Revenus annuels', category: 'financial', selected: false },
   { id: 'chargesAnnuelles', label: 'Charges annuelles', category: 'financial', selected: false },
-  
+
   // Données fiscales
-  { id: 'trancheImpot', label: 'Tranche d\'impôt', category: 'fiscal', selected: false },
-  { id: 'revenuFiscalReference', label: 'Revenu fiscal de référence', category: 'fiscal', selected: false },
+  { id: 'trancheImpot', label: "Tranche d'impôt", category: 'fiscal', selected: false },
+  {
+    id: 'revenuFiscalReference',
+    label: 'Revenu fiscal de référence',
+    category: 'fiscal',
+    selected: false,
+  },
   { id: 'partsImpot', label: 'Nombre de parts', category: 'fiscal', selected: false },
   { id: 'imposableIFI', label: 'Assujetti IFI', category: 'fiscal', selected: false },
   { id: 'montantIFI', label: 'Montant IFI', category: 'fiscal', selected: false },
-  { id: 'reductionsImpots', label: 'Réductions d\'impôts', category: 'fiscal', selected: false },
-  
+  { id: 'reductionsImpots', label: "Réductions d'impôts", category: 'fiscal', selected: false },
+
   // Produits souscrits
   { id: 'produitsSouscrits', label: 'Liste des produits', category: 'products', selected: false },
   { id: 'datesProduits', label: 'Dates de souscription', category: 'products', selected: false },
   { id: 'montantsProduits', label: 'Montants investis', category: 'products', selected: false },
-  { id: 'performanceProduits', label: 'Performance des produits', category: 'products', selected: false },
+  {
+    id: 'performanceProduits',
+    label: 'Performance des produits',
+    category: 'products',
+    selected: false,
+  },
   { id: 'fraisProduits', label: 'Frais des produits', category: 'products', selected: false },
-  
+
   // Simulations
-  { id: 'simulationsRealisees', label: 'Simulations réalisées', category: 'simulations', selected: false },
-  { id: 'resultatsSimulation', label: 'Résultats des simulations', category: 'simulations', selected: false },
-  { id: 'datesDerniereSimulation', label: 'Dates dernière simulation', category: 'simulations', selected: false },
+  {
+    id: 'simulationsRealisees',
+    label: 'Simulations réalisées',
+    category: 'simulations',
+    selected: false,
+  },
+  {
+    id: 'resultatsSimulation',
+    label: 'Résultats des simulations',
+    category: 'simulations',
+    selected: false,
+  },
+  {
+    id: 'datesDerniereSimulation',
+    label: 'Dates dernière simulation',
+    category: 'simulations',
+    selected: false,
+  },
   { id: 'typesSimulation', label: 'Types de simulation', category: 'simulations', selected: false },
-  
+
   // Scores et profils
   { id: 'scorePatrimonial', label: 'Score patrimonial', category: 'scores', selected: true },
   { id: 'profilRisque', label: 'Profil de risque', category: 'scores', selected: true },
-  { id: 'objectifsPatrimoniaux', label: 'Objectifs patrimoniaux', category: 'scores', selected: false },
-  { id: 'horizonInvestissement', label: 'Horizon d\'investissement', category: 'scores', selected: false },
+  {
+    id: 'objectifsPatrimoniaux',
+    label: 'Objectifs patrimoniaux',
+    category: 'scores',
+    selected: false,
+  },
+  {
+    id: 'horizonInvestissement',
+    label: "Horizon d'investissement",
+    category: 'scores',
+    selected: false,
+  },
 ];
 
 // Liste des clients fictifs
 const mockClients = [
-  { id: 1, nom: "Dupont", prenom: "Jean", selected: false },
-  { id: 2, nom: "Martin", prenom: "Sophie", selected: false },
-  { id: 3, nom: "Bernard", prenom: "Pierre", selected: false },
-  { id: 4, nom: "Petit", prenom: "Marie", selected: false },
-  { id: 5, nom: "Robert", prenom: "Antoine", selected: false },
-  { id: 6, nom: "Durand", prenom: "Claire", selected: false },
-  { id: 7, nom: "Leroy", prenom: "Thomas", selected: false },
-  { id: 8, nom: "Moreau", prenom: "Isabelle", selected: false },
-  { id: 9, nom: "Simon", prenom: "Michel", selected: false },
-  { id: 10, nom: "Laurent", prenom: "Emma", selected: false }
+  { id: 1, nom: 'Dupont', prenom: 'Jean', selected: false },
+  { id: 2, nom: 'Martin', prenom: 'Sophie', selected: false },
+  { id: 3, nom: 'Bernard', prenom: 'Pierre', selected: false },
+  { id: 4, nom: 'Petit', prenom: 'Marie', selected: false },
+  { id: 5, nom: 'Robert', prenom: 'Antoine', selected: false },
+  { id: 6, nom: 'Durand', prenom: 'Claire', selected: false },
+  { id: 7, nom: 'Leroy', prenom: 'Thomas', selected: false },
+  { id: 8, nom: 'Moreau', prenom: 'Isabelle', selected: false },
+  { id: 9, nom: 'Simon', prenom: 'Michel', selected: false },
+  { id: 10, nom: 'Laurent', prenom: 'Emma', selected: false },
 ];
 
 export default function ExportDonneesPage() {
@@ -117,15 +143,17 @@ export default function ExportDonneesPage() {
   const [selectAllFields, setSelectAllFields] = useState(false);
 
   const handleFieldToggle = (fieldId: string) => {
-    setFields(fields.map(field => 
-      field.id === fieldId ? { ...field, selected: !field.selected } : field
-    ));
+    setFields(
+      fields.map(field => (field.id === fieldId ? { ...field, selected: !field.selected } : field))
+    );
   };
 
   const handleClientToggle = (clientId: number) => {
-    setClients(clients.map(client => 
-      client.id === clientId ? { ...client, selected: !client.selected } : client
-    ));
+    setClients(
+      clients.map(client =>
+        client.id === clientId ? { ...client, selected: !client.selected } : client
+      )
+    );
   };
 
   const handleSelectAllClients = () => {
@@ -137,11 +165,13 @@ export default function ExportDonneesPage() {
   const handleSelectAllFields = () => {
     const newSelectAll = !selectAllFields;
     setSelectAllFields(newSelectAll);
-    setFields(fields.map(field => 
-      selectedCategory === 'all' || field.category === selectedCategory 
-        ? { ...field, selected: newSelectAll } 
-        : field
-    ));
+    setFields(
+      fields.map(field =>
+        selectedCategory === 'all' || field.category === selectedCategory
+          ? { ...field, selected: newSelectAll }
+          : field
+      )
+    );
   };
 
   const handleCategoryChange = (category: FieldCategory | 'all') => {
@@ -149,36 +179,46 @@ export default function ExportDonneesPage() {
     setSelectAllFields(false);
   };
 
-  const filteredFields = selectedCategory === 'all'
-    ? fields
-    : fields.filter(field => field.category === selectedCategory);
+  const filteredFields =
+    selectedCategory === 'all'
+      ? fields
+      : fields.filter(field => field.category === selectedCategory);
 
   const selectedFieldsCount = fields.filter(field => field.selected).length;
   const selectedClientsCount = clients.filter(client => client.selected).length;
-  
+
   const handleExport = () => {
     const fieldsToExport = fields.filter(f => f.selected);
     const clientsToExport = clients.filter(c => c.selected);
-    
+
     console.log('Exporting data:', {
       clients: clientsToExport,
       fields: fieldsToExport,
-      format
+      format,
     });
-    
+
     // Dans une application réelle, cela déclencherait l'export des données
-    alert(`Export ${format.toUpperCase()} généré avec ${clientsToExport.length} clients et ${fieldsToExport.length} champs.`);
+    alert(
+      `Export ${format.toUpperCase()} généré avec ${clientsToExport.length} clients et ${fieldsToExport.length} champs.`
+    );
   };
 
   const getCategoryLabel = (category: FieldCategory): string => {
-    switch(category) {
-      case 'personal': return 'Données personnelles';
-      case 'financial': return 'Données financières';
-      case 'fiscal': return 'Fiscalité';
-      case 'products': return 'Produits souscrits';
-      case 'simulations': return 'Simulations';
-      case 'scores': return 'Scores et profils';
-      default: return category;
+    switch (category) {
+      case 'personal':
+        return 'Données personnelles';
+      case 'financial':
+        return 'Données financières';
+      case 'fiscal':
+        return 'Fiscalité';
+      case 'products':
+        return 'Produits souscrits';
+      case 'simulations':
+        return 'Simulations';
+      case 'scores':
+        return 'Scores et profils';
+      default:
+        return category;
     }
   };
 
@@ -226,20 +266,20 @@ export default function ExportDonneesPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
               <Label>Résumé de la sélection</Label>
               <Card>
                 <CardContent className="p-4 space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Clients sélectionnés:</span>
-                    <Badge variant={selectedClientsCount > 0 ? "default" : "outline"}>
+                    <Badge variant={selectedClientsCount > 0 ? 'default' : 'outline'}>
                       {selectedClientsCount} / {clients.length}
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Champs sélectionnés:</span>
-                    <Badge variant={selectedFieldsCount > 0 ? "default" : "outline"}>
+                    <Badge variant={selectedFieldsCount > 0 ? 'default' : 'outline'}>
                       {selectedFieldsCount} / {fields.length}
                     </Badge>
                   </div>
@@ -252,7 +292,7 @@ export default function ExportDonneesPage() {
                 </CardContent>
               </Card>
             </div>
-            
+
             <div className="space-y-2">
               <Label>Modèles d'export</Label>
               <div className="space-y-2">
@@ -288,18 +328,18 @@ export default function ExportDonneesPage() {
                 </TabsList>
               </div>
               <CardDescription>
-                {activeTab === 'fields' ? 
-                  "Sélectionnez les champs à inclure dans l'export" : 
-                  "Sélectionnez les clients à inclure dans l'export"}
+                {activeTab === 'fields'
+                  ? "Sélectionnez les champs à inclure dans l'export"
+                  : "Sélectionnez les clients à inclure dans l'export"}
               </CardDescription>
             </CardHeader>
 
             <CardContent>
               <TabsContent value="fields" className="mt-0 space-y-4">
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <Select 
-                    value={selectedCategory} 
-                    onValueChange={(value) => handleCategoryChange(value as FieldCategory | 'all')}
+                  <Select
+                    value={selectedCategory}
+                    onValueChange={value => handleCategoryChange(value as FieldCategory | 'all')}
                   >
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Catégorie" />
@@ -314,12 +354,8 @@ export default function ExportDonneesPage() {
                       <SelectItem value="scores">Scores et profils</SelectItem>
                     </SelectContent>
                   </Select>
-                  
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleSelectAllFields}
-                  >
+
+                  <Button variant="outline" size="sm" onClick={handleSelectAllFields}>
                     {selectAllFields ? 'Désélectionner tout' : 'Sélectionner tout'}
                   </Button>
                 </div>
@@ -327,18 +363,20 @@ export default function ExportDonneesPage() {
                 <ScrollArea className="h-[400px] pr-4">
                   <div className="space-y-6">
                     {/* Group fields by category */}
-                    {(selectedCategory === 'all' ? 
-                      Array.from(new Set(fields.map(f => f.category))) : 
-                      [selectedCategory]
+                    {(selectedCategory === 'all'
+                      ? Array.from(new Set(fields.map(f => f.category)))
+                      : [selectedCategory]
                     ).map(category => (
                       <div key={category} className="space-y-3">
-                        <h3 className="font-medium">{getCategoryLabel(category as FieldCategory)}</h3>
+                        <h3 className="font-medium">
+                          {getCategoryLabel(category as FieldCategory)}
+                        </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {fields
                             .filter(field => field.category === category)
                             .map(field => (
                               <div key={field.id} className="flex items-center space-x-2">
-                                <Checkbox 
+                                <Checkbox
                                   id={`field-${field.id}`}
                                   checked={field.selected}
                                   onCheckedChange={() => handleFieldToggle(field.id)}
@@ -360,33 +398,27 @@ export default function ExportDonneesPage() {
 
               <TabsContent value="clients" className="mt-0 space-y-4">
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleSelectAllClients}
-                  >
+                  <Button variant="outline" size="sm" onClick={handleSelectAllClients}>
                     {selectAllClients ? 'Désélectionner tout' : 'Sélectionner tout'}
                   </Button>
-                  
-                  <Badge className="ml-auto">
-                    {selectedClientsCount} clients sélectionnés
-                  </Badge>
+
+                  <Badge className="ml-auto">{selectedClientsCount} clients sélectionnés</Badge>
                 </div>
 
                 <ScrollArea className="h-[400px] pr-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {clients.map(client => (
-                      <div key={client.id} className="flex items-center space-x-2 border p-3 rounded-md">
-                        <Checkbox 
+                      <div
+                        key={client.id}
+                        className="flex items-center space-x-2 border p-3 rounded-md"
+                      >
+                        <Checkbox
                           id={`client-${client.id}`}
                           checked={client.selected}
                           onCheckedChange={() => handleClientToggle(client.id)}
                         />
                         <div className="flex-1">
-                          <label
-                            htmlFor={`client-${client.id}`}
-                            className="font-medium"
-                          >
+                          <label htmlFor={`client-${client.id}`} className="font-medium">
                             {client.nom} {client.prenom}
                           </label>
                           <p className="text-xs text-muted-foreground">ID: {client.id}</p>
@@ -403,10 +435,10 @@ export default function ExportDonneesPage() {
           </Tabs>
         </Card>
       </div>
-      
+
       <div className="flex justify-end space-x-2">
         <Button variant="outline">Annuler</Button>
-        <Button 
+        <Button
           disabled={selectedFieldsCount === 0 || selectedClientsCount === 0}
           onClick={handleExport}
         >

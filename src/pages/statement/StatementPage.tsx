@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,9 @@ const StatementPage = () => {
       <div className="bg-white rounded-lg shadow p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-xl font-bold text-eparnova-blue">Bilan patrimonial au 01/05/2025</h2>
+            <h2 className="text-xl font-bold text-eparnova-blue">
+              Bilan patrimonial au 01/05/2025
+            </h2>
             <p className="text-muted-foreground">Dernière mise à jour: aujourd'hui</p>
           </div>
           <Button className="flex items-center gap-2">
@@ -51,7 +52,7 @@ const StatementPage = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg">Passif</CardTitle>
@@ -98,7 +99,8 @@ const StatementPage = () => {
           </CardHeader>
           <CardContent>
             <p className="text-sm opacity-90 mb-4">
-              Obtenez une analyse approfondie de votre patrimoine avec des recommandations personnalisées.
+              Obtenez une analyse approfondie de votre patrimoine avec des recommandations
+              personnalisées.
             </p>
             <Button className="w-full bg-white text-eparnova-blue hover:bg-white/90">
               <FileText className="h-4 w-4 mr-2" />
@@ -110,9 +112,7 @@ const StatementPage = () => {
         <Card>
           <CardHeader>
             <CardTitle>Progression annuelle</CardTitle>
-            <CardDescription>
-              Évolution de votre patrimoine
-            </CardDescription>
+            <CardDescription>Évolution de votre patrimoine</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -139,9 +139,7 @@ const StatementPage = () => {
         <Card>
           <CardHeader>
             <CardTitle>Recommandations</CardTitle>
-            <CardDescription>
-              Basées sur votre situation actuelle
-            </CardDescription>
+            <CardDescription>Basées sur votre situation actuelle</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">

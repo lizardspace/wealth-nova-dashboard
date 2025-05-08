@@ -1,21 +1,27 @@
-
 // src/pages/admin/alertes/IncompleteProfilesPage.tsx
-import { FileText, Search, CheckSquare, X, Filter, Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
-import { DataTable } from "@/components/ui/data-table";
-import { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
-import { Progress } from "@/components/ui/progress";
+import { FileText, Search, CheckSquare, X, Filter, Mail } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+  CardFooter,
+} from '@/components/ui/card';
+import { DataTable } from '@/components/ui/data-table';
+import { ColumnDef } from '@tanstack/react-table';
+import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
+import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 type IncompleteProfile = {
   id: string;
@@ -24,86 +30,84 @@ type IncompleteProfile = {
   completionRate: number;
   missingFields: string[];
   portfolio: number;
-  priority: "high" | "medium" | "low";
+  priority: 'high' | 'medium' | 'low';
   lastUpdate: string;
 };
 
 const clients: IncompleteProfile[] = [
   {
-    id: "1",
-    name: "Dupont Jean",
-    email: "jean.dupont@email.com",
+    id: '1',
+    name: 'Dupont Jean',
+    email: 'jean.dupont@email.com',
     completionRate: 65,
-    missingFields: ["Objectifs", "Horizon d'investissement", "Expérience"],
+    missingFields: ['Objectifs', "Horizon d'investissement", 'Expérience'],
     portfolio: 120000,
-    priority: "high",
-    lastUpdate: "15/03/2024",
+    priority: 'high',
+    lastUpdate: '15/03/2024',
   },
   {
-    id: "2",
-    name: "Martin Sophie",
-    email: "sophie.martin@email.com",
+    id: '2',
+    name: 'Martin Sophie',
+    email: 'sophie.martin@email.com',
     completionRate: 80,
-    missingFields: ["Capacité d'épargne", "Situation familiale"],
+    missingFields: ["Capacité d'épargne", 'Situation familiale'],
     portfolio: 85000,
-    priority: "medium",
-    lastUpdate: "10/02/2024",
+    priority: 'medium',
+    lastUpdate: '10/02/2024',
   },
   {
-    id: "3",
-    name: "Bernard Pierre",
-    email: "pierre.bernard@email.com",
+    id: '3',
+    name: 'Bernard Pierre',
+    email: 'pierre.bernard@email.com',
     completionRate: 50,
-    missingFields: ["Objectifs", "Revenus", "Capacité d'épargne", "Risque"],
+    missingFields: ['Objectifs', 'Revenus', "Capacité d'épargne", 'Risque'],
     portfolio: 250000,
-    priority: "high",
-    lastUpdate: "05/04/2024",
+    priority: 'high',
+    lastUpdate: '05/04/2024',
   },
   {
-    id: "4",
-    name: "Petit Marie",
-    email: "marie.petit@email.com",
+    id: '4',
+    name: 'Petit Marie',
+    email: 'marie.petit@email.com',
     completionRate: 90,
-    missingFields: ["Expérience"],
+    missingFields: ['Expérience'],
     portfolio: 175000,
-    priority: "low",
-    lastUpdate: "20/03/2024",
+    priority: 'low',
+    lastUpdate: '20/03/2024',
   },
   {
-    id: "5",
-    name: "Dubois Thomas",
-    email: "thomas.dubois@email.com",
+    id: '5',
+    name: 'Dubois Thomas',
+    email: 'thomas.dubois@email.com',
     completionRate: 70,
-    missingFields: ["Objectifs", "Risque", "Horizon d'investissement"],
+    missingFields: ['Objectifs', 'Risque', "Horizon d'investissement"],
     portfolio: 320000,
-    priority: "medium",
-    lastUpdate: "01/04/2024",
+    priority: 'medium',
+    lastUpdate: '01/04/2024',
   },
 ];
 
 const columns: ColumnDef<IncompleteProfile>[] = [
   {
-    accessorKey: "name",
-    header: "Client",
+    accessorKey: 'name',
+    header: 'Client',
     cell: ({ row }) => (
       <div>
         <Link
           to={`/admin/clients/${row.original.id}`}
           className="font-medium hover:underline text-primary"
         >
-          {row.getValue("name")}
+          {row.getValue('name')}
         </Link>
-        <p className="text-xs text-muted-foreground">
-          Mis à jour: {row.original.lastUpdate}
-        </p>
+        <p className="text-xs text-muted-foreground">Mis à jour: {row.original.lastUpdate}</p>
       </div>
     ),
   },
   {
-    accessorKey: "completionRate",
-    header: "Complétion",
+    accessorKey: 'completionRate',
+    header: 'Complétion',
     cell: ({ row }) => {
-      const completion = row.getValue("completionRate") as number;
+      const completion = row.getValue('completionRate') as number;
       return (
         <div className="w-full">
           <div className="flex justify-between items-center mb-1">
@@ -115,8 +119,8 @@ const columns: ColumnDef<IncompleteProfile>[] = [
     },
   },
   {
-    accessorKey: "missingFields",
-    header: "Champs manquants",
+    accessorKey: 'missingFields',
+    header: 'Champs manquants',
     cell: ({ row }) => {
       const missingFields = row.original.missingFields;
       return (
@@ -131,43 +135,35 @@ const columns: ColumnDef<IncompleteProfile>[] = [
     },
   },
   {
-    accessorKey: "portfolio",
-    header: "Encours",
+    accessorKey: 'portfolio',
+    header: 'Encours',
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("portfolio"));
-      const formatted = new Intl.NumberFormat("fr-FR", {
-        style: "currency",
-        currency: "EUR",
+      const amount = parseFloat(row.getValue('portfolio'));
+      const formatted = new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'EUR',
       }).format(amount);
       return formatted;
     },
   },
   {
-    accessorKey: "priority",
-    header: "Priorité",
+    accessorKey: 'priority',
+    header: 'Priorité',
     cell: ({ row }) => {
-      const priority = row.getValue("priority") as IncompleteProfile["priority"];
+      const priority = row.getValue('priority') as IncompleteProfile['priority'];
       return (
         <Badge
           variant={
-            priority === "high"
-              ? "destructive"
-              : priority === "medium"
-              ? "default"
-              : "outline"
+            priority === 'high' ? 'destructive' : priority === 'medium' ? 'default' : 'outline'
           }
         >
-          {priority === "high"
-            ? "Élevée"
-            : priority === "medium"
-            ? "Moyenne"
-            : "Basse"}
+          {priority === 'high' ? 'Élevée' : priority === 'medium' ? 'Moyenne' : 'Basse'}
         </Badge>
       );
     },
   },
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => (
       <div className="flex space-x-2">
         <Button variant="ghost" size="sm">
@@ -203,10 +199,7 @@ export default function IncompleteProfilesPage() {
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher un client..."
-            className="pl-8"
-          />
+          <Input placeholder="Rechercher un client..." className="pl-8" />
         </div>
         <div className="flex gap-2">
           <Select defaultValue="all">
@@ -245,7 +238,7 @@ export default function IncompleteProfilesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-red-500">
-              {clients.filter((c) => c.completionRate < 60).length}
+              {clients.filter(c => c.completionRate < 60).length}
             </div>
           </CardContent>
         </Card>
@@ -259,7 +252,7 @@ export default function IncompleteProfilesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-amber-500">
-              {clients.filter((c) => c.completionRate >= 60 && c.completionRate <= 80).length}
+              {clients.filter(c => c.completionRate >= 60 && c.completionRate <= 80).length}
             </div>
           </CardContent>
         </Card>
@@ -273,7 +266,7 @@ export default function IncompleteProfilesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-blue-500">
-              {clients.filter((c) => c.completionRate > 80).length}
+              {clients.filter(c => c.completionRate > 80).length}
             </div>
           </CardContent>
         </Card>

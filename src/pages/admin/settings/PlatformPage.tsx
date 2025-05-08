@@ -1,21 +1,18 @@
-
 // src/pages/admin/settings/PlatformPage.tsx
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function PlatformPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Paramètres de la plateforme</h1>
-        <Button>
-          Enregistrer les modifications
-        </Button>
+        <Button>Enregistrer les modifications</Button>
       </div>
 
       <Tabs defaultValue="general" className="w-full">
@@ -25,7 +22,7 @@ export default function PlatformPage() {
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="integrations">Intégrations</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="general" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
@@ -59,7 +56,7 @@ export default function PlatformPage() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader>
               <CardTitle>Préférences</CardTitle>
@@ -75,44 +72,50 @@ export default function PlatformPage() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox id="welcome-email" defaultChecked />
-                  <Label htmlFor="welcome-email">Envoyer un email de bienvenue aux nouveaux clients</Label>
+                  <Label htmlFor="welcome-email">
+                    Envoyer un email de bienvenue aux nouveaux clients
+                  </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox id="show-stats" defaultChecked />
-                  <Label htmlFor="show-stats">Afficher les statistiques sur la page d'accueil</Label>
+                  <Label htmlFor="show-stats">
+                    Afficher les statistiques sur la page d'accueil
+                  </Label>
                 </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="appearance" className="mt-4">
           <Card>
             <CardHeader>
               <CardTitle>Apparence</CardTitle>
-              <CardDescription>
-                Personnalisez l'apparence de votre plateforme
-              </CardDescription>
+              <CardDescription>Personnalisez l'apparence de votre plateforme</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="logo-upload">Logo de l'entreprise</Label>
                 <div className="flex items-center space-x-4">
-                  <div className="w-20 h-20 bg-gray-100 rounded-md flex items-center justify-center text-gray-400">Logo</div>
+                  <div className="w-20 h-20 bg-gray-100 rounded-md flex items-center justify-center text-gray-400">
+                    Logo
+                  </div>
                   <Button variant="outline">Télécharger</Button>
                   <Button variant="outline">Supprimer</Button>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="favicon-upload">Favicon</Label>
                 <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 bg-gray-100 rounded-md flex items-center justify-center text-gray-400">Fav</div>
+                  <div className="w-10 h-10 bg-gray-100 rounded-md flex items-center justify-center text-gray-400">
+                    Fav
+                  </div>
                   <Button variant="outline">Télécharger</Button>
                   <Button variant="outline">Supprimer</Button>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="primary-color">Couleur principale</Label>
@@ -132,7 +135,7 @@ export default function PlatformPage() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="notifications" className="mt-4">
           <Card>
             <CardHeader>
@@ -165,7 +168,7 @@ export default function PlatformPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Checkbox id="notify-appointments" defaultChecked />
@@ -186,7 +189,7 @@ export default function PlatformPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Checkbox id="notify-documents" defaultChecked />
@@ -208,7 +211,7 @@ export default function PlatformPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <h3 className="text-lg font-medium pt-4">Notifications administrateurs</h3>
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
@@ -228,33 +231,35 @@ export default function PlatformPage() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="integrations" className="mt-4">
           <Card>
             <CardHeader>
               <CardTitle>Intégrations</CardTitle>
-              <CardDescription>
-                Connectez votre plateforme à des services externes
-              </CardDescription>
+              <CardDescription>Connectez votre plateforme à des services externes</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
                   <div>
                     <h3 className="font-medium">API de paiement</h3>
-                    <p className="text-sm text-muted-foreground">Intégrez une solution de paiement</p>
+                    <p className="text-sm text-muted-foreground">
+                      Intégrez une solution de paiement
+                    </p>
                   </div>
                   <Button variant="outline">Configurer</Button>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
                   <div>
                     <h3 className="font-medium">Google Analytics</h3>
-                    <p className="text-sm text-muted-foreground">Suivez les statistiques d'utilisation</p>
+                    <p className="text-sm text-muted-foreground">
+                      Suivez les statistiques d'utilisation
+                    </p>
                   </div>
                   <Button variant="outline">Configurer</Button>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
                   <div>
                     <h3 className="font-medium">CRM</h3>
@@ -262,11 +267,13 @@ export default function PlatformPage() {
                   </div>
                   <Button variant="outline">Configurer</Button>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
                   <div>
                     <h3 className="font-medium">Service d'emailing</h3>
-                    <p className="text-sm text-muted-foreground">Intégrez un service d'envoi d'emails</p>
+                    <p className="text-sm text-muted-foreground">
+                      Intégrez un service d'envoi d'emails
+                    </p>
                   </div>
                   <Button variant="outline">Configurer</Button>
                 </div>

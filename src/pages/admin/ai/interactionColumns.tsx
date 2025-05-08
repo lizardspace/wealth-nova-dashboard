@@ -1,17 +1,16 @@
-
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { 
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { MoreHorizontal, ArrowUpDown } from "lucide-react";
-import { type ColumnDef } from "@tanstack/react-table";
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { MoreHorizontal, ArrowUpDown } from 'lucide-react';
+import { type ColumnDef } from '@tanstack/react-table';
 
 export type Interaction = {
   id: string;
@@ -19,7 +18,7 @@ export type Interaction = {
   date: string;
   topic: string;
   duration: string;
-  status: "Terminée" | "En cours" | "Interrompue";
+  status: 'Terminée' | 'En cours' | 'Interrompue';
   type?: string;
   topics?: string[];
   satisfaction?: string;
@@ -27,22 +26,22 @@ export type Interaction = {
 
 export const interactionColumns: ColumnDef<Interaction>[] = [
   {
-    id: "select",
+    id: 'select',
     header: ({ table }) => (
       <Checkbox
         checked={
           table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate") ||
+          (table.getIsSomePageRowsSelected() && 'indeterminate') ||
           false
         }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
       />
     ),
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        onCheckedChange={value => row.toggleSelected(!!value)}
         aria-label="Select row"
       />
     ),
@@ -50,16 +49,16 @@ export const interactionColumns: ColumnDef<Interaction>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "client",
-    header: "Client",
+    accessorKey: 'client',
+    header: 'Client',
   },
   {
-    accessorKey: "date",
+    accessorKey: 'date',
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Date
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -68,27 +67,23 @@ export const interactionColumns: ColumnDef<Interaction>[] = [
     },
   },
   {
-    accessorKey: "topic",
-    header: "Sujet",
+    accessorKey: 'topic',
+    header: 'Sujet',
   },
   {
-    accessorKey: "duration",
-    header: "Durée",
+    accessorKey: 'duration',
+    header: 'Durée',
   },
   {
-    accessorKey: "status",
-    header: "Statut",
+    accessorKey: 'status',
+    header: 'Statut',
     cell: ({ row }) => {
-      const status = row.getValue("status") as string;
+      const status = row.getValue('status') as string;
 
       return (
         <Badge
           variant={
-            status === "Terminée"
-              ? "outline"
-              : status === "En cours"
-              ? "secondary"
-              : "destructive"
+            status === 'Terminée' ? 'outline' : status === 'En cours' ? 'secondary' : 'destructive'
           }
         >
           {status}
@@ -97,7 +92,7 @@ export const interactionColumns: ColumnDef<Interaction>[] = [
     },
   },
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => {
       const interaction = row.original;
 

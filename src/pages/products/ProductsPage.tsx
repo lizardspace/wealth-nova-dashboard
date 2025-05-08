@@ -1,6 +1,12 @@
-
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Star, Info, ArrowRight } from 'lucide-react';
@@ -9,7 +15,7 @@ const products = [
   {
     id: 'life-insurance',
     title: 'Assurance Vie',
-    description: 'Solution d\'épargne flexible et avantageuse fiscalement',
+    description: "Solution d'épargne flexible et avantageuse fiscalement",
     performance: '3.5%',
     risk: 'Moyen',
     liquidity: 'Moyenne',
@@ -69,17 +75,23 @@ const products = [
 ];
 
 const getRiskColor = (risk: string) => {
-  switch(risk) {
-    case 'Très faible': return 'bg-green-100 text-green-700';
-    case 'Faible': return 'bg-green-100 text-green-700';
-    case 'Moyen-faible': return 'bg-blue-100 text-blue-700';
-    case 'Moyen': return 'bg-blue-100 text-blue-700';
-    case 'Élevé': return 'bg-amber-100 text-amber-700';
-    default: return 'bg-gray-100 text-gray-700';
+  switch (risk) {
+    case 'Très faible':
+      return 'bg-green-100 text-green-700';
+    case 'Faible':
+      return 'bg-green-100 text-green-700';
+    case 'Moyen-faible':
+      return 'bg-blue-100 text-blue-700';
+    case 'Moyen':
+      return 'bg-blue-100 text-blue-700';
+    case 'Élevé':
+      return 'bg-amber-100 text-amber-700';
+    default:
+      return 'bg-gray-100 text-gray-700';
   }
 };
 
-const ProductCard = ({ product }: { product: typeof products[0] }) => {
+const ProductCard = ({ product }: { product: (typeof products)[0] }) => {
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
@@ -87,9 +99,9 @@ const ProductCard = ({ product }: { product: typeof products[0] }) => {
           <CardTitle>{product.title}</CardTitle>
           <div className="flex">
             {[...Array(5)].map((_, i) => (
-              <Star 
-                key={i} 
-                className={`w-4 h-4 ${i < product.rating ? 'text-eparnova-gold fill-eparnova-gold' : 'text-gray-300'}`} 
+              <Star
+                key={i}
+                className={`w-4 h-4 ${i < product.rating ? 'text-eparnova-gold fill-eparnova-gold' : 'text-gray-300'}`}
               />
             ))}
           </div>
@@ -129,7 +141,9 @@ const ProductsPage = () => {
     <div className="space-y-6">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-eparnova-blue">Produits Financiers</h1>
-        <p className="text-muted-foreground mt-1">Découvrez notre sélection de produits pour optimiser votre patrimoine</p>
+        <p className="text-muted-foreground mt-1">
+          Découvrez notre sélection de produits pour optimiser votre patrimoine
+        </p>
       </div>
 
       <div className="bg-muted/20 p-4 rounded-md flex items-start gap-3 mb-6">
@@ -137,8 +151,11 @@ const ProductsPage = () => {
         <div className="text-sm">
           <p className="font-medium">Besoin de conseils personnalisés ?</p>
           <p className="text-muted-foreground">
-            Nos experts financiers peuvent vous aider à choisir les produits les plus adaptés à votre situation et objectifs.
-            <a href="/appointments" className="text-eparnova-blue hover:underline ml-1">Prendre rendez-vous →</a>
+            Nos experts financiers peuvent vous aider à choisir les produits les plus adaptés à
+            votre situation et objectifs.
+            <a href="/appointments" className="text-eparnova-blue hover:underline ml-1">
+              Prendre rendez-vous →
+            </a>
           </p>
         </div>
       </div>
@@ -158,28 +175,48 @@ const ProductsPage = () => {
           ))}
         </TabsContent>
 
-        <TabsContent value="savings" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.filter(p => p.category === 'savings').map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+        <TabsContent
+          value="savings"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          {products
+            .filter(p => p.category === 'savings')
+            .map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
         </TabsContent>
 
-        <TabsContent value="investment" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.filter(p => p.category === 'investment').map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+        <TabsContent
+          value="investment"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          {products
+            .filter(p => p.category === 'investment')
+            .map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
         </TabsContent>
 
-        <TabsContent value="property" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.filter(p => p.category === 'property').map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+        <TabsContent
+          value="property"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          {products
+            .filter(p => p.category === 'property')
+            .map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
         </TabsContent>
 
-        <TabsContent value="retirement" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.filter(p => p.category === 'retirement').map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+        <TabsContent
+          value="retirement"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          {products
+            .filter(p => p.category === 'retirement')
+            .map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
         </TabsContent>
       </Tabs>
     </div>

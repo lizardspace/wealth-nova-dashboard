@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { 
+import {
   ArrowLeft,
   User,
   BriefcaseIcon,
@@ -10,90 +9,147 @@ import {
   Bell,
   Phone,
   Video,
-  Users
+  Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import AppointmentModal from '@/components/appointments/AppointmentModal';
 
 // Mock client data for demonstration
 const mockClientData = {
   id: 1,
-  nom: "Dupont",
-  prenom: "Jean",
-  dateNaissance: "15/04/1975",
-  telephone: "06 12 34 56 78",
-  email: "jean.dupont@email.com",
-  adresse: "123 Avenue des Champs-Élysées, 75008 Paris",
-  situationFamiliale: "Marié",
+  nom: 'Dupont',
+  prenom: 'Jean',
+  dateNaissance: '15/04/1975',
+  telephone: '06 12 34 56 78',
+  email: 'jean.dupont@email.com',
+  adresse: '123 Avenue des Champs-Élysées, 75008 Paris',
+  situationFamiliale: 'Marié',
   enfants: 2,
-  profession: "Cadre supérieur",
-  societe: "Entreprise SA",
+  profession: 'Cadre supérieur',
+  societe: 'Entreprise SA',
   patrimoineGlobal: 850000,
   actifs: 920000,
   passifs: 70000,
   scoreIA: 85,
-  profilRisque: "Dynamique",
+  profilRisque: 'Dynamique',
   revenus: 95000,
   charges: 45000,
   ir: 12500,
   ifi: 0,
   prets: [
-    { type: "Immobilier", montant: 280000, tauxInteret: "1.2%", mensualite: 950, echeance: "2045" },
-    { type: "Consommation", montant: 15000, tauxInteret: "3.5%", mensualite: 350, echeance: "2026" }
+    { type: 'Immobilier', montant: 280000, tauxInteret: '1.2%', mensualite: 950, echeance: '2045' },
+    {
+      type: 'Consommation',
+      montant: 15000,
+      tauxInteret: '3.5%',
+      mensualite: 350,
+      echeance: '2026',
+    },
   ],
   produits: [
-    { id: 1, type: "Assurance vie", nom: "Contrat Premium", montant: 150000, dateOuverture: "12/03/2020", performance: "+4.2%" },
-    { id: 2, type: "PEA", nom: "PEA Actions Europe", montant: 75000, dateOuverture: "05/09/2018", performance: "+5.8%" },
-    { id: 3, type: "SCPI", nom: "SCPI Rendement", montant: 50000, dateOuverture: "18/11/2022", performance: "+3.8%" }
+    {
+      id: 1,
+      type: 'Assurance vie',
+      nom: 'Contrat Premium',
+      montant: 150000,
+      dateOuverture: '12/03/2020',
+      performance: '+4.2%',
+    },
+    {
+      id: 2,
+      type: 'PEA',
+      nom: 'PEA Actions Europe',
+      montant: 75000,
+      dateOuverture: '05/09/2018',
+      performance: '+5.8%',
+    },
+    {
+      id: 3,
+      type: 'SCPI',
+      nom: 'SCPI Rendement',
+      montant: 50000,
+      dateOuverture: '18/11/2022',
+      performance: '+3.8%',
+    },
   ],
   repartitionActifs: {
     immobilier: 65,
     actions: 15,
     obligations: 8,
     monetaire: 5,
-    autres: 7
+    autres: 7,
   },
-  objectifs: ["Préparation retraite", "Optimisation fiscale", "Constitution patrimoine"],
+  objectifs: ['Préparation retraite', 'Optimisation fiscale', 'Constitution patrimoine'],
   historique: [
-    { date: "15/04/2025", type: "Connexion", description: "Connexion à l'espace client" },
-    { date: "12/04/2025", type: "Simulation", description: "Simulation épargne retraite" },
-    { date: "01/04/2025", type: "Document", description: "Téléchargement relevé annuel" }
+    { date: '15/04/2025', type: 'Connexion', description: "Connexion à l'espace client" },
+    { date: '12/04/2025', type: 'Simulation', description: 'Simulation épargne retraite' },
+    { date: '01/04/2025', type: 'Document', description: 'Téléchargement relevé annuel' },
   ],
   rendezVous: [
-    { id: 1, date: "20/05/2025", heure: "14:00", type: "video", theme: "Bilan patrimonial", conseiller: "Marie Lambert", statut: "confirmed" },
-    { id: 2, date: "06/03/2025", heure: "10:30", type: "in-person", theme: "Signature contrat assurance vie", conseiller: "Paul Bernard", statut: "done" }
+    {
+      id: 1,
+      date: '20/05/2025',
+      heure: '14:00',
+      type: 'video',
+      theme: 'Bilan patrimonial',
+      conseiller: 'Marie Lambert',
+      statut: 'confirmed',
+    },
+    {
+      id: 2,
+      date: '06/03/2025',
+      heure: '10:30',
+      type: 'in-person',
+      theme: 'Signature contrat assurance vie',
+      conseiller: 'Paul Bernard',
+      statut: 'done',
+    },
   ],
   alertes: [
-    { id: 1, type: "opportunity", titre: "Épargne dormante", description: "25 000€ sur compte courant sans rendement", date: "10/04/2025", priorite: "high" },
-    { id: 2, type: "profile", titre: "Mise à jour KYC", description: "Justificatif d'identité à renouveler", date: "05/04/2025", priorite: "medium" }
-  ]
+    {
+      id: 1,
+      type: 'opportunity',
+      titre: 'Épargne dormante',
+      description: '25 000€ sur compte courant sans rendement',
+      date: '10/04/2025',
+      priorite: 'high',
+    },
+    {
+      id: 2,
+      type: 'profile',
+      titre: 'Mise à jour KYC',
+      description: "Justificatif d'identité à renouveler",
+      date: '05/04/2025',
+      priorite: 'medium',
+    },
+  ],
 };
 
 const ClientDetailPage = () => {
   const { clientId } = useParams<{ clientId: string }>();
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
-  
+
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('fr-FR', { 
-      style: 'currency', 
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
       currency: 'EUR',
-      maximumFractionDigits: 0 
+      maximumFractionDigits: 0,
     }).format(value);
   };
 
   const renderAppointmentTypeIcon = (type: string) => {
-    switch(type) {
+    switch (type) {
       case 'video':
         return <Video className="h-4 w-4 text-blue-500" />;
       case 'call':
@@ -105,7 +161,7 @@ const ClientDetailPage = () => {
   };
 
   const handleNewAppointment = (data: any) => {
-    console.log("Nouveau rendez-vous:", data);
+    console.log('Nouveau rendez-vous:', data);
     // Implement actual saving logic here
   };
 
@@ -127,9 +183,7 @@ const ClientDetailPage = () => {
           <Button variant="outline" onClick={() => setIsAppointmentModalOpen(true)}>
             Nouveau RDV
           </Button>
-          <Button>
-            Éditer le profil
-          </Button>
+          <Button>Éditer le profil</Button>
         </div>
       </div>
 
@@ -195,7 +249,9 @@ const ClientDetailPage = () => {
               <CardContent>
                 <dl className="space-y-4">
                   <div className="grid grid-cols-2 gap-2">
-                    <dt className="text-sm font-medium text-muted-foreground">Situation familiale</dt>
+                    <dt className="text-sm font-medium text-muted-foreground">
+                      Situation familiale
+                    </dt>
                     <dd>{mockClientData.situationFamiliale}</dd>
                     <dt className="text-sm font-medium text-muted-foreground">Nombre d'enfants</dt>
                     <dd>{mockClientData.enfants}</dd>
@@ -228,11 +284,15 @@ const ClientDetailPage = () => {
                     <dd className="text-red-600">{formatCurrency(mockClientData.passifs)}</dd>
                     <dt className="text-sm font-medium text-muted-foreground">Score IA</dt>
                     <dd>
-                      <Badge className={
-                        mockClientData.scoreIA > 80 ? "bg-green-100 text-green-800" : 
-                        mockClientData.scoreIA > 60 ? "bg-yellow-100 text-yellow-800" : 
-                        "bg-red-100 text-red-800"
-                      }>
+                      <Badge
+                        className={
+                          mockClientData.scoreIA > 80
+                            ? 'bg-green-100 text-green-800'
+                            : mockClientData.scoreIA > 60
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-red-100 text-red-800'
+                        }
+                      >
                         {mockClientData.scoreIA}/100
                       </Badge>
                     </dd>
@@ -254,7 +314,9 @@ const ClientDetailPage = () => {
                     <dd>{formatCurrency(mockClientData.revenus)}</dd>
                     <dt className="text-sm font-medium text-muted-foreground">Charges annuelles</dt>
                     <dd>{formatCurrency(mockClientData.charges)}</dd>
-                    <dt className="text-sm font-medium text-muted-foreground">Impôt sur le revenu</dt>
+                    <dt className="text-sm font-medium text-muted-foreground">
+                      Impôt sur le revenu
+                    </dt>
                     <dd>{formatCurrency(mockClientData.ir)}</dd>
                     <dt className="text-sm font-medium text-muted-foreground">IFI</dt>
                     <dd>{formatCurrency(mockClientData.ifi)}</dd>
@@ -300,7 +362,9 @@ const ClientDetailPage = () => {
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {mockClientData.objectifs.map((objectif, index) => (
-                    <Badge key={index} variant="outline">{objectif}</Badge>
+                    <Badge key={index} variant="outline">
+                      {objectif}
+                    </Badge>
                   ))}
                 </div>
               </CardContent>
@@ -313,9 +377,7 @@ const ClientDetailPage = () => {
           <Card>
             <CardHeader>
               <CardTitle>Produits souscrits</CardTitle>
-              <CardDescription>
-                Liste des produits financiers détenus par le client
-              </CardDescription>
+              <CardDescription>Liste des produits financiers détenus par le client</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
@@ -330,13 +392,17 @@ const ClientDetailPage = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockClientData.produits.map((produit) => (
+                  {mockClientData.produits.map(produit => (
                     <TableRow key={produit.id}>
                       <TableCell>{produit.type}</TableCell>
                       <TableCell>{produit.nom}</TableCell>
                       <TableCell>{formatCurrency(produit.montant)}</TableCell>
                       <TableCell>{produit.dateOuverture}</TableCell>
-                      <TableCell className={produit.performance.startsWith('+') ? "text-green-600" : "text-red-600"}>
+                      <TableCell
+                        className={
+                          produit.performance.startsWith('+') ? 'text-green-600' : 'text-red-600'
+                        }
+                      >
                         {produit.performance}
                       </TableCell>
                       <TableCell className="text-right">
@@ -406,26 +472,37 @@ const ClientDetailPage = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockClientData.rendezVous.map((rdv) => (
+                  {mockClientData.rendezVous.map(rdv => (
                     <TableRow key={rdv.id}>
                       <TableCell>{rdv.date}</TableCell>
                       <TableCell>{rdv.heure}</TableCell>
                       <TableCell className="flex items-center gap-1">
                         {renderAppointmentTypeIcon(rdv.type)}
                         <span>
-                          {rdv.type === 'video' ? 'Visio' : 
-                           rdv.type === 'call' ? 'Téléphone' : 'Présentiel'}
+                          {rdv.type === 'video'
+                            ? 'Visio'
+                            : rdv.type === 'call'
+                              ? 'Téléphone'
+                              : 'Présentiel'}
                         </span>
                       </TableCell>
                       <TableCell>{rdv.theme}</TableCell>
                       <TableCell>{rdv.conseiller}</TableCell>
                       <TableCell>
                         <Badge
-                          variant={rdv.statut === "confirmed" ? "outline" : 
-                                 rdv.statut === "done" ? "secondary" : "default"}
+                          variant={
+                            rdv.statut === 'confirmed'
+                              ? 'outline'
+                              : rdv.statut === 'done'
+                                ? 'secondary'
+                                : 'default'
+                          }
                         >
-                          {rdv.statut === "confirmed" ? "À venir" : 
-                           rdv.statut === "done" ? "Terminé" : "À confirmer"}
+                          {rdv.statut === 'confirmed'
+                            ? 'À venir'
+                            : rdv.statut === 'done'
+                              ? 'Terminé'
+                              : 'À confirmer'}
                         </Badge>
                       </TableCell>
                     </TableRow>
@@ -444,17 +521,21 @@ const ClientDetailPage = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {mockClientData.alertes.map((alerte) => (
-                  <Card key={alerte.id} className={
-                    alerte.priorite === 'high' ? 'border-red-300' : 
-                    alerte.priorite === 'medium' ? 'border-yellow-300' : 'border-blue-300'
-                  }>
+                {mockClientData.alertes.map(alerte => (
+                  <Card
+                    key={alerte.id}
+                    className={
+                      alerte.priorite === 'high'
+                        ? 'border-red-300'
+                        : alerte.priorite === 'medium'
+                          ? 'border-yellow-300'
+                          : 'border-blue-300'
+                    }
+                  >
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-center">
                         <CardTitle className="text-base">{alerte.titre}</CardTitle>
-                        <Badge variant={
-                          alerte.type === 'opportunity' ? 'default' : 'outline'
-                        }>
+                        <Badge variant={alerte.type === 'opportunity' ? 'default' : 'outline'}>
                           {alerte.type === 'opportunity' ? 'Opportunité' : 'Alerte'}
                         </Badge>
                       </div>
@@ -474,7 +555,7 @@ const ClientDetailPage = () => {
         </TabsContent>
       </Tabs>
 
-      <AppointmentModal 
+      <AppointmentModal
         isOpen={isAppointmentModalOpen}
         onClose={() => setIsAppointmentModalOpen(false)}
         onSave={handleNewAppointment}

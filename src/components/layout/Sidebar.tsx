@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -21,9 +20,9 @@ const Sidebar = () => {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-64">
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="absolute top-4 right-4"
               onClick={() => setIsOpen(false)}
             >

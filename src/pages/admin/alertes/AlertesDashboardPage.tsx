@@ -1,9 +1,16 @@
 // src/pages/admin/alertes/AlertesDashboardPage.tsx
-import { Eye, Bell, AlertTriangle, Clock, UserX, FileText, BarChart } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
-import { Link } from "react-router-dom";
-import { Progress } from "@/components/ui/progress";
+import { Eye, Bell, AlertTriangle, Clock, UserX, FileText, BarChart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+  CardFooter,
+} from '@/components/ui/card';
+import { Link } from 'react-router-dom';
+import { Progress } from '@/components/ui/progress';
 
 type AlertStats = {
   total: number;
@@ -23,76 +30,76 @@ const alertsStats: AlertStats = {
 
 type RecentAlert = {
   id: string;
-  type: "inactiveClient" | "incompleteProfile" | "pendingProject" | "potentialGain";
+  type: 'inactiveClient' | 'incompleteProfile' | 'pendingProject' | 'potentialGain';
   client: string;
   description: string;
   date: string;
-  priority: "high" | "medium" | "low";
+  priority: 'high' | 'medium' | 'low';
 };
 
 const recentAlerts: RecentAlert[] = [
   {
-    id: "1",
-    type: "inactiveClient",
-    client: "Dupont Jean",
-    description: "Client inactif depuis 6 mois",
-    date: "2024-04-15",
-    priority: "high",
+    id: '1',
+    type: 'inactiveClient',
+    client: 'Dupont Jean',
+    description: 'Client inactif depuis 6 mois',
+    date: '2024-04-15',
+    priority: 'high',
   },
   {
-    id: "2",
-    type: "incompleteProfile",
-    client: "Martin Sophie",
-    description: "Objectifs patrimoniaux non définis",
-    date: "2024-04-20",
-    priority: "medium",
+    id: '2',
+    type: 'incompleteProfile',
+    client: 'Martin Sophie',
+    description: 'Objectifs patrimoniaux non définis',
+    date: '2024-04-20',
+    priority: 'medium',
   },
   {
-    id: "3",
-    type: "pendingProject",
-    client: "Bernard Pierre",
-    description: "Projet immobilier en attente depuis 3 mois",
-    date: "2024-04-18",
-    priority: "medium",
+    id: '3',
+    type: 'pendingProject',
+    client: 'Bernard Pierre',
+    description: 'Projet immobilier en attente depuis 3 mois',
+    date: '2024-04-18',
+    priority: 'medium',
   },
   {
-    id: "4",
-    type: "potentialGain",
-    client: "Petit Marie",
+    id: '4',
+    type: 'potentialGain',
+    client: 'Petit Marie',
     description: "Optimisation fiscale possible: -2300€ d'impôts",
-    date: "2024-04-22",
-    priority: "high",
+    date: '2024-04-22',
+    priority: 'high',
   },
 ];
 
-const PriorityBadge = ({ priority }: { priority: RecentAlert["priority"] }) => {
+const PriorityBadge = ({ priority }: { priority: RecentAlert['priority'] }) => {
   return (
     <div className="flex items-center">
       <div
         className={`w-2 h-2 rounded-full mr-2 ${
-          priority === "high"
-            ? "bg-red-500"
-            : priority === "medium"
-            ? "bg-yellow-500"
-            : "bg-green-500"
+          priority === 'high'
+            ? 'bg-red-500'
+            : priority === 'medium'
+              ? 'bg-yellow-500'
+              : 'bg-green-500'
         }`}
       ></div>
       <span className="text-xs text-muted-foreground capitalize">
-        {priority === "high" ? "Élevée" : priority === "medium" ? "Moyenne" : "Basse"}
+        {priority === 'high' ? 'Élevée' : priority === 'medium' ? 'Moyenne' : 'Basse'}
       </span>
     </div>
   );
 };
 
-const AlertIcon = ({ type }: { type: RecentAlert["type"] }) => {
+const AlertIcon = ({ type }: { type: RecentAlert['type'] }) => {
   switch (type) {
-    case "inactiveClient":
+    case 'inactiveClient':
       return <Clock className="h-4 w-4 text-amber-500" />;
-    case "incompleteProfile":
+    case 'incompleteProfile':
       return <FileText className="h-4 w-4 text-blue-500" />;
-    case "pendingProject":
+    case 'pendingProject':
       return <AlertTriangle className="h-4 w-4 text-purple-500" />;
-    case "potentialGain":
+    case 'potentialGain':
       return <BarChart className="h-4 w-4 text-green-500" />;
   }
 };
@@ -112,9 +119,7 @@ export default function AlertesDashboardPage() {
         <Card className="hover:shadow-md transition-all border-slate-200 hover:border-blue-200">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-medium">Clients inactifs</CardTitle>
-            <CardDescription>
-              Clients sans interaction récente
-            </CardDescription>
+            <CardDescription>Clients sans interaction récente</CardDescription>
           </CardHeader>
           <CardContent className="pb-2">
             <div className="text-3xl font-bold text-amber-500">{alertsStats.inactiveClients}</div>
@@ -125,7 +130,11 @@ export default function AlertesDashboardPage() {
           </CardContent>
           <CardFooter>
             <Link to="/admin/alertes/inactifs">
-              <Button variant="ghost" size="sm" className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 transition-colors">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 transition-colors"
+              >
                 <Eye className="mr-2 h-4 w-4" />
                 Voir les clients
               </Button>
@@ -136,9 +145,7 @@ export default function AlertesDashboardPage() {
         <Card className="hover:shadow-md transition-all border-slate-200 hover:border-blue-200">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-medium">Profils incomplets</CardTitle>
-            <CardDescription>
-              Informations manquantes
-            </CardDescription>
+            <CardDescription>Informations manquantes</CardDescription>
           </CardHeader>
           <CardContent className="pb-2">
             <div className="text-3xl font-bold text-blue-500">{alertsStats.incompleteProfiles}</div>
@@ -149,7 +156,11 @@ export default function AlertesDashboardPage() {
           </CardContent>
           <CardFooter>
             <Link to="/admin/alertes/profils-incomplets">
-              <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors"
+              >
                 <Eye className="mr-2 h-4 w-4" />
                 Voir les profils
               </Button>
@@ -160,9 +171,7 @@ export default function AlertesDashboardPage() {
         <Card className="hover:shadow-md transition-all border-slate-200 hover:border-blue-200">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-medium">Projets en cours</CardTitle>
-            <CardDescription>
-              Projets non finalisés
-            </CardDescription>
+            <CardDescription>Projets non finalisés</CardDescription>
           </CardHeader>
           <CardContent className="pb-2">
             <div className="text-3xl font-bold text-purple-500">{alertsStats.pendingProjects}</div>
@@ -173,7 +182,11 @@ export default function AlertesDashboardPage() {
           </CardContent>
           <CardFooter>
             <Link to="/admin/alertes/projets-en-cours">
-              <Button variant="ghost" size="sm" className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 transition-colors">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 transition-colors"
+              >
                 <Eye className="mr-2 h-4 w-4" />
                 Voir les projets
               </Button>
@@ -184,9 +197,7 @@ export default function AlertesDashboardPage() {
         <Card className="hover:shadow-md transition-all border-slate-200 hover:border-blue-200">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-medium">Gains potentiels</CardTitle>
-            <CardDescription>
-              Optimisations non activées
-            </CardDescription>
+            <CardDescription>Optimisations non activées</CardDescription>
           </CardHeader>
           <CardContent className="pb-2">
             <div className="text-3xl font-bold text-green-500">{alertsStats.potentialGains}</div>
@@ -197,7 +208,11 @@ export default function AlertesDashboardPage() {
           </CardContent>
           <CardFooter>
             <Link to="/admin/alertes/gains-potentiels">
-              <Button variant="ghost" size="sm" className="text-green-600 hover:text-green-700 hover:bg-green-50 transition-colors">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-green-600 hover:text-green-700 hover:bg-green-50 transition-colors"
+              >
                 <Eye className="mr-2 h-4 w-4" />
                 Voir les opportunités
               </Button>
@@ -209,13 +224,11 @@ export default function AlertesDashboardPage() {
       <Card className="hover:shadow-md transition-all border-slate-200 hover:border-blue-200">
         <CardHeader>
           <CardTitle>Alertes récentes</CardTitle>
-          <CardDescription>
-            Les dernières opportunités détectées
-          </CardDescription>
+          <CardDescription>Les dernières opportunités détectées</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {recentAlerts.map((alert) => (
+            {recentAlerts.map(alert => (
               <div
                 key={alert.id}
                 className="flex items-start justify-between p-4 border rounded-lg hover:shadow-sm hover:border-blue-200 transition-all group"
@@ -236,24 +249,33 @@ export default function AlertesDashboardPage() {
                     <p className="text-sm text-muted-foreground">{alert.description}</p>
                     <div className="mt-1 flex items-center gap-4">
                       <span className="text-xs text-muted-foreground">
-                        {new Date(alert.date).toLocaleDateString("fr-FR")}
+                        {new Date(alert.date).toLocaleDateString('fr-FR')}
                       </span>
                       <PriorityBadge priority={alert.priority} />
                     </div>
                   </div>
                 </div>
                 <div>
-                  <Button size="sm" variant="outline" className="mr-2 hover:border-blue-300 transition-colors">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mr-2 hover:border-blue-300 transition-colors"
+                  >
                     Contacter
                   </Button>
-                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 transition-colors">Traiter</Button>
+                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 transition-colors">
+                    Traiter
+                  </Button>
                 </div>
               </div>
             ))}
           </div>
         </CardContent>
         <CardFooter>
-          <Button variant="outline" className="w-full hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-colors">
+          <Button
+            variant="outline"
+            className="w-full hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-colors"
+          >
             Voir toutes les alertes
           </Button>
         </CardFooter>
@@ -262,14 +284,14 @@ export default function AlertesDashboardPage() {
       <Card className="hover:shadow-md transition-all border-slate-200 hover:border-blue-200">
         <CardHeader>
           <CardTitle>Rapport de campagnes</CardTitle>
-          <CardDescription>
-            Effets des campagnes sur les alertes
-          </CardDescription>
+          <CardDescription>Effets des campagnes sur les alertes</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="p-4 border rounded-lg hover:border-blue-200 hover:shadow-sm transition-all group">
-              <h3 className="font-medium group-hover:text-blue-600 transition-colors">Campagne "Retour aux inactifs"</h3>
+              <h3 className="font-medium group-hover:text-blue-600 transition-colors">
+                Campagne "Retour aux inactifs"
+              </h3>
               <div className="mt-2 flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">
@@ -286,7 +308,9 @@ export default function AlertesDashboardPage() {
               </div>
             </div>
             <div className="p-4 border rounded-lg hover:border-blue-200 hover:shadow-sm transition-all group">
-              <h3 className="font-medium group-hover:text-blue-600 transition-colors">Campagne "Complétion KYC"</h3>
+              <h3 className="font-medium group-hover:text-blue-600 transition-colors">
+                Campagne "Complétion KYC"
+              </h3>
               <div className="mt-2 flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">

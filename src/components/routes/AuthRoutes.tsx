@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Route, Navigate } from 'react-router-dom';
 import Login from '../../pages/auth/Login';
@@ -21,16 +20,22 @@ const PublicOnlyRoute = ({ children }: PublicOnlyRouteProps) => {
 const AuthRoutes = () => {
   return (
     <>
-      <Route path="/login" element={
-        <PublicOnlyRoute>
-          <Login />
-        </PublicOnlyRoute>
-      } />
-      <Route path="/register" element={
-        <PublicOnlyRoute>
-          <Register />
-        </PublicOnlyRoute>
-      } />
+      <Route
+        path="/login"
+        element={
+          <PublicOnlyRoute>
+            <Login />
+          </PublicOnlyRoute>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <PublicOnlyRoute>
+            <Register />
+          </PublicOnlyRoute>
+        }
+      />
     </>
   );
 };

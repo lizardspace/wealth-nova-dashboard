@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -28,16 +27,12 @@ const WealthScore = ({ score }: WealthScoreProps) => {
           <Award className="w-5 h-5 mr-2 text-eparnova-blue" />
           Wealth Score
         </CardTitle>
-        <CardDescription>
-          Évaluation globale de votre patrimoine
-        </CardDescription>
+        <CardDescription>Évaluation globale de votre patrimoine</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex items-center justify-between mb-2">
           <div>
-            <span className={`text-3xl font-bold ${getScoreColor(score)}`}>
-              {score}
-            </span>
+            <span className={`text-3xl font-bold ${getScoreColor(score)}`}>{score}</span>
             <span className="text-muted-foreground text-sm ml-1">/100</span>
           </div>
           <span className={`font-medium text-sm ${getScoreColor(score)}`}>
@@ -45,12 +40,14 @@ const WealthScore = ({ score }: WealthScoreProps) => {
           </span>
         </div>
 
-        <Progress 
-          value={score} 
+        <Progress
+          value={score}
           className="h-2 bg-muted"
-          style={{
-            '--progress-background': score < 40 ? '#ef4444' : score < 70 ? '#E6AF2E' : '#22c55e'
-          } as any} 
+          style={
+            {
+              '--progress-background': score < 40 ? '#ef4444' : score < 70 ? '#E6AF2E' : '#22c55e',
+            } as any
+          }
         />
 
         <div className="mt-4 space-y-2">

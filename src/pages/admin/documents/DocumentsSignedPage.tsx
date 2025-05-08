@@ -1,20 +1,19 @@
-
 // src/pages/admin/documents/DocumentsSignedPage.tsx
-import { FileCheck, Search, Download, Eye, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { DataTable } from "@/components/ui/data-table";
-import { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
+import { FileCheck, Search, Download, Eye, Filter } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { DataTable } from '@/components/ui/data-table';
+import { ColumnDef } from '@tanstack/react-table';
+import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 type SignedDocument = {
   id: string;
@@ -23,104 +22,102 @@ type SignedDocument = {
   type: string;
   signatureDate: string;
   signedBy: string;
-  method: "electronique" | "manuscrite" | "certification";
+  method: 'electronique' | 'manuscrite' | 'certification';
 };
 
 const documents: SignedDocument[] = [
   {
-    id: "1",
-    title: "Contrat Assurance Vie - XYZ",
-    client: "Dupont Jean",
-    type: "Contrat",
-    signatureDate: "15/03/2024",
-    signedBy: "J. Dupont",
-    method: "electronique",
+    id: '1',
+    title: 'Contrat Assurance Vie - XYZ',
+    client: 'Dupont Jean',
+    type: 'Contrat',
+    signatureDate: '15/03/2024',
+    signedBy: 'J. Dupont',
+    method: 'electronique',
   },
   {
-    id: "2",
-    title: "Mandat de gestion - Portefeuille principal",
-    client: "Martin Sophie",
-    type: "Mandat",
-    signatureDate: "10/02/2024",
-    signedBy: "S. Martin",
-    method: "electronique",
+    id: '2',
+    title: 'Mandat de gestion - Portefeuille principal',
+    client: 'Martin Sophie',
+    type: 'Mandat',
+    signatureDate: '10/02/2024',
+    signedBy: 'S. Martin',
+    method: 'electronique',
   },
   {
-    id: "3",
-    title: "Avenant contrat PER - Modification bénéficiaires",
-    client: "Bernard Pierre",
-    type: "Avenant",
-    signatureDate: "20/03/2024",
-    signedBy: "P. Bernard",
-    method: "manuscrite",
+    id: '3',
+    title: 'Avenant contrat PER - Modification bénéficiaires',
+    client: 'Bernard Pierre',
+    type: 'Avenant',
+    signatureDate: '20/03/2024',
+    signedBy: 'P. Bernard',
+    method: 'manuscrite',
   },
   {
-    id: "4",
-    title: "Souscription SCPI - Primovie",
-    client: "Petit Marie",
-    type: "Contrat",
-    signatureDate: "05/04/2024",
-    signedBy: "M. Petit",
-    method: "certification",
+    id: '4',
+    title: 'Souscription SCPI - Primovie',
+    client: 'Petit Marie',
+    type: 'Contrat',
+    signatureDate: '05/04/2024',
+    signedBy: 'M. Petit',
+    method: 'certification',
   },
 ];
 
 const columns: ColumnDef<SignedDocument>[] = [
   {
-    accessorKey: "title",
-    header: "Document",
+    accessorKey: 'title',
+    header: 'Document',
     cell: ({ row }) => (
       <div>
         <Link
           to={`/admin/documents/detail/${row.original.id}`}
           className="font-medium hover:underline text-primary"
         >
-          {row.getValue("title")}
+          {row.getValue('title')}
         </Link>
-        <p className="text-xs text-muted-foreground">
-          {row.original.type}
-        </p>
+        <p className="text-xs text-muted-foreground">{row.original.type}</p>
       </div>
     ),
   },
   {
-    accessorKey: "client",
-    header: "Client",
+    accessorKey: 'client',
+    header: 'Client',
   },
   {
-    accessorKey: "signatureDate",
-    header: "Date de signature",
+    accessorKey: 'signatureDate',
+    header: 'Date de signature',
   },
   {
-    accessorKey: "signedBy",
-    header: "Signataire",
+    accessorKey: 'signedBy',
+    header: 'Signataire',
   },
   {
-    accessorKey: "method",
-    header: "Méthode",
+    accessorKey: 'method',
+    header: 'Méthode',
     cell: ({ row }) => {
-      const method = row.getValue("method") as SignedDocument["method"];
+      const method = row.getValue('method') as SignedDocument['method'];
       return (
         <Badge
           variant={
-            method === "electronique"
-              ? "default"
-              : method === "manuscrite"
-              ? "outline"
-              : "secondary"
+            method === 'electronique'
+              ? 'default'
+              : method === 'manuscrite'
+                ? 'outline'
+                : 'secondary'
           }
         >
-          {method === "electronique"
-            ? "Électronique"
-            : method === "manuscrite"
-            ? "Manuscrite"
-            : "Certification"}
+          {method === 'electronique'
+            ? 'Électronique'
+            : method === 'manuscrite'
+              ? 'Manuscrite'
+              : 'Certification'}
         </Badge>
       );
     },
   },
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => (
       <div className="flex space-x-2">
         <Button variant="ghost" size="icon">
@@ -151,10 +148,7 @@ export default function DocumentsSignedPage() {
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher un document..."
-            className="pl-8"
-          />
+          <Input placeholder="Rechercher un document..." className="pl-8" />
         </div>
         <div className="flex gap-2">
           <Select defaultValue="all">
@@ -197,8 +191,9 @@ export default function DocumentsSignedPage() {
           <div>
             <h3 className="font-medium">Conservation légale</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Les documents signés sont conservés de manière sécurisée pendant une durée légale de 10 ans.
-              Pour les contrats d'assurance vie, la durée est prolongée à 30 ans après la fin du contrat.
+              Les documents signés sont conservés de manière sécurisée pendant une durée légale de
+              10 ans. Pour les contrats d'assurance vie, la durée est prolongée à 30 ans après la
+              fin du contrat.
             </p>
           </div>
         </div>

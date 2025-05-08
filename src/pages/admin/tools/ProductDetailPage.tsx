@@ -1,25 +1,24 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Upload, Save } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown, Upload, Save } from 'lucide-react';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
   const [expanded, setExpanded] = useState(false);
-  const [activeTab, setActiveTab] = useState("general");
+  const [activeTab, setActiveTab] = useState('general');
 
   const handleSave = () => {
     // Implement save logic here
-    console.log("Saving product data");
+    console.log('Saving product data');
   };
 
   return (
@@ -66,16 +65,16 @@ const ProductDetailPage = () => {
                   <Input id="risk" type="number" min="1" max="5" placeholder="2" />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
-                <Textarea 
-                  id="description" 
-                  placeholder="Description détaillée du produit..." 
+                <Textarea
+                  id="description"
+                  placeholder="Description détaillée du produit..."
                   rows={5}
                 />
               </div>
-              
+
               <div className="border border-dashed border-gray-300 rounded-lg p-6 text-center">
                 <div className="space-y-2">
                   <Upload className="h-8 w-8 mx-auto text-gray-400" />
@@ -85,12 +84,10 @@ const ProductDetailPage = () => {
                       parcourir vos fichiers
                     </Button>
                   </div>
-                  <div className="text-xs text-gray-400">
-                    PNG, JPG (max. 2MB)
-                  </div>
+                  <div className="text-xs text-gray-400">PNG, JPG (max. 2MB)</div>
                 </div>
               </div>
-              
+
               <div className="flex items-center space-x-2">
                 <Switch id="published" />
                 <Label htmlFor="published">Publié</Label>
@@ -98,7 +95,7 @@ const ProductDetailPage = () => {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="conditions" className="mt-6">
           <Card>
             <CardHeader>
@@ -125,7 +122,9 @@ const ProductDetailPage = () => {
                 <CollapsibleContent className="space-y-4 pt-2">
                   <div className="flex items-center space-x-2 px-4 py-2">
                     <Checkbox id="rule-1" />
-                    <Label htmlFor="rule-1">Afficher aux clients avec un score supérieur à 75</Label>
+                    <Label htmlFor="rule-1">
+                      Afficher aux clients avec un score supérieur à 75
+                    </Label>
                   </div>
                   <div className="flex items-center space-x-2 px-4 py-2">
                     <Checkbox id="rule-2" />
@@ -140,14 +139,12 @@ const ProductDetailPage = () => {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="simulator" className="mt-6">
           <Card>
             <CardHeader>
               <CardTitle>Simulateur associé</CardTitle>
-              <CardDescription>
-                Associez un simulateur à ce produit financier
-              </CardDescription>
+              <CardDescription>Associez un simulateur à ce produit financier</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -156,9 +153,9 @@ const ProductDetailPage = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="params">Paramètres par défaut (JSON)</Label>
-                <Textarea 
-                  id="params" 
-                  placeholder='{"duree": 10, "capital_initial": 10000}' 
+                <Textarea
+                  id="params"
+                  placeholder='{"duree": 10, "capital_initial": 10000}'
                   rows={5}
                 />
               </div>

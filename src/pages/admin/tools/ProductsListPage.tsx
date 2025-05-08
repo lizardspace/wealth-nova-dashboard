@@ -1,6 +1,6 @@
 // src/pages/admin/tools/ProductsListPage.tsx
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -8,30 +8,30 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 
 // Simuler des données pour le tableau
 const products = [
   {
-    id: "1",
-    name: "Assurance vie",
-    category: "Épargne",
-    provider: "AXA",
-    status: "active",
+    id: '1',
+    name: 'Assurance vie',
+    category: 'Épargne',
+    provider: 'AXA',
+    status: 'active',
   },
   {
-    id: "2",
-    name: "PEA",
-    category: "Bourse",
-    provider: "BNP Paribas",
-    status: "active",
+    id: '2',
+    name: 'PEA',
+    category: 'Bourse',
+    provider: 'BNP Paribas',
+    status: 'active',
   },
   {
-    id: "3",
-    name: "SCPI",
-    category: "Immobilier",
-    provider: "Primonial",
-    status: "inactive",
+    id: '3',
+    name: 'SCPI',
+    category: 'Immobilier',
+    provider: 'Primonial',
+    status: 'inactive',
   },
 ];
 
@@ -57,10 +57,10 @@ export default function ProductsListPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.map((product) => (
+            {products.map(product => (
               <TableRow key={product.id}>
                 <TableCell>
-                  <Link 
+                  <Link
                     to={`/admin/outils/produits/${product.id}`}
                     className="font-medium text-primary hover:underline"
                   >
@@ -69,14 +69,10 @@ export default function ProductsListPage() {
                 </TableCell>
                 <TableCell>{product.category}</TableCell>
                 <TableCell>{product.provider}</TableCell>
-                <TableCell>
-                  {product.status === "active" ? "Actif" : "Inactif"}
-                </TableCell>
+                <TableCell>{product.status === 'active' ? 'Actif' : 'Inactif'}</TableCell>
                 <TableCell>
                   <Button asChild variant="outline" size="sm">
-                    <Link to={`/admin/outils/produits/${product.id}`}>
-                      Détails
-                    </Link>
+                    <Link to={`/admin/outils/produits/${product.id}`}>Détails</Link>
                   </Button>
                 </TableCell>
               </TableRow>

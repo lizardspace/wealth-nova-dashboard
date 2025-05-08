@@ -1,8 +1,8 @@
 // src/pages/admin/tools/SimulatorDetailPage.tsx
-import { useParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useParams } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 export default function SimulatorDetailPage() {
   const { id } = useParams();
@@ -11,10 +11,10 @@ export default function SimulatorDetailPage() {
   const simulator = {
     id: id,
     name: `Simulateur ${id}`,
-    description: "Description détaillée du simulateur",
+    description: 'Description détaillée du simulateur',
     configuration: {
-      param1: "Valeur 1",
-      param2: "Valeur 2",
+      param1: 'Valeur 1',
+      param2: 'Valeur 2',
     },
   };
 

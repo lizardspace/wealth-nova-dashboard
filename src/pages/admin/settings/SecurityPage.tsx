@@ -1,60 +1,60 @@
 // src/pages/admin/settings/SecurityPage.tsx
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Shield, ShieldAlert, ShieldCheck, Lock } from "lucide-react";
-import { DataTable } from "@/components/ui/data-table";
-import { accessLogColumns, AccessLog } from "./accessLogColumns";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Shield, ShieldAlert, ShieldCheck, Lock } from 'lucide-react';
+import { DataTable } from '@/components/ui/data-table';
+import { accessLogColumns, AccessLog } from './accessLogColumns';
 
 const dummyAccessLogs: AccessLog[] = [
   {
-    id: "1",
-    userName: "Jean Dupont",
-    ipAddress: "192.168.1.1",
-    timestamp: "2023-11-15 14:32:45",
-    action: "Connexion",
-    status: "Réussi",
-    device: "Chrome / Windows",
+    id: '1',
+    userName: 'Jean Dupont',
+    ipAddress: '192.168.1.1',
+    timestamp: '2023-11-15 14:32:45',
+    action: 'Connexion',
+    status: 'Réussi',
+    device: 'Chrome / Windows',
   },
   {
-    id: "2",
-    userName: "Marie Martin",
-    ipAddress: "192.168.1.2",
-    timestamp: "2023-11-15 13:21:15",
-    action: "Connexion",
-    status: "Réussi",
-    device: "Safari / MacOS",
+    id: '2',
+    userName: 'Marie Martin',
+    ipAddress: '192.168.1.2',
+    timestamp: '2023-11-15 13:21:15',
+    action: 'Connexion',
+    status: 'Réussi',
+    device: 'Safari / MacOS',
   },
   {
-    id: "3",
-    userName: "Jean Dupont",
-    ipAddress: "192.168.1.3",
-    timestamp: "2023-11-15 10:45:30",
-    action: "Connexion",
-    status: "Échec",
-    device: "Firefox / Windows",
+    id: '3',
+    userName: 'Jean Dupont',
+    ipAddress: '192.168.1.3',
+    timestamp: '2023-11-15 10:45:30',
+    action: 'Connexion',
+    status: 'Échec',
+    device: 'Firefox / Windows',
   },
   {
-    id: "4",
-    userName: "Sophie Bernard",
-    ipAddress: "192.168.1.4",
-    timestamp: "2023-11-14 17:38:22",
-    action: "Déconnexion",
-    status: "Réussi",
-    device: "Chrome / Android",
+    id: '4',
+    userName: 'Sophie Bernard',
+    ipAddress: '192.168.1.4',
+    timestamp: '2023-11-14 17:38:22',
+    action: 'Déconnexion',
+    status: 'Réussi',
+    device: 'Chrome / Android',
   },
   {
-    id: "5",
-    userName: "Thomas Petit",
-    ipAddress: "192.168.1.5",
-    timestamp: "2023-11-14 16:12:05",
-    action: "Connexion",
-    status: "Réussi",
-    device: "Edge / Windows",
+    id: '5',
+    userName: 'Thomas Petit',
+    ipAddress: '192.168.1.5',
+    timestamp: '2023-11-14 16:12:05',
+    action: 'Connexion',
+    status: 'Réussi',
+    device: 'Edge / Windows',
   },
 ];
 
@@ -63,9 +63,7 @@ export default function SecurityPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Paramètres de sécurité</h1>
-        <Button>
-          Enregistrer les modifications
-        </Button>
+        <Button>Enregistrer les modifications</Button>
       </div>
 
       <Tabs defaultValue="general" className="w-full">
@@ -75,7 +73,7 @@ export default function SecurityPage() {
           <TabsTrigger value="data-protection">Protection des données</TabsTrigger>
           <TabsTrigger value="access-logs">Journal de connexion</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="general" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
@@ -83,9 +81,7 @@ export default function SecurityPage() {
                 <ShieldCheck className="h-5 w-5 text-primary" />
                 <CardTitle>Politique de sécurité globale</CardTitle>
               </div>
-              <CardDescription>
-                Configuration des paramètres généraux de sécurité
-              </CardDescription>
+              <CardDescription>Configuration des paramètres généraux de sécurité</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -98,7 +94,7 @@ export default function SecurityPage() {
                   <Input id="timeout-minutes" className="w-20" type="number" defaultValue="30" />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox id="ip-restriction" />
@@ -109,14 +105,14 @@ export default function SecurityPage() {
                   <Input id="allowed-ips" placeholder="Ex: 192.168.1.1, 10.0.0.1" />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox id="login-notification" defaultChecked />
                   <Label htmlFor="login-notification">Notification de connexion (email)</Label>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox id="suspicious-activity" defaultChecked />
@@ -125,16 +121,14 @@ export default function SecurityPage() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader>
               <div className="flex items-center space-x-2">
                 <ShieldAlert className="h-5 w-5 text-primary" />
                 <CardTitle>Surveillance et alerte</CardTitle>
               </div>
-              <CardDescription>
-                Configuration des alertes de sécurité
-              </CardDescription>
+              <CardDescription>Configuration des alertes de sécurité</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -155,11 +149,13 @@ export default function SecurityPage() {
                     </div>
                     <div className="flex items-center space-x-2">
                       <Checkbox id="alert-unusual-login" defaultChecked />
-                      <Label htmlFor="alert-unusual-login">Connexion depuis un nouvel appareil</Label>
+                      <Label htmlFor="alert-unusual-login">
+                        Connexion depuis un nouvel appareil
+                      </Label>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="alert-email">Email pour les alertes:</Label>
                   <Input id="alert-email" type="email" placeholder="securite@eparnova.com" />
@@ -168,7 +164,7 @@ export default function SecurityPage() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="authentication" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
@@ -186,7 +182,7 @@ export default function SecurityPage() {
                   <Checkbox id="pwd-complexity" defaultChecked />
                   <Label htmlFor="pwd-complexity">Exiger des mots de passe complexes</Label>
                 </div>
-                
+
                 <div className="space-y-2 pl-6">
                   <div className="flex items-center space-x-2">
                     <Checkbox id="pwd-uppercase" defaultChecked />
@@ -206,7 +202,7 @@ export default function SecurityPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox id="pwd-expiration" />
@@ -218,7 +214,7 @@ export default function SecurityPage() {
                   <Label htmlFor="pwd-days">jours</Label>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox id="pwd-history" defaultChecked />
@@ -232,16 +228,14 @@ export default function SecurityPage() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader>
               <div className="flex items-center space-x-2">
                 <Shield className="h-5 w-5 text-primary" />
                 <CardTitle>Authentification à deux facteurs (2FA)</CardTitle>
               </div>
-              <CardDescription>
-                Configurez la vérification en deux étapes
-              </CardDescription>
+              <CardDescription>Configurez la vérification en deux étapes</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -250,7 +244,7 @@ export default function SecurityPage() {
                   <Label htmlFor="2fa-enabled">Activer l'authentification à deux facteurs</Label>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label>Méthodes disponibles:</Label>
                 <div className="space-y-2 pl-4">
@@ -268,17 +262,19 @@ export default function SecurityPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox id="2fa-required" />
-                  <Label htmlFor="2fa-required">Rendre obligatoire pour tous les utilisateurs</Label>
+                  <Label htmlFor="2fa-required">
+                    Rendre obligatoire pour tous les utilisateurs
+                  </Label>
                 </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="data-protection" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
@@ -286,9 +282,7 @@ export default function SecurityPage() {
                 <Shield className="h-5 w-5 text-primary" />
                 <CardTitle>Protection des données</CardTitle>
               </div>
-              <CardDescription>
-                Paramètres de chiffrement et de confidentialité
-              </CardDescription>
+              <CardDescription>Paramètres de chiffrement et de confidentialité</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -300,7 +294,7 @@ export default function SecurityPage() {
                   Les données personnelles et financières sont stockées avec chiffrement AES-256.
                 </p>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox id="data-backup" defaultChecked />
@@ -311,7 +305,7 @@ export default function SecurityPage() {
                   <Input id="backup-frequency" className="w-32" defaultValue="Quotidienne" />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox id="data-retention" defaultChecked />
@@ -323,7 +317,7 @@ export default function SecurityPage() {
                   <Label htmlFor="retention-period">mois</Label>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox id="anonymization" />
@@ -331,19 +325,22 @@ export default function SecurityPage() {
                 </div>
                 <div className="flex items-center space-x-2 pl-6">
                   <Label htmlFor="anonymization-period">Après</Label>
-                  <Input id="anonymization-period" className="w-20" type="number" defaultValue="24" />
+                  <Input
+                    id="anonymization-period"
+                    className="w-20"
+                    type="number"
+                    defaultValue="24"
+                  />
                   <Label htmlFor="anonymization-period">mois d'inactivité</Label>
                 </div>
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader>
               <CardTitle>Conformité RGPD</CardTitle>
-              <CardDescription>
-                Paramètres liés à la conformité réglementaire
-              </CardDescription>
+              <CardDescription>Paramètres liés à la conformité réglementaire</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -352,38 +349,40 @@ export default function SecurityPage() {
                   <Label htmlFor="privacy-policy">Afficher la politique de confidentialité</Label>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox id="cookie-consent" defaultChecked />
                   <Label htmlFor="cookie-consent">Demander le consentement pour les cookies</Label>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox id="data-portability" defaultChecked />
-                  <Label htmlFor="data-portability">Activer l'exportation des données utilisateurs</Label>
+                  <Label htmlFor="data-portability">
+                    Activer l'exportation des données utilisateurs
+                  </Label>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox id="right-to-forget" defaultChecked />
-                  <Label htmlFor="right-to-forget">Permettre la suppression de compte (droit à l'oubli)</Label>
+                  <Label htmlFor="right-to-forget">
+                    Permettre la suppression de compte (droit à l'oubli)
+                  </Label>
                 </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="access-logs" className="mt-4">
           <Card>
             <CardHeader>
               <CardTitle>Journal des connexions</CardTitle>
-              <CardDescription>
-                Historique des accès à la plateforme
-              </CardDescription>
+              <CardDescription>Historique des accès à la plateforme</CardDescription>
             </CardHeader>
             <CardContent>
               <DataTable columns={accessLogColumns} data={dummyAccessLogs} />

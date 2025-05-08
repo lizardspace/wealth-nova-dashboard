@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { format, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Video, Clock, Users, Phone } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 type AppointmentType = 'video' | 'phone' | 'in-person';
 
@@ -29,7 +28,7 @@ export const DayAppointments: React.FC<DayAppointmentsProps> = ({ date, events }
   });
 
   const getTypeIcon = (type: AppointmentType) => {
-    switch(type) {
+    switch (type) {
       case 'video':
         return <Video className="h-4 w-4" />;
       case 'phone':
@@ -40,7 +39,7 @@ export const DayAppointments: React.FC<DayAppointmentsProps> = ({ date, events }
   };
 
   const getTypeColor = (type: AppointmentType) => {
-    switch(type) {
+    switch (type) {
       case 'video':
         return 'bg-blue-100 border-blue-300 text-blue-800';
       case 'phone':
@@ -55,13 +54,13 @@ export const DayAppointments: React.FC<DayAppointmentsProps> = ({ date, events }
     const hours = now.getHours();
     const minutes = now.getMinutes();
     const totalMinutes = hours * 60 + minutes;
-    
+
     // Only show current time line for today
     if (!isSameDay(now, date)) return null;
-    
+
     // Position from top is based on time (8:00 = 0)
     const startHour = 8;
-    const minutesSinceStart = totalMinutes - (startHour * 60);
+    const minutesSinceStart = totalMinutes - startHour * 60;
     const position = minutesSinceStart * (80 / 60); // Each hour is 80px height
 
     return position;
@@ -81,10 +80,10 @@ export const DayAppointments: React.FC<DayAppointmentsProps> = ({ date, events }
           </div>
         ))}
       </div>
-      
+
       {/* Current time indicator */}
       {currentTimePosition !== null && (
-        <div 
+        <div
           className="absolute left-16 right-0 border-t-2 border-red-500 z-10"
           style={{ top: `${currentTimePosition}px` }}
         >
@@ -98,15 +97,15 @@ export const DayAppointments: React.FC<DayAppointmentsProps> = ({ date, events }
           // For demo, we'll position events statically
           // In a real app, calculate position based on time
           const [startHour, startMinute] = event.time.split(' - ')[0].split(':').map(Number);
-          
+
           // Calculate top position based on start time
           const startTime = startHour * 60 + startMinute;
-          const topPosition = ((startTime - 8*60) / 60) * 80; // 80px per hour
-          
+          const topPosition = ((startTime - 8 * 60) / 60) * 80; // 80px per hour
+
           // In a real app, calculate duration from actual event times
           // Here we'll use fixed height for demo
           const height = 80; // 1 hour event
-          
+
           return (
             <Card
               key={event.id}
@@ -114,7 +113,7 @@ export const DayAppointments: React.FC<DayAppointmentsProps> = ({ date, events }
               style={{
                 top: `${topPosition}px`,
                 height: `${height}px`,
-                left: '4px'
+                left: '4px',
               }}
             >
               <div className="flex flex-col h-full">
@@ -123,9 +122,7 @@ export const DayAppointments: React.FC<DayAppointmentsProps> = ({ date, events }
                     <Clock className="h-3 w-3 opacity-70" />
                     <span>{event.time}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    {getTypeIcon(event.type)}
-                  </div>
+                  <div className="flex items-center gap-1">{getTypeIcon(event.type)}</div>
                 </div>
                 <div className="font-medium mt-1">{event.title}</div>
                 <div className="text-xs mt-auto flex justify-between">

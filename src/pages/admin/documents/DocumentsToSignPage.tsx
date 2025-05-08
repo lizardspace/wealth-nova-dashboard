@@ -1,13 +1,12 @@
-
 // src/pages/admin/documents/DocumentsToSignPage.tsx
-import { FileSignature, Download, Eye, Search, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { DataTable } from "@/components/ui/data-table";
-import { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
+import { FileSignature, Download, Eye, Search, Filter } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { DataTable } from '@/components/ui/data-table';
+import { ColumnDef } from '@tanstack/react-table';
+import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
 
 type Document = {
   id: string;
@@ -16,104 +15,94 @@ type Document = {
   date: string;
   type: string;
   expiryDate: string;
-  status: "waiting" | "expired" | "reminded";
+  status: 'waiting' | 'expired' | 'reminded';
 };
 
 const documents: Document[] = [
   {
-    id: "1",
-    title: "Contrat Assurance Vie",
-    client: "Dupont Jean",
-    date: "15/04/2024",
-    type: "Contrat",
-    expiryDate: "29/04/2024",
-    status: "waiting",
+    id: '1',
+    title: 'Contrat Assurance Vie',
+    client: 'Dupont Jean',
+    date: '15/04/2024',
+    type: 'Contrat',
+    expiryDate: '29/04/2024',
+    status: 'waiting',
   },
   {
-    id: "2",
-    title: "Mandat de gestion",
-    client: "Martin Sophie",
-    date: "10/04/2024",
-    type: "Mandat",
-    expiryDate: "24/04/2024",
-    status: "waiting",
+    id: '2',
+    title: 'Mandat de gestion',
+    client: 'Martin Sophie',
+    date: '10/04/2024',
+    type: 'Mandat',
+    expiryDate: '24/04/2024',
+    status: 'waiting',
   },
   {
-    id: "3",
-    title: "Avenant contrat PER",
-    client: "Bernard Pierre",
-    date: "01/04/2024",
-    type: "Avenant",
-    expiryDate: "15/04/2024",
-    status: "expired",
+    id: '3',
+    title: 'Avenant contrat PER',
+    client: 'Bernard Pierre',
+    date: '01/04/2024',
+    type: 'Avenant',
+    expiryDate: '15/04/2024',
+    status: 'expired',
   },
   {
-    id: "4",
-    title: "Souscription SCPI",
-    client: "Petit Marie",
-    date: "12/04/2024",
-    type: "Contrat",
-    expiryDate: "26/04/2024",
-    status: "reminded",
+    id: '4',
+    title: 'Souscription SCPI',
+    client: 'Petit Marie',
+    date: '12/04/2024',
+    type: 'Contrat',
+    expiryDate: '26/04/2024',
+    status: 'reminded',
   },
 ];
 
 const columns: ColumnDef<Document>[] = [
   {
-    accessorKey: "title",
-    header: "Document",
+    accessorKey: 'title',
+    header: 'Document',
     cell: ({ row }) => (
       <div>
         <Link
           to={`/admin/documents/detail/${row.original.id}`}
           className="font-medium hover:underline text-primary"
         >
-          {row.getValue("title")}
+          {row.getValue('title')}
         </Link>
-        <p className="text-xs text-muted-foreground">
-          {row.original.type}
-        </p>
+        <p className="text-xs text-muted-foreground">{row.original.type}</p>
       </div>
     ),
   },
   {
-    accessorKey: "client",
-    header: "Client",
+    accessorKey: 'client',
+    header: 'Client',
   },
   {
-    accessorKey: "date",
+    accessorKey: 'date',
     header: "Date d'envoi",
   },
   {
-    accessorKey: "expiryDate",
-    header: "Expire le",
+    accessorKey: 'expiryDate',
+    header: 'Expire le',
   },
   {
-    accessorKey: "status",
-    header: "Statut",
+    accessorKey: 'status',
+    header: 'Statut',
     cell: ({ row }) => {
-      const status = row.getValue("status") as Document["status"];
+      const status = row.getValue('status') as Document['status'];
       return (
         <Badge
           variant={
-            status === "waiting"
-              ? "outline"
-              : status === "expired"
-              ? "destructive"
-              : "secondary"
+            status === 'waiting' ? 'outline' : status === 'expired' ? 'destructive' : 'secondary'
           }
         >
-          {status === "waiting"
-            ? "En attente"
-            : status === "expired"
-            ? "Expiré"
-            : "Rappel envoyé"}
+          {status === 'waiting' ? 'En attente' : status === 'expired' ? 'Expiré' : 'Rappel envoyé'}
         </Badge>
       );
     },
   },
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => (
       <div className="flex space-x-2">
         <Button variant="ghost" size="icon">
@@ -147,10 +136,7 @@ export default function DocumentsToSignPage() {
       <div className="max-w-md mb-6">
         <div className="relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher un document..."
-            className="pl-8"
-          />
+          <Input placeholder="Rechercher un document..." className="pl-8" />
         </div>
       </div>
 
@@ -169,8 +155,9 @@ export default function DocumentsToSignPage() {
           <div>
             <h3 className="font-medium">Rappels automatiques</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Les rappels sont envoyés automatiquement 5 jours avant l'expiration du document puis tous les 3 jours.
-              Les documents sont considérés comme expirés après 15 jours sans signature.
+              Les rappels sont envoyés automatiquement 5 jours avant l'expiration du document puis
+              tous les 3 jours. Les documents sont considérés comme expirés après 15 jours sans
+              signature.
             </p>
           </div>
         </div>

@@ -1,15 +1,9 @@
-
 import React from 'react';
 import { Eye, MoreHorizontal } from 'lucide-react';
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -17,19 +11,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { 
-  AppointmentType, 
-  AppointmentStatus, 
-  HistoricalAppointment 
-} from './AppointmentTypes';
+} from '@/components/ui/dropdown-menu';
+import { AppointmentType, AppointmentStatus, HistoricalAppointment } from './AppointmentTypes';
 
 interface HistoryViewProps {
   appointments: HistoricalAppointment[];
@@ -52,7 +42,9 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ appointments }) => {
             <CardTitle className="text-sm font-medium">Rendez-vous complétés</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{appointments.filter(a => a.status === "completed").length}</div>
+            <div className="text-2xl font-bold">
+              {appointments.filter(a => a.status === 'completed').length}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -60,7 +52,9 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ appointments }) => {
             <CardTitle className="text-sm font-medium">Annulations</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{appointments.filter(a => a.status === "cancelled").length}</div>
+            <div className="text-2xl font-bold">
+              {appointments.filter(a => a.status === 'cancelled').length}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -75,13 +69,13 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ appointments }) => {
           <AppointmentHistoryTable appointments={appointments} />
         </TabsContent>
         <TabsContent value="completed" className="mt-6">
-          <AppointmentHistoryTable 
-            appointments={appointments.filter(appointment => appointment.status === "completed")} 
+          <AppointmentHistoryTable
+            appointments={appointments.filter(appointment => appointment.status === 'completed')}
           />
         </TabsContent>
         <TabsContent value="cancelled" className="mt-6">
-          <AppointmentHistoryTable 
-            appointments={appointments.filter(appointment => appointment.status === "cancelled")} 
+          <AppointmentHistoryTable
+            appointments={appointments.filter(appointment => appointment.status === 'cancelled')}
           />
         </TabsContent>
       </Tabs>
@@ -108,7 +102,7 @@ const AppointmentHistoryTable: React.FC<AppointmentHistoryTableProps> = ({ appoi
         </TableRow>
       </TableHeader>
       <TableBody>
-        {appointments.map((appointment) => (
+        {appointments.map(appointment => (
           <TableRow key={appointment.id}>
             <TableCell className="font-medium">{appointment.client}</TableCell>
             <TableCell>{appointment.date}</TableCell>
@@ -116,9 +110,9 @@ const AppointmentHistoryTable: React.FC<AppointmentHistoryTableProps> = ({ appoi
             <TableCell>{appointment.advisor}</TableCell>
             <TableCell>
               <div className="flex items-center">
-                {appointment.type === "video" ? (
+                {appointment.type === 'video' ? (
                   <span>Visioconférence</span>
-                ) : appointment.type === "phone" ? (
+                ) : appointment.type === 'phone' ? (
                   <span>Téléphone</span>
                 ) : (
                   <span>Présentiel</span>
@@ -128,20 +122,20 @@ const AppointmentHistoryTable: React.FC<AppointmentHistoryTableProps> = ({ appoi
             <TableCell>
               <Badge
                 variant={
-                  appointment.status === "completed"
-                    ? "outline"
-                    : appointment.status === "rescheduled"
-                    ? "secondary"
-                    : "destructive"
+                  appointment.status === 'completed'
+                    ? 'outline'
+                    : appointment.status === 'rescheduled'
+                      ? 'secondary'
+                      : 'destructive'
                 }
               >
-                {appointment.status === "completed"
-                  ? "Terminé"
-                  : appointment.status === "cancelled"
-                  ? "Annulé"
-                  : appointment.status === "rescheduled" 
-                  ? "Reporté"
-                  : "À venir"}
+                {appointment.status === 'completed'
+                  ? 'Terminé'
+                  : appointment.status === 'cancelled'
+                    ? 'Annulé'
+                    : appointment.status === 'rescheduled'
+                      ? 'Reporté'
+                      : 'À venir'}
               </Badge>
             </TableCell>
             <TableCell className="text-right">

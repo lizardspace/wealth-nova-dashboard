@@ -1,11 +1,18 @@
-
 // src/pages/admin/ai/ClientScorePage.tsx
-import { useParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { TrendingDown, TrendingUp, AlertTriangle } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useParams } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { TrendingDown, TrendingUp, AlertTriangle } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
 export default function ClientScorePage() {
   const { clientId } = useParams();
@@ -16,38 +23,38 @@ export default function ClientScorePage() {
     name: `Client ${clientId}`,
     score: 78,
     details: {
-      diversification: "Bonne",
-      fiscalite: "Optimisable",
-      frais: "Faibles",
-      liquidite: "Correcte",
+      diversification: 'Bonne',
+      fiscalite: 'Optimisable',
+      frais: 'Faibles',
+      liquidite: 'Correcte',
     },
     recommendations: [
-      "Optimiser la fiscalité avec un PER",
-      "Diversifier avec des SCPI",
-      "Réduire les liquidités excédentaires",
+      'Optimiser la fiscalité avec un PER',
+      'Diversifier avec des SCPI',
+      'Réduire les liquidités excédentaires',
     ],
     history: [
-      { date: "2023-06", score: 65 },
-      { date: "2023-07", score: 68 },
-      { date: "2023-08", score: 72 },
-      { date: "2023-09", score: 76 },
-      { date: "2023-10", score: 75 },
-      { date: "2023-11", score: 78 },
+      { date: '2023-06', score: 65 },
+      { date: '2023-07', score: 68 },
+      { date: '2023-08', score: 72 },
+      { date: '2023-09', score: 76 },
+      { date: '2023-10', score: 75 },
+      { date: '2023-11', score: 78 },
     ],
     alerts: [
       {
         id: 1,
-        date: "2023-07-15",
-        message: "Gain de 3 points suite à la diversification du portefeuille",
-        type: "positive"
+        date: '2023-07-15',
+        message: 'Gain de 3 points suite à la diversification du portefeuille',
+        type: 'positive',
       },
       {
         id: 2,
-        date: "2023-10-05",
+        date: '2023-10-05',
         message: "Perte d'1 point due à la concentration excessive sur un produit",
-        type: "negative"
-      }
-    ]
+        type: 'negative',
+      },
+    ],
   };
 
   // Calculer la variation par rapport au mois précédent
@@ -88,7 +95,7 @@ export default function ClientScorePage() {
                 )}
               </div>
             </div>
-            
+
             <div className="text-sm text-muted-foreground">
               Dernière mise à jour: {new Date().toLocaleDateString()}
             </div>
@@ -96,7 +103,7 @@ export default function ClientScorePage() {
             <div className="pt-4">
               <h3 className="font-medium mb-2">Profil de risque</h3>
               <div className="bg-gray-100 rounded-full h-2">
-                <div 
+                <div
                   className="bg-blue-500 rounded-full h-2"
                   style={{ width: `${clientScore.score}%` }}
                 />
@@ -126,12 +133,12 @@ export default function ClientScorePage() {
                   <XAxis dataKey="date" />
                   <YAxis domain={[40, 100]} />
                   <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="score" 
-                    stroke="#8884d8" 
-                    strokeWidth={2} 
-                    activeDot={{ r: 8 }} 
+                  <Line
+                    type="monotone"
+                    dataKey="score"
+                    stroke="#8884d8"
+                    strokeWidth={2}
+                    activeDot={{ r: 8 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -186,10 +193,12 @@ export default function ClientScorePage() {
           <CardContent>
             <ul className="space-y-2">
               {clientScore.alerts.map(alert => (
-                <li 
+                <li
                   key={alert.id}
                   className={`p-3 rounded-md ${
-                    alert.type === "positive" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"
+                    alert.type === 'positive'
+                      ? 'bg-green-50 text-green-800'
+                      : 'bg-red-50 text-red-800'
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -214,7 +223,9 @@ export default function ClientScorePage() {
                 <div className="flex justify-between items-center">
                   <span>{rec}</span>
                   <div className="space-x-2">
-                    <Button size="sm" variant="outline">Ignorer</Button>
+                    <Button size="sm" variant="outline">
+                      Ignorer
+                    </Button>
                     <Button size="sm">Appliquer</Button>
                   </div>
                 </div>

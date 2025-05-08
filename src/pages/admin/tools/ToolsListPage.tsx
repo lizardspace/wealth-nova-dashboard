@@ -1,9 +1,16 @@
-
 // src/pages/admin/tools/ToolsListPage.tsx
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Settings, TrendingUp, Briefcase, FileText, Activity, LineChart, Wrench } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import {
+  Settings,
+  TrendingUp,
+  Briefcase,
+  FileText,
+  Activity,
+  LineChart,
+  Wrench,
+} from 'lucide-react';
 
 export default function ToolsListPage() {
   return (

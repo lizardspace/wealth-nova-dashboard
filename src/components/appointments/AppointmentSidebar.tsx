@@ -1,17 +1,16 @@
-
 import React from 'react';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Calendar } from "@/components/ui/calendar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
+import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import { AppointmentType } from './AppointmentTypes';
 
 interface AppointmentSidebarProps {
@@ -29,11 +28,11 @@ export const AppointmentSidebar: React.FC<AppointmentSidebarProps> = ({
   selectedAdvisor,
   setSelectedAdvisor,
   selectedTypes,
-  toggleTypeFilter
+  toggleTypeFilter,
 }) => {
   const month = date.toLocaleString('fr', { month: 'long' });
   const year = date.getFullYear();
-  
+
   const handleCalendarSelect = (newDate: Date | undefined) => {
     if (newDate) {
       setDate(newDate);
@@ -47,12 +46,14 @@ export const AppointmentSidebar: React.FC<AppointmentSidebarProps> = ({
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center">
               <CalendarIcon className="mr-2 h-5 w-5 text-primary" />
-              <span className="font-medium capitalize">{month} {year}</span>
+              <span className="font-medium capitalize">
+                {month} {year}
+              </span>
             </div>
             <div className="flex">
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => {
                   const newDate = new Date(date);
                   newDate.setMonth(date.getMonth() - 1);
@@ -61,8 +62,8 @@ export const AppointmentSidebar: React.FC<AppointmentSidebarProps> = ({
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="icon"
                 onClick={() => {
                   const newDate = new Date(date);
@@ -80,9 +81,9 @@ export const AppointmentSidebar: React.FC<AppointmentSidebarProps> = ({
             onSelect={handleCalendarSelect}
             className="rounded-md border pointer-events-auto"
           />
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="w-full mt-4"
             onClick={() => setDate(new Date())}
           >
@@ -98,10 +99,7 @@ export const AppointmentSidebar: React.FC<AppointmentSidebarProps> = ({
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Conseiller</label>
-            <Select 
-              value={selectedAdvisor} 
-              onValueChange={(value) => setSelectedAdvisor(value)}
-            >
+            <Select value={selectedAdvisor} onValueChange={value => setSelectedAdvisor(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner un conseiller" />
               </SelectTrigger>
@@ -116,24 +114,24 @@ export const AppointmentSidebar: React.FC<AppointmentSidebarProps> = ({
           <div className="space-y-2">
             <label className="text-sm font-medium">Type</label>
             <div className="flex flex-wrap gap-2">
-              <Badge 
-                variant={selectedTypes.includes("video") ? "default" : "outline"} 
+              <Badge
+                variant={selectedTypes.includes('video') ? 'default' : 'outline'}
                 className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
-                onClick={() => toggleTypeFilter("video")}
+                onClick={() => toggleTypeFilter('video')}
               >
                 Visio
               </Badge>
-              <Badge 
-                variant={selectedTypes.includes("phone") ? "default" : "outline"} 
+              <Badge
+                variant={selectedTypes.includes('phone') ? 'default' : 'outline'}
                 className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
-                onClick={() => toggleTypeFilter("phone")}
+                onClick={() => toggleTypeFilter('phone')}
               >
                 Téléphone
               </Badge>
-              <Badge 
-                variant={selectedTypes.includes("in-person") ? "default" : "outline"} 
+              <Badge
+                variant={selectedTypes.includes('in-person') ? 'default' : 'outline'}
                 className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
-                onClick={() => toggleTypeFilter("in-person")}
+                onClick={() => toggleTypeFilter('in-person')}
               >
                 Présentiel
               </Badge>
@@ -142,13 +140,22 @@ export const AppointmentSidebar: React.FC<AppointmentSidebarProps> = ({
           <div className="space-y-2">
             <label className="text-sm font-medium">Statut</label>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
+              <Badge
+                variant="outline"
+                className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+              >
                 À venir
               </Badge>
-              <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
+              <Badge
+                variant="outline"
+                className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+              >
                 Confirmé
               </Badge>
-              <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
+              <Badge
+                variant="outline"
+                className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+              >
                 Annulé
               </Badge>
             </div>

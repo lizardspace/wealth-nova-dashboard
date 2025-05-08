@@ -1,64 +1,72 @@
-
 import React, { useState } from 'react';
-import { Calendar as CalendarIcon, Video, Users, Phone, ChevronLeft, ChevronRight, Plus, Filter } from 'lucide-react';
+import {
+  Calendar as CalendarIcon,
+  Video,
+  Users,
+  Phone,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Filter,
+} from 'lucide-react';
 import { format, addDays, subDays, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { AppointmentList } from "@/components/appointments/AppointmentList";
+} from '@/components/ui/select';
+import { AppointmentList } from '@/components/appointments/AppointmentList';
 import { DayAppointments } from '@/components/appointments/DayAppointments';
 import AppointmentModal from '@/components/appointments/AppointmentModal';
 
 const events = [
-  { 
-    id: 1, 
-    title: "Bilan patrimonial", 
-    client: "Jean Dupont", 
-    time: "09:00 - 10:00", 
-    type: "video" as const,
-    advisor: "Marie Lambert"
+  {
+    id: 1,
+    title: 'Bilan patrimonial',
+    client: 'Jean Dupont',
+    time: '09:00 - 10:00',
+    type: 'video' as const,
+    advisor: 'Marie Lambert',
   },
-  { 
-    id: 2, 
-    title: "Point mensuel", 
-    client: "Sophie Martin", 
-    time: "11:30 - 12:15", 
-    type: "phone" as const,
-    advisor: "Paul Bernard"
+  {
+    id: 2,
+    title: 'Point mensuel',
+    client: 'Sophie Martin',
+    time: '11:30 - 12:15',
+    type: 'phone' as const,
+    advisor: 'Paul Bernard',
   },
-  { 
-    id: 3, 
-    title: "Signature contrat", 
-    client: "Philippe Durand", 
-    time: "14:00 - 15:00", 
-    type: "in-person" as const,
-    advisor: "Marie Lambert"
+  {
+    id: 3,
+    title: 'Signature contrat',
+    client: 'Philippe Durand',
+    time: '14:00 - 15:00',
+    type: 'in-person' as const,
+    advisor: 'Marie Lambert',
   },
-  { 
-    id: 4, 
-    title: "Présentation stratégie", 
-    client: "Amélie Petit", 
-    time: "16:30 - 17:30", 
-    type: "video" as const,
-    advisor: "Thomas Richard"
-  }
+  {
+    id: 4,
+    title: 'Présentation stratégie',
+    client: 'Amélie Petit',
+    time: '16:30 - 17:30',
+    type: 'video' as const,
+    advisor: 'Thomas Richard',
+  },
 ];
 
 export default function AgendaPage() {
   const [date, setDate] = useState<Date>(new Date());
   const [view, setView] = useState<'day' | 'week' | 'month'>('day');
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
-  
+
   const month = date.toLocaleString('fr', { month: 'long' });
   const year = date.getFullYear();
 
@@ -87,13 +95,13 @@ export default function AgendaPage() {
   };
 
   const handleSaveAppointment = (data: any) => {
-    console.log("Nouveau rendez-vous:", data);
+    console.log('Nouveau rendez-vous:', data);
     // In a real app, this would save to database and update the UI
   };
 
   const weekDays = eachDayOfInterval({
     start: startOfWeek(date, { weekStartsOn: 1 }),
-    end: endOfWeek(date, { weekStartsOn: 1 })
+    end: endOfWeek(date, { weekStartsOn: 1 }),
   });
 
   return (
@@ -120,12 +128,14 @@ export default function AgendaPage() {
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center">
                   <CalendarIcon className="mr-2 h-5 w-5 text-primary" />
-                  <span className="font-medium capitalize">{month} {year}</span>
+                  <span className="font-medium capitalize">
+                    {month} {year}
+                  </span>
                 </div>
                 <div className="flex">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => {
                       const newDate = new Date(date);
                       newDate.setMonth(date.getMonth() - 1);
@@ -134,8 +144,8 @@ export default function AgendaPage() {
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="icon"
                     onClick={() => {
                       const newDate = new Date(date);
@@ -150,12 +160,12 @@ export default function AgendaPage() {
               <Calendar
                 mode="single"
                 selected={date}
-                onSelect={(newDate) => newDate && setDate(newDate)}
+                onSelect={newDate => newDate && setDate(newDate)}
                 className="rounded-md border pointer-events-auto"
               />
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="w-full mt-4"
                 onClick={() => setDate(new Date())}
               >
@@ -186,13 +196,22 @@ export default function AgendaPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Type</label>
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
+                  <Badge
+                    variant="outline"
+                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                  >
                     Visio
                   </Badge>
-                  <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
+                  <Badge
+                    variant="outline"
+                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                  >
                     Téléphone
                   </Badge>
-                  <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
+                  <Badge
+                    variant="outline"
+                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                  >
                     Présentiel
                   </Badge>
                 </div>
@@ -242,9 +261,9 @@ export default function AgendaPage() {
           <Card>
             <CardHeader className="pb-2 pt-6">
               <div className="flex flex-wrap items-center justify-between">
-                <Tabs 
-                  value={view} 
-                  onValueChange={(v) => setView(v as 'day' | 'week' | 'month')} 
+                <Tabs
+                  value={view}
+                  onValueChange={v => setView(v as 'day' | 'week' | 'month')}
                   className="mr-auto"
                 >
                   <TabsList>
@@ -256,27 +275,19 @@ export default function AgendaPage() {
 
                 <div className="flex items-center space-x-4 mt-2 lg:mt-0">
                   <div className="flex items-center">
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      onClick={handlePreviousDate}
-                    >
+                    <Button variant="outline" size="sm" onClick={handlePreviousDate}>
                       <ChevronLeft className="h-4 w-4 mr-1" />
                       Précédent
                     </Button>
-                    <Button 
+                    <Button
                       variant="outline"
-                      size="sm" 
+                      size="sm"
                       className="mx-2"
                       onClick={() => setDate(new Date())}
                     >
                       Aujourd'hui
                     </Button>
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      onClick={handleNextDate}
-                    >
+                    <Button variant="outline" size="sm" onClick={handleNextDate}>
                       Suivant
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
@@ -286,54 +297,62 @@ export default function AgendaPage() {
 
               <h2 className="font-medium text-lg mt-4">
                 {view === 'day' && format(date, 'EEEE d MMMM yyyy', { locale: fr })}
-                {view === 'week' && `${format(weekDays[0], 'd MMMM', { locale: fr })} - ${format(weekDays[6], 'd MMMM yyyy', { locale: fr })}`}
+                {view === 'week' &&
+                  `${format(weekDays[0], 'd MMMM', { locale: fr })} - ${format(weekDays[6], 'd MMMM yyyy', { locale: fr })}`}
                 {view === 'month' && format(date, 'MMMM yyyy', { locale: fr })}
               </h2>
             </CardHeader>
 
             <CardContent>
-              {view === 'day' && (
-                <DayAppointments date={date} events={events} />
-              )}
-              
+              {view === 'day' && <DayAppointments date={date} events={events} />}
+
               {view === 'week' && (
                 <div className="overflow-auto">
                   <div className="grid grid-cols-7 gap-1 mb-2">
-                    {weekDays.map((day) => (
+                    {weekDays.map(day => (
                       <div key={day.toString()} className="text-center">
                         <div className="text-xs text-muted-foreground mb-1">
                           {format(day, 'EEE', { locale: fr })}
                         </div>
-                        <div className={`text-sm font-medium rounded-full w-8 h-8 flex items-center justify-center mx-auto ${
-                          day.toDateString() === new Date().toDateString() ? 
-                          'bg-primary text-primary-foreground' : ''
-                        }`}>
+                        <div
+                          className={`text-sm font-medium rounded-full w-8 h-8 flex items-center justify-center mx-auto ${
+                            day.toDateString() === new Date().toDateString()
+                              ? 'bg-primary text-primary-foreground'
+                              : ''
+                          }`}
+                        >
                           {format(day, 'd')}
                         </div>
                       </div>
                     ))}
                   </div>
-                  
+
                   <div className="grid grid-cols-7 gap-1 min-h-[500px]">
-                    {weekDays.map((day) => (
+                    {weekDays.map(day => (
                       <div key={day.toString()} className="border rounded-md h-full p-1">
                         <div className="text-xs font-medium mb-2 text-center">
-                          {events.filter(e => true /* filter by date in real app */).length} évènements
+                          {events.filter(e => true /* filter by date in real app */).length}{' '}
+                          évènements
                         </div>
                         <div className="space-y-1">
-                          {events.filter(e => true /* filter by date in real app */).slice(0, 2).map(event => (
-                            <div 
-                              key={event.id}
-                              className={`p-1 rounded-sm text-xs truncate cursor-pointer ${
-                                event.type === 'video' ? 'bg-blue-100 border-blue-300 text-blue-800' :
-                                event.type === 'phone' ? 'bg-green-100 border-green-300 text-green-800' :
-                                'bg-purple-100 border-purple-300 text-purple-800'
-                              }`}
-                            >
-                              <div className="font-medium">{event.time}</div>
-                              <div className="truncate">{event.title}</div>
-                            </div>
-                          ))}
+                          {events
+                            .filter(e => true /* filter by date in real app */)
+                            .slice(0, 2)
+                            .map(event => (
+                              <div
+                                key={event.id}
+                                className={`p-1 rounded-sm text-xs truncate cursor-pointer ${
+                                  event.type === 'video'
+                                    ? 'bg-blue-100 border-blue-300 text-blue-800'
+                                    : event.type === 'phone'
+                                      ? 'bg-green-100 border-green-300 text-green-800'
+                                      : 'bg-purple-100 border-purple-300 text-purple-800'
+                                }`}
+                              >
+                                <div className="font-medium">{event.time}</div>
+                                <div className="truncate">{event.title}</div>
+                              </div>
+                            ))}
                           {events.length > 2 && (
                             <div className="text-xs text-center text-muted-foreground mt-1">
                               +{events.length - 2} autres
@@ -345,7 +364,7 @@ export default function AgendaPage() {
                   </div>
                 </div>
               )}
-              
+
               {view === 'month' && (
                 <div className="min-h-[500px]">
                   <AppointmentList />
@@ -356,7 +375,7 @@ export default function AgendaPage() {
         </div>
       </div>
 
-      <AppointmentModal 
+      <AppointmentModal
         isOpen={isAppointmentModalOpen}
         onClose={() => setIsAppointmentModalOpen(false)}
         onSave={handleSaveAppointment}

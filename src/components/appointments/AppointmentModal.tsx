@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,24 +35,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
-  clientName: z.string().min(1, "Nom du client requis"),
-  theme: z.string().min(1, "Thème du rendez-vous requis"),
+  clientName: z.string().min(1, 'Nom du client requis'),
+  theme: z.string().min(1, 'Thème du rendez-vous requis'),
   date: z.date({
-    required_error: "Date requise",
+    required_error: 'Date requise',
   }),
-  time: z.string().min(1, "Heure requise"),
-  duration: z.string().min(1, "Durée requise"),
-  type: z.enum(["call", "video", "in-person", "assessment", "product", "signature", "follow-up"]),
+  time: z.string().min(1, 'Heure requise'),
+  duration: z.string().min(1, 'Durée requise'),
+  type: z.enum(['call', 'video', 'in-person', 'assessment', 'product', 'signature', 'follow-up']),
   location: z.string().optional(),
-  advisor: z.string().min(1, "Conseiller requis"),
+  advisor: z.string().min(1, 'Conseiller requis'),
   comments: z.string().optional(),
 });
 
@@ -63,22 +58,18 @@ interface AppointmentModalProps {
   onSave: (data: z.infer<typeof formSchema>) => void;
 }
 
-const AppointmentModal: React.FC<AppointmentModalProps> = ({ 
-  isOpen, 
-  onClose,
-  onSave,
-}) => {
+const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onClose, onSave }) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      clientName: "",
-      theme: "",
-      time: "09:00",
-      duration: "60",
-      type: "video",
-      location: "",
-      advisor: "",
-      comments: "",
+      clientName: '',
+      theme: '',
+      time: '09:00',
+      duration: '60',
+      type: 'video',
+      location: '',
+      advisor: '',
+      comments: '',
     },
   });
 
@@ -93,12 +84,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>Nouveau rendez-vous</DialogTitle>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="absolute right-4 top-4" 
-            onClick={onClose}
-          >
+          <Button variant="ghost" size="icon" className="absolute right-4 top-4" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </DialogHeader>
@@ -119,17 +105,14 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="advisor"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Conseiller</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Sélectionner un conseiller" />
@@ -174,12 +157,12 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                           <Button
                             variant="outline"
                             className={cn(
-                              "pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              'pl-3 text-left font-normal',
+                              !field.value && 'text-muted-foreground'
                             )}
                           >
                             {field.value ? (
-                              format(field.value, "dd MMMM yyyy", { locale: fr })
+                              format(field.value, 'dd MMMM yyyy', { locale: fr })
                             ) : (
                               <span>Sélectionner une date</span>
                             )}
@@ -192,7 +175,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
-                          disabled={(date) => date < new Date()}
+                          disabled={date => date < new Date()}
                           initialFocus
                           className="p-3 pointer-events-auto"
                         />
@@ -202,7 +185,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="time"
@@ -211,10 +194,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                     <FormLabel>Heure</FormLabel>
                     <div className="flex items-center">
                       <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Sélectionner l'heure" />
@@ -237,17 +217,14 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="duration"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Durée (min)</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Durée" />
@@ -274,10 +251,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Type de rendez-vous</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                  >
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Type de rendez-vous" />
@@ -319,10 +293,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 <FormItem>
                   <FormLabel>Commentaire</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <Textarea
                       placeholder="Notes ou informations complémentaires"
-                      className="min-h-[80px]" 
-                      {...field} 
+                      className="min-h-[80px]"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />

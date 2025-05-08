@@ -1,6 +1,12 @@
-
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,20 +16,20 @@ import { User, Settings, FileText, Lock, Bell, Shield, LogOut } from 'lucide-rea
 
 const ProfilePage = () => {
   const { toast } = useToast();
-  
+
   const handleSaveChanges = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
-      title: "Profil mis à jour",
-      description: "Vos informations personnelles ont été mises à jour avec succès.",
+      title: 'Profil mis à jour',
+      description: 'Vos informations personnelles ont été mises à jour avec succès.',
     });
   };
 
   const handlePassword = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
-      title: "Mot de passe modifié",
-      description: "Votre mot de passe a été changé avec succès.",
+      title: 'Mot de passe modifié',
+      description: 'Votre mot de passe a été changé avec succès.',
     });
   };
 
@@ -31,7 +37,9 @@ const ProfilePage = () => {
     <div className="space-y-6">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-eparnova-blue">Mon Profil</h1>
-        <p className="text-muted-foreground mt-1">Gérez vos informations personnelles et vos préférences</p>
+        <p className="text-muted-foreground mt-1">
+          Gérez vos informations personnelles et vos préférences
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -89,7 +97,7 @@ const ProfilePage = () => {
               <TabsTrigger value="notifications">Notifications</TabsTrigger>
               <TabsTrigger value="documents">Documents</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="personal">
               <Card>
                 <CardHeader>
@@ -108,22 +116,22 @@ const ProfilePage = () => {
                         <Input id="lastName" defaultValue="Dubois" />
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
                       <Input id="email" type="email" defaultValue="sophie.dubois@example.com" />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="phone">Téléphone</Label>
                       <Input id="phone" type="tel" defaultValue="06 12 34 56 78" />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="address">Adresse</Label>
                       <Input id="address" defaultValue="15 rue des Lilas" />
                     </div>
-                    
+
                     <div className="grid grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="postalCode">Code postal</Label>
@@ -134,7 +142,7 @@ const ProfilePage = () => {
                         <Input id="city" defaultValue="Paris" />
                       </div>
                     </div>
-                    
+
                     <div className="flex justify-end">
                       <Button type="submit">Enregistrer les modifications</Button>
                     </div>
@@ -142,12 +150,14 @@ const ProfilePage = () => {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="security">
               <Card>
                 <CardHeader>
                   <CardTitle>Sécurité</CardTitle>
-                  <CardDescription>Gérez votre mot de passe et la sécurité de votre compte</CardDescription>
+                  <CardDescription>
+                    Gérez votre mot de passe et la sécurité de votre compte
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handlePassword} className="space-y-4">
@@ -155,17 +165,17 @@ const ProfilePage = () => {
                       <Label htmlFor="currentPassword">Mot de passe actuel</Label>
                       <Input id="currentPassword" type="password" />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="newPassword">Nouveau mot de passe</Label>
                       <Input id="newPassword" type="password" />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="confirmPassword">Confirmer le nouveau mot de passe</Label>
                       <Input id="confirmPassword" type="password" />
                     </div>
-                    
+
                     <div className="flex justify-end">
                       <Button type="submit">Modifier le mot de passe</Button>
                     </div>
@@ -173,12 +183,14 @@ const ProfilePage = () => {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="notifications">
               <Card>
                 <CardHeader>
                   <CardTitle>Préférences de notification</CardTitle>
-                  <CardDescription>Configurez comment et quand vous souhaitez être notifié</CardDescription>
+                  <CardDescription>
+                    Configurez comment et quand vous souhaitez être notifié
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="p-6 text-center text-muted-foreground">
@@ -187,7 +199,7 @@ const ProfilePage = () => {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="documents">
               <Card>
                 <CardHeader>

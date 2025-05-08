@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import LoginForm from '@/components/auth/LoginForm';
@@ -12,9 +11,9 @@ const Login = () => {
         </Link>
         <p className="text-white/80 mt-2">Votre solution complète de gestion patrimoniale</p>
       </div>
-      
+
       <LoginForm />
-      
+
       <div className="mt-8 text-white/70 text-sm text-center">
         <p>© 2025 EPARNOVA. Tous droits réservés.</p>
       </div>

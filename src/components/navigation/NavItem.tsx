@@ -1,12 +1,6 @@
-
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type NavItemProps = {
   to: string;
@@ -25,9 +19,10 @@ const NavItem = ({ to, icon: Icon, label, isPremium, onClick }: NavItemProps) =>
             to={to}
             className={({ isActive }) => `
               flex items-center px-3 py-2 rounded-md text-sm
-              ${isActive 
-                ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' 
-                : 'text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
+              ${
+                isActive
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+                  : 'text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
               }
             `}
             onClick={onClick}
