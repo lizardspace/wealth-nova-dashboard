@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
@@ -139,13 +138,9 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
 
   return (
     <div className="w-64 h-full flex flex-col bg-slate-50 border-r border-slate-200 overflow-y-auto">
-      <div className="p-4 flex items-center justify-center border-b border-slate-200">
-        <div className="text-xl font-bold text-eparnova-blue flex items-center">
-          <span className="text-eparnova-gold">EPAR</span>NOVA <span className="text-xs ml-2 bg-eparnova-blue/10 text-eparnova-blue px-2 py-1 rounded-md">Admin</span>
-        </div>
-      </div>
       
-      <nav className="flex-1 px-3 py-4 space-y-2">
+      
+      <nav className="flex-1 px-3 py-4 space-y-4">
         <SidebarSection title="Tableau de bord" items={dashboardItems} onItemClick={onItemClick} />
         <SidebarSection title="Clients" items={clientsItems} onItemClick={onItemClick} />
         <SidebarSection title="Portefeuilles" items={portfolioItems} onItemClick={onItemClick} />
@@ -156,10 +151,10 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
         <SidebarSection title="Paramètres" items={settingsItems} onItemClick={onItemClick} />
       </nav>
 
-      <div className="p-4 border-t border-slate-200 bg-white hover:bg-slate-50 transition-colors">
+      <div className="p-4 border-t border-slate-200 bg-white">
         <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center">
-            <span className="text-sm font-medium text-blue-600">AD</span>
+          <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center">
+            <span className="text-sm font-medium text-purple-600">AD</span>
           </div>
           <div>
             <p className="text-sm font-medium text-slate-800">Admin User</p>
