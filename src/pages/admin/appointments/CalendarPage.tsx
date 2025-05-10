@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Calendar, Video, Users, Phone, ChevronLeft, ChevronRight, Plus, Filter } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -71,10 +70,10 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-[330px_1fr] gap-6">
         {/* Left Sidebar */}
         <div className="space-y-4">
-          <Card>
+          <Card className="min-w-[300px]">
             <CardContent className="pt-6">
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center">
@@ -110,7 +109,8 @@ export default function CalendarPage() {
                 mode="single"
                 selected={date}
                 onSelect={(newDate) => newDate && setDate(newDate)}
-                className="rounded-md border pointer-events-auto"
+                className="rounded-md border w-full"
+                fixedWeeks
               />
               <Button 
                 variant="outline" 
@@ -183,7 +183,7 @@ export default function CalendarPage() {
         </div>
 
         {/* Main Content */}
-        <div>
+        <div className="overflow-hidden">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2 pt-6">
               <CardTitle className="flex items-center">
