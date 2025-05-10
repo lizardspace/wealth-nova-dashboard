@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Save, Tag, Hash, Palette } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialisation du client Supabase
+const supabaseUrl = 'https://xoxbpdkqvtulavbpfmgu.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhveGJwZGtxdnR1bGF2YnBmbWd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NDk0MjMsImV4cCI6MjA2MDMyNTQyM30.XVzmmTfjcMNDchCd7ed-jG3N8WoLuD3RyDZguyZh1EM';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function FormulaireCreationCategorie() {
   const [formData, setFormData] = useState({
@@ -7,7 +13,7 @@ export default function FormulaireCreationCategorie() {
     slug: '',
     color: '#3b82f6' // Couleur bleue par défaut
   });
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   const [existingCategories, setExistingCategories] = useState([]);
@@ -16,15 +22,19 @@ export default function FormulaireCreationCategorie() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        // À remplacer par votre appel API réel
-        const response = await fetch('/api/categories');
-        const data = await response.json();
-        setExistingCategories(data);
+        const { data, error } = await supabase
+          .from('journal_categories')
+          .select('id, name, color, slug')
+          .order('name', { ascending: true });
+
+        if (error) throw error;
+
+        setExistingCategories(data || []);
       } catch (error) {
         console.error('Erreur lors de la récupération des catégories:', error);
       }
     };
-    
+
     fetchCategories();
   }, []);
 
@@ -34,7 +44,7 @@ export default function FormulaireCreationCategorie() {
       .toLowerCase()
       .replace(/[^\w\s]/gi, '')
       .replace(/\s+/g, '-');
-    
+
     setFormData(prev => ({ ...prev, slug: generatedSlug }));
   }, [formData.name]);
 
@@ -71,42 +81,40 @@ export default function FormulaireCreationCategorie() {
       showNotification('Le nom de la catégorie est obligatoire', 'error');
       return;
     }
-    
+
     // Vérification des doublons
-    const nameExists = existingCategories.some(cat => 
+    const nameExists = existingCategories.some(cat =>
       cat.name.toLowerCase() === formData.name.toLowerCase());
-    const slugExists = existingCategories.some(cat => 
+    const slugExists = existingCategories.some(cat =>
       cat.slug.toLowerCase() === formData.slug.toLowerCase());
-    
+
     if (nameExists) {
       showNotification('Une catégorie avec ce nom existe déjà', 'error');
       return;
     }
-    
+
     if (slugExists) {
       showNotification('Une catégorie avec ce slug existe déjà', 'error');
       return;
     }
-    
+
     setIsLoading(true);
 
     try {
-      // À remplacer par votre appel API réel
-      const response = await fetch('/api/categories', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      // Enregistrement de la catégorie dans Supabase
+      const { data, error } = await supabase
+        .from('journal_categories')
+        .insert([{
+          name: formData.name,
+          slug: formData.slug,
+          color: formData.color
+        }])
+        .select();
 
-      if (!response.ok) {
-        throw new Error('Échec de la création de la catégorie');
-      }
+      if (error) throw error;
 
       // Ajouter la nouvelle catégorie à la liste existante
-      const newCategory = await response.json();
-      setExistingCategories(prev => [...prev, newCategory]);
+      setExistingCategories(prev => [...prev, data[0]]);
 
       // Réinitialiser le formulaire après soumission réussie
       setFormData({
@@ -114,11 +122,11 @@ export default function FormulaireCreationCategorie() {
         slug: '',
         color: '#3b82f6'
       });
-      
+
       showNotification('Catégorie créée avec succès !');
     } catch (error) {
       console.error('Erreur lors de la création de la catégorie:', error);
-      showNotification('Échec de la création de la catégorie', 'error');
+      showNotification(`Échec de la création de la catégorie: ${error.message}`, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -130,13 +138,13 @@ export default function FormulaireCreationCategorie() {
         <Tag className="mr-2 text-blue-600" size={24} />
         <h1 className="text-xl font-bold text-gray-800">Ajouter une nouvelle catégorie</h1>
       </div>
-      
+
       {notification.show && (
         <div className={`mb-4 p-3 rounded ${notification.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
           {notification.message}
         </div>
       )}
-      
+
       <div className="space-y-4">
         {/* Nom */}
         <div>
@@ -157,7 +165,7 @@ export default function FormulaireCreationCategorie() {
             />
           </div>
         </div>
-        
+
         {/* Slug */}
         <div>
           <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-1">
@@ -177,7 +185,7 @@ export default function FormulaireCreationCategorie() {
             Version adaptée pour les URLs. Généré automatiquement mais modifiable.
           </p>
         </div>
-        
+
         {/* Couleur */}
         <div>
           <label htmlFor="color" className="block text-sm font-medium text-gray-700 mb-1">
@@ -216,14 +224,14 @@ export default function FormulaireCreationCategorie() {
         <div className="mt-4">
           <p className="text-sm font-medium text-gray-700 mb-2">Aperçu :</p>
           <div className="flex items-center">
-            <span 
-              className="inline-block w-4 h-4 rounded-full mr-2" 
+            <span
+              className="inline-block w-4 h-4 rounded-full mr-2"
               style={{ backgroundColor: formData.color }}
             />
             <span className="font-medium">{formData.name || 'Nom de la catégorie'}</span>
           </div>
         </div>
-        
+
         {/* Catégories existantes */}
         {existingCategories.length > 0 && (
           <div className="mt-6">
@@ -231,8 +239,8 @@ export default function FormulaireCreationCategorie() {
             <div className="max-h-40 overflow-y-auto">
               {existingCategories.map((category, index) => (
                 <div key={category.id || index} className="flex items-center py-1">
-                  <span 
-                    className="inline-block w-3 h-3 rounded-full mr-2" 
+                  <span
+                    className="inline-block w-3 h-3 rounded-full mr-2"
                     style={{ backgroundColor: category.color }}
                   />
                   <span className="text-sm">{category.name}</span>
@@ -241,7 +249,7 @@ export default function FormulaireCreationCategorie() {
             </div>
           </div>
         )}
-        
+
         {/* Bouton de soumission */}
         <div className="flex justify-end mt-6">
           <button
