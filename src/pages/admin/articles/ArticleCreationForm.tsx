@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Save, Image, FileText, Calendar, Tag } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialisation du client Supabase
+const supabaseUrl = 'https://xoxbpdkqvtulavbpfmgu.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhveGJwZGtxdnR1bGF2YnBmbWd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NDk0MjMsImV4cCI6MjA2MDMyNTQyM30.XVzmmTfjcMNDchCd7ed-jG3N8WoLuD3RyDZguyZh1EM';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function FormulaireCreationArticle() {
   const [formData, setFormData] = useState({
@@ -19,14 +25,18 @@ export default function FormulaireCreationArticle() {
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
 
-  // Récupérer les catégories au chargement du composant
+  // Récupérer les catégories depuis Supabase
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        // À remplacer par votre appel API réel
-        const response = await fetch('/api/categories');
-        const data = await response.json();
-        setCategories(data);
+        const { data, error } = await supabase
+          .from('journal_categories')
+          .select('id, name, color, slug')
+          .order('name', { ascending: true });
+
+        if (error) throw error;
+        
+        setCategories(data || []);
       } catch (error) {
         console.error('Erreur lors de la récupération des catégories:', error);
         showNotification('Échec du chargement des catégories', 'error');
@@ -80,27 +90,44 @@ export default function FormulaireCreationArticle() {
     setIsLoading(true);
 
     try {
-      // Créer FormData pour l'upload de fichier
-      const articleData = new FormData();
-      
-      // Ajouter tous les champs du formulaire
-      Object.keys(formData).forEach(key => {
-        if (key === 'featured_image' && formData[key]) {
-          articleData.append(key, formData[key]);
-        } else if (formData[key] !== null && formData[key] !== undefined) {
-          articleData.append(key, formData[key]);
-        }
-      });
+      // Upload de l'image si elle existe
+      let imageUrl = null;
+      if (formData.featured_image) {
+        const fileExt = formData.featured_image.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `article-images/${fileName}`;
 
-      // À remplacer par votre appel API réel
-      const response = await fetch('/api/articles', {
-        method: 'POST',
-        body: articleData,
-      });
+        const { error: uploadError } = await supabase.storage
+          .from('article-images-human')
+          .upload(filePath, formData.featured_image);
 
-      if (!response.ok) {
-        throw new Error('Échec de la création de l\'article');
+        if (uploadError) throw uploadError;
+
+        // Récupérer l'URL publique
+        const { data: { publicUrl } } = supabase.storage
+          .from('article-images-human')
+          .getPublicUrl(filePath);
+        
+        imageUrl = publicUrl;
       }
+
+      // Enregistrement de l'article dans Supabase
+      const { data, error } = await supabase
+        .from('journal_articles')
+        .insert([{
+          title: formData.title,
+          slug: formData.slug,
+          excerpt: formData.excerpt,
+          content: formData.content,
+          featured_image: imageUrl,
+          category_id: formData.category_id || null,
+          author: formData.author || null,
+          publish_date: formData.publish_date,
+          is_published: formData.is_published
+        }])
+        .select();
+
+      if (error) throw error;
 
       // Réinitialiser le formulaire après soumission réussie
       setFormData({
@@ -119,7 +146,7 @@ export default function FormulaireCreationArticle() {
       showNotification('Article créé avec succès !');
     } catch (error) {
       console.error('Erreur lors de la création de l\'article:', error);
-      showNotification('Échec de la création de l\'article', 'error');
+      showNotification(`Échec de la création de l'article: ${error.message}`, 'error');
     } finally {
       setIsLoading(false);
     }
