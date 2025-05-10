@@ -1,4 +1,4 @@
-
+// src/components/routes/AdminRoutes.tsx
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import DashboardRoutes from './DashboardRoutes';
@@ -9,6 +9,7 @@ import AIRoutes from './AIRoutes';
 import DocumentsRoutes from './DocumentsRoutes';
 import AlertesRoutes from './AlertesRoutes';
 import SettingsRoutes from './SettingsRoutes';
+import BlogRoutes from './BlogRoutes'; // Importez le nouveau composant
 
 const AdminRoutes = () => {
   return (
@@ -22,6 +23,7 @@ const AdminRoutes = () => {
       <Route path="/documents/*" element={<DocumentsRoutes />} />
       <Route path="/alertes/*" element={<AlertesRoutes />} />
       <Route path="/settings/*" element={<SettingsRoutes />} />
+      <Route path="/blog/*" element={<BlogRoutes />} /> {/* Nouvelle route */}
     </Routes>
   );
 };

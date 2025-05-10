@@ -138,11 +138,11 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
   ];
 
   const blogItems = [
-    { to: "/admin/blog", icon: BookOpen, label: "Articles", end: true },
-    { to: "/admin/blog/nouveau", icon: BookOpen, label: "Nouvel article" },
-    { to: "/admin/blog/categories", icon: BookOpen, label: "Catégories" },
-    { to: "/admin/blog/commentaires", icon: BookOpen, label: "Commentaires" }
-  ];
+  { to: "/admin/blog", icon: BookOpen, label: "Articles", end: true },
+  { to: "/admin/blog/nouveau", icon: BookOpen, label: "Nouvel article" },
+  { to: "/admin/blog/categories", icon: BookOpen, label: "Catégories" },
+  { to: "/admin/blog/commentaires", icon: BookOpen, label: "Commentaires" }
+];
 
   return (
     <div className="w-64 h-full flex flex-col bg-slate-50 border-r border-slate-200 overflow-y-auto">
