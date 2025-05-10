@@ -12,7 +12,8 @@ import {
   Home,
   Shield,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  BookOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -136,10 +137,15 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
     { to: "/admin/parametres/securite", icon: Shield, label: "Sécurité" }
   ];
 
+  const blogItems = [
+    { to: "/admin/blog", icon: BookOpen, label: "Articles", end: true },
+    { to: "/admin/blog/nouveau", icon: BookOpen, label: "Nouvel article" },
+    { to: "/admin/blog/categories", icon: BookOpen, label: "Catégories" },
+    { to: "/admin/blog/commentaires", icon: BookOpen, label: "Commentaires" }
+  ];
+
   return (
     <div className="w-64 h-full flex flex-col bg-slate-50 border-r border-slate-200 overflow-y-auto">
-      
-      
       <nav className="flex-1 px-3 py-4 space-y-4">
         <SidebarSection title="Tableau de bord" items={dashboardItems} onItemClick={onItemClick} />
         <SidebarSection title="Clients" items={clientsItems} onItemClick={onItemClick} />
@@ -148,6 +154,7 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
         <SidebarSection title="Intelligence Artificielle" items={aiItems} onItemClick={onItemClick} />
         <SidebarSection title="Documents" items={documentsItems} onItemClick={onItemClick} />
         <SidebarSection title="Alertes" items={alertsItems} onItemClick={onItemClick} />
+        <SidebarSection title="Blog" items={blogItems} onItemClick={onItemClick} />
         <SidebarSection title="Paramètres" items={settingsItems} onItemClick={onItemClick} />
       </nav>
 
