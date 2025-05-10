@@ -1,34 +1,34 @@
 import { useState, useEffect } from 'react';
 import { Save, Tag, Hash, Palette } from 'lucide-react';
 
-export default function CategoryCreationForm() {
+export default function FormulaireCreationCategorie() {
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
-    color: '#3b82f6' // Default blue color
+    color: '#3b82f6' // Couleur bleue par défaut
   });
   
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   const [existingCategories, setExistingCategories] = useState([]);
 
-  // Fetch existing categories on component mount
+  // Récupérer les catégories existantes au montage du composant
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        // This would be replaced with your actual API call
+        // À remplacer par votre appel API réel
         const response = await fetch('/api/categories');
         const data = await response.json();
         setExistingCategories(data);
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.error('Erreur lors de la récupération des catégories:', error);
       }
     };
     
     fetchCategories();
   }, []);
 
-  // Generate slug from name
+  // Générer le slug à partir du nom
   useEffect(() => {
     const generatedSlug = formData.name
       .toLowerCase()
@@ -53,45 +53,45 @@ export default function CategoryCreationForm() {
     }, 3000);
   };
 
-  // Common color options
+  // Options de couleurs communes
   const colorOptions = [
-    { name: 'Blue', value: '#3b82f6' },
-    { name: 'Red', value: '#ef4444' },
-    { name: 'Green', value: '#10b981' },
-    { name: 'Yellow', value: '#f59e0b' },
-    { name: 'Purple', value: '#8b5cf6' },
-    { name: 'Pink', value: '#ec4899' },
+    { name: 'Bleu', value: '#3b82f6' },
+    { name: 'Rouge', value: '#ef4444' },
+    { name: 'Vert', value: '#10b981' },
+    { name: 'Jaune', value: '#f59e0b' },
+    { name: 'Violet', value: '#8b5cf6' },
+    { name: 'Rose', value: '#ec4899' },
     { name: 'Indigo', value: '#6366f1' },
-    { name: 'Gray', value: '#6b7280' },
+    { name: 'Gris', value: '#6b7280' },
   ];
 
   const handleSubmit = async () => {
-    // Basic validation
+    // Validation de base
     if (!formData.name.trim()) {
-      showNotification('Category name is required', 'error');
+      showNotification('Le nom de la catégorie est obligatoire', 'error');
       return;
     }
     
-    // Check for duplicate names or slugs
+    // Vérification des doublons
     const nameExists = existingCategories.some(cat => 
       cat.name.toLowerCase() === formData.name.toLowerCase());
     const slugExists = existingCategories.some(cat => 
       cat.slug.toLowerCase() === formData.slug.toLowerCase());
     
     if (nameExists) {
-      showNotification('A category with this name already exists', 'error');
+      showNotification('Une catégorie avec ce nom existe déjà', 'error');
       return;
     }
     
     if (slugExists) {
-      showNotification('A category with this slug already exists', 'error');
+      showNotification('Une catégorie avec ce slug existe déjà', 'error');
       return;
     }
     
     setIsLoading(true);
 
     try {
-      // This would be replaced with your actual API call
+      // À remplacer par votre appel API réel
       const response = await fetch('/api/categories', {
         method: 'POST',
         headers: {
@@ -101,24 +101,24 @@ export default function CategoryCreationForm() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create category');
+        throw new Error('Échec de la création de la catégorie');
       }
 
-      // Add new category to the existing categories list
+      // Ajouter la nouvelle catégorie à la liste existante
       const newCategory = await response.json();
       setExistingCategories(prev => [...prev, newCategory]);
 
-      // Reset form after successful submission
+      // Réinitialiser le formulaire après soumission réussie
       setFormData({
         name: '',
         slug: '',
         color: '#3b82f6'
       });
       
-      showNotification('Category created successfully!');
+      showNotification('Catégorie créée avec succès !');
     } catch (error) {
-      console.error('Error creating category:', error);
-      showNotification('Failed to create category', 'error');
+      console.error('Erreur lors de la création de la catégorie:', error);
+      showNotification('Échec de la création de la catégorie', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -128,7 +128,7 @@ export default function CategoryCreationForm() {
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
       <div className="flex items-center mb-6">
         <Tag className="mr-2 text-blue-600" size={24} />
-        <h1 className="text-xl font-bold text-gray-800">Add New Category</h1>
+        <h1 className="text-xl font-bold text-gray-800">Ajouter une nouvelle catégorie</h1>
       </div>
       
       {notification.show && (
@@ -138,10 +138,10 @@ export default function CategoryCreationForm() {
       )}
       
       <div className="space-y-4">
-        {/* Name */}
+        {/* Nom */}
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-            Category Name*
+            Nom de la catégorie*
           </label>
           <div className="flex items-center">
             <Hash className="mr-2 text-gray-500" size={18} />
@@ -153,7 +153,7 @@ export default function CategoryCreationForm() {
               onChange={handleInputChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Technology, Health, Fashion..."
+              placeholder="Technologie, Santé, Mode..."
             />
           </div>
         </div>
@@ -171,17 +171,17 @@ export default function CategoryCreationForm() {
             onChange={handleInputChange}
             required
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            placeholder="category-slug"
+            placeholder="nom-de-la-categorie"
           />
           <p className="text-xs text-gray-500 mt-1">
-            URL-friendly version of the name. Generated automatically but can be edited.
+            Version adaptée pour les URLs. Généré automatiquement mais modifiable.
           </p>
         </div>
         
-        {/* Color */}
+        {/* Couleur */}
         <div>
           <label htmlFor="color" className="block text-sm font-medium text-gray-700 mb-1">
-            Color
+            Couleur
           </label>
           <div className="flex items-center">
             <Palette className="mr-2 text-gray-500" size={18} />
@@ -202,32 +202,32 @@ export default function CategoryCreationForm() {
                   className="w-6 h-6 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   style={{ backgroundColor: color.value }}
                   title={color.name}
-                  aria-label={`Select ${color.name} color`}
+                  aria-label={`Sélectionner la couleur ${color.name}`}
                 />
               ))}
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            This color will be used to identify the category.
+            Cette couleur sera utilisée pour identifier la catégorie.
           </p>
         </div>
 
-        {/* Preview */}
+        {/* Aperçu */}
         <div className="mt-4">
-          <p className="text-sm font-medium text-gray-700 mb-2">Preview:</p>
+          <p className="text-sm font-medium text-gray-700 mb-2">Aperçu :</p>
           <div className="flex items-center">
             <span 
               className="inline-block w-4 h-4 rounded-full mr-2" 
               style={{ backgroundColor: formData.color }}
             />
-            <span className="font-medium">{formData.name || 'Category Name'}</span>
+            <span className="font-medium">{formData.name || 'Nom de la catégorie'}</span>
           </div>
         </div>
         
-        {/* Existing Categories */}
+        {/* Catégories existantes */}
         {existingCategories.length > 0 && (
           <div className="mt-6">
-            <p className="text-sm font-medium text-gray-700 mb-2">Existing Categories:</p>
+            <p className="text-sm font-medium text-gray-700 mb-2">Catégories existantes :</p>
             <div className="max-h-40 overflow-y-auto">
               {existingCategories.map((category, index) => (
                 <div key={category.id || index} className="flex items-center py-1">
@@ -242,7 +242,7 @@ export default function CategoryCreationForm() {
           </div>
         )}
         
-        {/* Submit Button */}
+        {/* Bouton de soumission */}
         <div className="flex justify-end mt-6">
           <button
             type="button"
@@ -251,11 +251,11 @@ export default function CategoryCreationForm() {
             className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
           >
             {isLoading ? (
-              <span>Adding...</span>
+              <span>Création en cours...</span>
             ) : (
               <>
                 <Save className="mr-2" size={18} />
-                <span>Add Category</span>
+                <span>Ajouter la catégorie</span>
               </>
             )}
           </button>

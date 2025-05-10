@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Image, FileText, Calendar, Tag } from 'lucide-react';
 
-export default function ArticleCreationForm() {
+export default function FormulaireCreationArticle() {
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
@@ -19,24 +19,24 @@ export default function ArticleCreationForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
 
-  // Fetch categories on component mount
+  // Récupérer les catégories au chargement du composant
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        // This would be replaced with your actual API call
+        // À remplacer par votre appel API réel
         const response = await fetch('/api/categories');
         const data = await response.json();
         setCategories(data);
       } catch (error) {
-        console.error('Error fetching categories:', error);
-        showNotification('Failed to load categories', 'error');
+        console.error('Erreur lors de la récupération des catégories:', error);
+        showNotification('Échec du chargement des catégories', 'error');
       }
     };
     
     fetchCategories();
   }, []);
 
-  // Generate slug from title
+  // Générer le slug à partir du titre
   useEffect(() => {
     const generatedSlug = formData.title
       .toLowerCase()
@@ -59,7 +59,7 @@ export default function ArticleCreationForm() {
     if (file) {
       setFormData(prev => ({ ...prev, featured_image: file }));
       
-      // Create preview
+      // Créer un aperçu
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result);
@@ -80,10 +80,10 @@ export default function ArticleCreationForm() {
     setIsLoading(true);
 
     try {
-      // Create FormData for file upload
+      // Créer FormData pour l'upload de fichier
       const articleData = new FormData();
       
-      // Append all form fields
+      // Ajouter tous les champs du formulaire
       Object.keys(formData).forEach(key => {
         if (key === 'featured_image' && formData[key]) {
           articleData.append(key, formData[key]);
@@ -92,17 +92,17 @@ export default function ArticleCreationForm() {
         }
       });
 
-      // This would be replaced with your actual API call
+      // À remplacer par votre appel API réel
       const response = await fetch('/api/articles', {
         method: 'POST',
         body: articleData,
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create article');
+        throw new Error('Échec de la création de l\'article');
       }
 
-      // Reset form after successful submission
+      // Réinitialiser le formulaire après soumission réussie
       setFormData({
         title: '',
         slug: '',
@@ -116,10 +116,10 @@ export default function ArticleCreationForm() {
       });
       setPreview(null);
       
-      showNotification('Article created successfully!');
+      showNotification('Article créé avec succès !');
     } catch (error) {
-      console.error('Error creating article:', error);
-      showNotification('Failed to create article', 'error');
+      console.error('Erreur lors de la création de l\'article:', error);
+      showNotification('Échec de la création de l\'article', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -127,7 +127,7 @@ export default function ArticleCreationForm() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Create New Article</h1>
+      <h1 className="text-2xl font-bold mb-6 text-gray-800">Créer un nouvel article</h1>
       
       {notification.show && (
         <div className={`mb-4 p-3 rounded ${notification.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
@@ -136,10 +136,10 @@ export default function ArticleCreationForm() {
       )}
       
       <div className="space-y-6">
-        {/* Title */}
+        {/* Titre */}
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-            Title*
+            Titre*
           </label>
           <input
             type="text"
@@ -149,7 +149,7 @@ export default function ArticleCreationForm() {
             onChange={handleInputChange}
             required
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Article title"
+            placeholder="Titre de l'article"
           />
         </div>
         
@@ -166,17 +166,17 @@ export default function ArticleCreationForm() {
             onChange={handleInputChange}
             required
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            placeholder="article-slug"
+            placeholder="titre-de-l-article"
           />
           <p className="text-xs text-gray-500 mt-1">
-            URL-friendly version of the title. Generated automatically but can be edited.
+            Version adaptée pour les URLs. Généré automatiquement mais modifiable.
           </p>
         </div>
         
-        {/* Author */}
+        {/* Auteur */}
         <div>
           <label htmlFor="author" className="block text-sm font-medium text-gray-700 mb-1">
-            Author
+            Auteur
           </label>
           <input
             type="text"
@@ -185,14 +185,14 @@ export default function ArticleCreationForm() {
             value={formData.author}
             onChange={handleInputChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Author name"
+            placeholder="Nom de l'auteur"
           />
         </div>
         
-        {/* Category */}
+        {/* Catégorie */}
         <div>
           <label htmlFor="category_id" className="block text-sm font-medium text-gray-700 mb-1">
-            Category
+            Catégorie
           </label>
           <div className="flex items-center">
             <Tag className="mr-2 text-gray-500" size={20} />
@@ -203,7 +203,7 @@ export default function ArticleCreationForm() {
               onChange={handleInputChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="">Select a category</option>
+              <option value="">Sélectionner une catégorie</option>
               {categories.map(category => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -213,10 +213,10 @@ export default function ArticleCreationForm() {
           </div>
         </div>
         
-        {/* Excerpt */}
+        {/* Extrait */}
         <div>
           <label htmlFor="excerpt" className="block text-sm font-medium text-gray-700 mb-1">
-            Excerpt
+            Extrait
           </label>
           <textarea
             id="excerpt"
@@ -225,18 +225,18 @@ export default function ArticleCreationForm() {
             onChange={handleInputChange}
             rows="3"
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Brief summary of the article"
+            placeholder="Résumé court de l'article"
           />
         </div>
         
-        {/* Content */}
+        {/* Contenu */}
         <div>
           <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
-            Content
+            Contenu
           </label>
           <div className="flex items-center mb-2">
             <FileText className="mr-2 text-gray-500" size={20} />
-            <span className="text-sm text-gray-500">Rich text editor</span>
+            <span className="text-sm text-gray-500">Éditeur de texte enrichi</span>
           </div>
           <textarea
             id="content"
@@ -245,17 +245,17 @@ export default function ArticleCreationForm() {
             onChange={handleInputChange}
             rows="10"
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Article content"
+            placeholder="Contenu de l'article"
           />
           <p className="text-xs text-gray-500 mt-1">
-            In a production environment, this would be replaced with a rich text editor.
+            Dans un environnement de production, ceci serait remplacé par un éditeur de texte enrichi.
           </p>
         </div>
         
-        {/* Featured Image */}
+        {/* Image à la une */}
         <div>
           <label htmlFor="featured_image" className="block text-sm font-medium text-gray-700 mb-1">
-            Featured Image
+            Image à la une
           </label>
           <div className="flex items-center mb-2">
             <Image className="mr-2 text-gray-500" size={20} />
@@ -271,23 +271,23 @@ export default function ArticleCreationForm() {
           
           {preview && (
             <div className="mt-2">
-              <p className="text-sm text-gray-500 mb-1">Preview:</p>
+              <p className="text-sm text-gray-500 mb-1">Aperçu :</p>
               <img 
                 src={preview} 
-                alt="Preview" 
+                alt="Aperçu" 
                 className="h-48 w-auto object-cover rounded-md" 
               />
             </div>
           )}
           <p className="text-xs text-gray-500 mt-1">
-            Images will be uploaded to the "article-images-human" bucket.
+            Les images seront uploadées dans le bucket "article-images-human".
           </p>
         </div>
         
-        {/* Publish Date */}
+        {/* Date de publication */}
         <div>
           <label htmlFor="publish_date" className="block text-sm font-medium text-gray-700 mb-1">
-            Publish Date
+            Date de publication
           </label>
           <div className="flex items-center">
             <Calendar className="mr-2 text-gray-500" size={20} />
@@ -302,7 +302,7 @@ export default function ArticleCreationForm() {
           </div>
         </div>
         
-        {/* Publication Status */}
+        {/* Statut de publication */}
         <div className="flex items-center">
           <input
             type="checkbox"
@@ -313,11 +313,11 @@ export default function ArticleCreationForm() {
             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
           />
           <label htmlFor="is_published" className="ml-2 block text-sm text-gray-700">
-            Publish immediately
+            Publier immédiatement
           </label>
         </div>
         
-        {/* Submit Button */}
+        {/* Bouton de soumission */}
         <div className="flex justify-end">
           <button
             type="button"
@@ -326,11 +326,11 @@ export default function ArticleCreationForm() {
             className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
           >
             {isLoading ? (
-              <span>Saving...</span>
+              <span>Enregistrement...</span>
             ) : (
               <>
                 <Save className="mr-2" size={18} />
-                <span>Save Article</span>
+                <span>Enregistrer l'article</span>
               </>
             )}
           </button>
