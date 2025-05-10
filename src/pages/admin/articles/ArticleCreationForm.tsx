@@ -113,7 +113,7 @@ export default function FormulaireCreationArticle() {
 
       // Enregistrement de l'article dans Supabase
       const { data, error } = await supabase
-        .from('journal_articles')
+        .from('journal_articles_human')
         .insert([{
           title: formData.title,
           slug: formData.slug,
