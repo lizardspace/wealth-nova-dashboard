@@ -126,10 +126,11 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
   ];
 
   const alertsItems = [
-    { to: "/admin/alertes", icon: Bell, label: "Vue d'ensemble", end: true },
-    { to: "/admin/alertes/inactifs", icon: Bell, label: "Clients inactifs" },
-    { to: "/admin/alertes/profils-incomplets", icon: Bell, label: "Profils incomplets" }
-  ];
+  { to: "/admin/alertes", icon: Bell, label: "Vue d'ensemble", end: true },
+  { to: "/admin/alertes/inactifs", icon: Bell, label: "Clients inactifs" },
+  { to: "/admin/alertes/profils-incomplets", icon: Bell, label: "Profils incomplets" },
+  { to: "/admin/alertes/nouveaux-contacts", icon: Bell, label: "Nouveaux contacts" } // Nouvel élément ajouté
+];
 
   const settingsItems = [
     { to: "/admin/parametres/roles", icon: Users, label: "Utilisateurs", end: true },
