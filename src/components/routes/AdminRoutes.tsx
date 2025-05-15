@@ -10,6 +10,7 @@ import DocumentsRoutes from './DocumentsRoutes';
 import AlertesRoutes from './AlertesRoutes';
 import SettingsRoutes from './SettingsRoutes';
 import BlogRoutes from './BlogRoutes'; // Importez le nouveau composant
+import ArticleView from '@/pages/admin/articles/ArticleView'; // Importez le composant de vue d'article
 
 const AdminRoutes = () => {
   return (
@@ -25,6 +26,7 @@ const AdminRoutes = () => {
       <Route path="/settings/*" element={<SettingsRoutes />} />
       <Route path="/blog/*" element={<BlogRoutes />} />
       <Route path="/articles/*" element={<BlogRoutes />} /> {/* Modifié de /blog/* à /articles/* */}
+      <Route path="/article/:id" element={<ArticleView />} />
     </Routes>
   );
 };
