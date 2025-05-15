@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Edit, Trash2, Eye, Calendar as CalendarIcon, Tag as TagIcon, AlertCircle } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
+import { Link } from 'react-router-dom';
 
 // Initialisation du client Supabase
 const supabaseUrl = 'https://xoxbpdkqvtulavbpfmgu.supabase.co';
@@ -307,15 +308,13 @@ export default function ListeArticles() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div className="flex justify-end space-x-2">
-                                                <a
-                                                    href={`/admin/article/${article.id}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
+                                                <Link
+                                                    to={`/admin/article/${article.id}`}
                                                     className="text-blue-600 hover:text-blue-900 p-1 rounded-full hover:bg-blue-50 transition-colors duration-200"
                                                     title="Voir"
                                                 >
                                                     <Eye className="h-4 w-4" />
-                                                </a>
+                                                </Link>
                                                 <a
                                                     href={`/admin/articles/edit/${article.id}`}
                                                     className="text-indigo-600 hover:text-indigo-900 p-1 rounded-full hover:bg-indigo-50 transition-colors duration-200"
