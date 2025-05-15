@@ -23,7 +23,8 @@ const AdminRoutes = () => {
       <Route path="/documents/*" element={<DocumentsRoutes />} />
       <Route path="/alertes/*" element={<AlertesRoutes />} />
       <Route path="/settings/*" element={<SettingsRoutes />} />
-      <Route path="/blog/*" element={<BlogRoutes />} /> {/* Nouvelle route */}
+      <Route path="/blog/*" element={<BlogRoutes />} />
+      <Route path="/articles/*" element={<BlogRoutes />} /> {/* Modifié de /blog/* à /articles/* */}
     </Routes>
   );
 };
