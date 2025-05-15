@@ -3,14 +3,37 @@ import { createClient } from '@supabase/supabase-js';
 import { Save, ArrowLeft, Calendar, Trash2, Image as ImageIcon, Tag as TagIcon, AlertCircle } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
-
-// Import dynamique de l'éditeur pour éviter les erreurs côté serveur
-const Editor = dynamic(() => import('../components/Editor'), { ssr: false });
+import 'react-quill/dist/quill.snow.css';
 
 // Initialisation du client Supabase
 const supabaseUrl = 'https://xoxbpdkqvtulavbpfmgu.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhveGJwZGtxdnR1bGF2YnBmbWd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NDk0MjMsImV4cCI6MjA2MDMyNTQyM30.XVzmmTfjcMNDchCd7ed-jG3N8WoLuD3RyDZguyZh1EM';
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Configuration de l'éditeur riche
+const RichTextEditor = dynamic(() => import('react-quill'), {
+  ssr: false,
+  loading: () => <p className="p-4 text-gray-500">Chargement de l'éditeur...</p>
+});
+
+const modules = {
+  toolbar: [
+    [{ header: [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ color: [] }, { background: [] }],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    ['link', 'image'],
+    ['clean']
+  ]
+};
+
+const formats = [
+  'header',
+  'bold', 'italic', 'underline', 'strike',
+  'color', 'background',
+  'list', 'bullet',
+  'link', 'image'
+];
 
 const ModifierArticle = () => {
   const router = useRouter();
@@ -116,35 +139,30 @@ const ModifierArticle = () => {
     if (!file) return;
     
     try {
-      // Vérifier le type et la taille du fichier
       if (!file.type.startsWith('image/')) {
         showNotification('Veuillez sélectionner une image', 'error');
         return;
       }
       
-      if (file.size > 5 * 1024 * 1024) { // 5MB max
+      if (file.size > 5 * 1024 * 1024) {
         showNotification('L\'image est trop volumineuse (max 5MB)', 'error');
         return;
       }
       
-      // Créer un aperçu local
       const reader = new FileReader();
       reader.onload = (e) => setImagePreview(e.target.result);
       reader.readAsDataURL(file);
       
-      // Générer un nom de fichier unique
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `journal_images/${fileName}`;
       
-      // Télécharger l'image vers Supabase Storage
       const { data, error } = await supabase.storage
         .from('images')
         .upload(filePath, file);
         
       if (error) throw error;
       
-      // Obtenir l'URL publique de l'image
       const { data: { publicUrl } } = supabase.storage
         .from('images')
         .getPublicUrl(filePath);
@@ -213,7 +231,6 @@ const ModifierArticle = () => {
     }
   };
   
-  // Avertissement avant de quitter la page si des modifications non sauvegardées
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       if (contentChanged) {
@@ -226,12 +243,11 @@ const ModifierArticle = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [contentChanged]);
   
-  // Confirmation avant de naviguer si des modifications non sauvegardées
   useEffect(() => {
     const handleRouteChange = (url) => {
       if (contentChanged && !window.confirm('Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter cette page?')) {
         router.events.emit('routeChangeError');
-        throw 'Navigation annulée';  // Annule la navigation
+        throw 'Navigation annulée';
       }
     };
     
@@ -254,14 +270,11 @@ const ModifierArticle = () => {
     <div className="max-w-6xl mx-auto p-6 bg-white rounded-lg shadow-md">
       {/* Notification */}
       {notification.show && (
-        <div 
-          className={`mb-4 p-4 rounded-md flex items-center ${
-            notification.type === 'error' 
-              ? 'bg-red-50 text-red-700 border-l-4 border-red-500' 
-              : 'bg-green-50 text-green-700 border-l-4 border-green-500'
-          }`}
-          style={{ animation: "slideIn 0.3s ease-out" }}
-        >
+        <div className={`mb-4 p-4 rounded-md flex items-center ${
+          notification.type === 'error' 
+            ? 'bg-red-50 text-red-700 border-l-4 border-red-500' 
+            : 'bg-green-50 text-green-700 border-l-4 border-green-500'
+        }`}>
           {notification.type === 'error' ? (
             <AlertCircle className="h-5 w-5 mr-2" />
           ) : (
@@ -278,7 +291,7 @@ const ModifierArticle = () => {
         <div className="flex items-center space-x-2">
           <button 
             onClick={() => router.push('/admin/articles')}
-            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors duration-200"
+            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -293,7 +306,7 @@ const ModifierArticle = () => {
               contentChanged 
                 ? 'bg-blue-600 text-white hover:bg-blue-700' 
                 : 'bg-gray-300 text-gray-600'
-            } transition-colors duration-200`}
+            }`}
           >
             {isSaving ? (
               <>
@@ -377,9 +390,14 @@ const ModifierArticle = () => {
               Contenu
             </label>
             <div className="border border-gray-300 rounded-md">
-              <Editor 
-                initialValue={article.content} 
-                onChange={handleEditorChange} 
+              <RichTextEditor
+                theme="snow"
+                value={article.content}
+                onChange={handleEditorChange}
+                modules={modules}
+                formats={formats}
+                placeholder="Rédigez votre contenu ici..."
+                className="h-[400px]"
               />
             </div>
           </div>
@@ -465,7 +483,7 @@ const ModifierArticle = () => {
                     setArticle(prev => ({ ...prev, featured_image: '' }));
                     setContentChanged(true);
                   }}
-                  className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors duration-200"
+                  className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -507,14 +525,6 @@ const ModifierArticle = () => {
           </div>
         </div>
       </div>
-      
-      {/* Styles pour les animations */}
-      <style jsx global>{`
-        @keyframes slideIn {
-          from { transform: translateY(-10px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-      `}</style>
     </div>
   );
 };
