@@ -140,7 +140,6 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
 
   const blogItems = [
   { to: "/admin/blog", icon: BookOpen, label: "Articles", end: true },
-  { to: "/admin/blog/nouveau", icon: BookOpen, label: "Nouvel article" },
   { to: "/admin/blog/categories", icon: BookOpen, label: "Catégories" },
   { to: "/admin/blog/commentaires", icon: BookOpen, label: "Commentaires" }
 ];

@@ -9,7 +9,7 @@ import ModifierArticle from '@/pages/admin/articles/ModifierArticle'; // Importe
 const BlogRoutes = () => {
   return (
     <Routes>
-      <Route index element={<ArticleCreationForm />} />
+      <Route index element={<ArticleManagement />} />
       <Route path="nouveau" element={<ArticleManagement />} />
       <Route path="edit/:id" element={<ModifierArticle />} /> {/* Ajoutez cette ligne */}
       <Route path="categories" element={<CategoryCreationForm />} />
