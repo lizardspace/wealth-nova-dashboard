@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Save, Image, FileText, Calendar, Tag } from 'lucide-react';
+import { Save, Image, FileText, Calendar, Tag, Bold, Italic, List, Code, Link } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
+import { EditorState, RichUtils, convertToRaw, ContentState } from 'draft-js';
+import { Editor } from 'react-draft-wysiwyg';
+import draftToHtml from 'draftjs-to-html';
+import htmlToDraft from 'html-to-draftjs';
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 
 // Initialisation du client Supabase
 const supabaseUrl = 'https://xoxbpdkqvtulavbpfmgu.supabase.co';
@@ -8,11 +13,12 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function FormulaireCreationArticle() {
+  const [editorState, setEditorState] = useState(EditorState.createEmpty());
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
     excerpt: '',
-    content: '',
+    content: '', // Contiendra le HTML généré depuis l'éditeur
     featured_image: null,
     category_id: '',
     author: '',
@@ -56,12 +62,41 @@ export default function FormulaireCreationArticle() {
     setFormData(prev => ({ ...prev, slug: generatedSlug }));
   }, [formData.title]);
 
+  // Mise à jour du champ content avec le HTML généré par Draft.js
+  useEffect(() => {
+    const contentHtml = draftToHtml(convertToRaw(editorState.getCurrentContent()));
+    setFormData(prev => ({ ...prev, content: contentHtml }));
+  }, [editorState]);
+
+  // Charger du HTML existant dans l'éditeur (utile pour l'édition)
+  const loadContentToEditor = (htmlContent) => {
+    const contentBlock = htmlToDraft(htmlContent);
+    if (contentBlock) {
+      const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
+      const editorState = EditorState.createWithContent(contentState);
+      setEditorState(editorState);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+  };
+
+  const handleEditorStateChange = (state) => {
+    setEditorState(state);
+  };
+
+  const handleKeyCommand = (command) => {
+    const newState = RichUtils.handleKeyCommand(editorState, command);
+    if (newState) {
+      setEditorState(newState);
+      return 'handled';
+    }
+    return 'not-handled';
   };
 
   const handleImageChange = (e) => {
@@ -118,7 +153,7 @@ export default function FormulaireCreationArticle() {
           title: formData.title,
           slug: formData.slug,
           excerpt: formData.excerpt,
-          content: formData.content,
+          content: formData.content, // HTML généré par Draft.js
           featured_image: imageUrl,
           category_id: formData.category_id || null,
           author: formData.author || null,
@@ -141,6 +176,7 @@ export default function FormulaireCreationArticle() {
         publish_date: new Date().toISOString().split('T')[0],
         is_published: false
       });
+      setEditorState(EditorState.createEmpty());
       setPreview(null);
       
       showNotification('Article créé avec succès !');
@@ -150,6 +186,20 @@ export default function FormulaireCreationArticle() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Configuration de la barre d'outils de l'éditeur
+  const toolbarOptions = {
+    options: ['inline', 'blockType', 'fontSize', 'list', 'textAlign', 'colorPicker', 'link', 'embedded', 'emoji', 'image', 'history'],
+    inline: {
+      options: ['bold', 'italic', 'underline', 'strikethrough', 'monospace'],
+    },
+    blockType: {
+      options: ['Normal', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'Blockquote'],
+    },
+    list: {
+      options: ['unordered', 'ordered'],
+    },
   };
 
   return (
@@ -256,7 +306,7 @@ export default function FormulaireCreationArticle() {
           />
         </div>
         
-        {/* Contenu */}
+        {/* Contenu avec Draft.js */}
         <div>
           <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
             Contenu
@@ -265,18 +315,17 @@ export default function FormulaireCreationArticle() {
             <FileText className="mr-2 text-gray-500" size={20} />
             <span className="text-sm text-gray-500">Éditeur de texte enrichi</span>
           </div>
-          <textarea
-            id="content"
-            name="content"
-            value={formData.content}
-            onChange={handleInputChange}
-            rows="10"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Contenu de l'article"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Dans un environnement de production, ceci serait remplacé par un éditeur de texte enrichi.
-          </p>
+          <div className="border border-gray-300 rounded-md">
+            <Editor
+              editorState={editorState}
+              onEditorStateChange={handleEditorStateChange}
+              handleKeyCommand={handleKeyCommand}
+              toolbar={toolbarOptions}
+              wrapperClassName="w-full"
+              editorClassName="px-4 py-2 min-h-[300px]"
+              placeholder="Contenu de l'article"
+            />
+          </div>
         </div>
         
         {/* Image à la une */}
@@ -342,6 +391,16 @@ export default function FormulaireCreationArticle() {
           <label htmlFor="is_published" className="ml-2 block text-sm text-gray-700">
             Publier immédiatement
           </label>
+        </div>
+        
+        {/* Aperçu du HTML généré (pour débogage, peut être supprimé en production) */}
+        <div className="border-t pt-4">
+          <details>
+            <summary className="cursor-pointer text-sm font-medium text-gray-700">Aperçu du HTML généré</summary>
+            <div className="mt-2 p-3 bg-gray-50 rounded overflow-auto max-h-40">
+              <pre className="text-xs">{formData.content}</pre>
+            </div>
+          </details>
         </div>
         
         {/* Bouton de soumission */}
