@@ -13,7 +13,8 @@ import {
   Shield,
   ChevronDown,
   ChevronRight,
-  BookOpen
+  BookOpen,
+  Youtube
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -140,6 +141,7 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
 
   const blogItems = [
   { to: "/admin/blog", icon: BookOpen, label: "Articles", end: true },
+  { to: "/admin/blog/videos", icon: Youtube, label: "Vidéos" },
   { to: "/admin/blog/categories", icon: BookOpen, label: "Catégories" },
   { to: "/admin/blog/commentaires", icon: BookOpen, label: "Commentaires" }
 ];
