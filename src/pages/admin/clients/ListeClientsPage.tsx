@@ -1,289 +1,484 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, UserPlus, Filter, BarChart, BriefcaseIcon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  Button,
+  Paper,
+  TextField,
+  MenuItem,
+  Grid,
+  Tab,
+  Tabs,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
+  Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  SelectChangeEvent
+} from '@mui/material';
+import {
+  Edit2 as EditIcon,
+  Trash2 as DeleteIcon,
+  ArrowLeft as ArrowBackIcon,
+  Save as SaveIcon,
+  Plus as AddIcon
+} from 'lucide-react';
+import { supabase } from './../../../lib/supabase';
 
-// Données fictives pour la démo
-const mockClients = [
-  { id: 1, nom: "Dupont", prenom: "Jean", dateNaissance: "15/04/1975", telephone: "06 12 34 56 78", email: "jean.dupont@email.com", abonnement: true, scoreIA: 85, statutProfil: "complet", derniereActivite: "10/04/2025", patrimoineGlobal: 850000, actifs: 920000, passifs: 70000 },
-  { id: 2, nom: "Martin", prenom: "Sophie", dateNaissance: "22/07/1980", telephone: "06 23 45 67 89", email: "sophie.martin@email.com", abonnement: true, scoreIA: 72, statutProfil: "complet", derniereActivite: "12/04/2025", patrimoineGlobal: 650000, actifs: 790000, passifs: 140000 },
-  { id: 3, nom: "Bernard", prenom: "Pierre", dateNaissance: "30/11/1965", telephone: "06 34 56 78 90", email: "pierre.bernard@email.com", abonnement: false, scoreIA: 65, statutProfil: "incomplet", derniereActivite: "05/03/2025", patrimoineGlobal: 420000, actifs: 490000, passifs: 70000 },
-  { id: 4, nom: "Petit", prenom: "Marie", dateNaissance: "18/09/1990", telephone: "06 45 67 89 01", email: "marie.petit@email.com", abonnement: false, scoreIA: 91, statutProfil: "complet", derniereActivite: "15/04/2025", patrimoineGlobal: 1250000, actifs: 1400000, passifs: 150000 },
-  { id: 5, nom: "Robert", prenom: "Antoine", dateNaissance: "07/06/1972", telephone: "06 56 78 90 12", email: "antoine.robert@email.com", abonnement: true, scoreIA: 78, statutProfil: "complet", derniereActivite: "08/04/2025", patrimoineGlobal: 720000, actifs: 920000, passifs: 200000 }
-];
+interface User {
+  id: string;
+  last_name: string;
+  first_name: string;
+  power: number;
+  email: string;
+  created_at: string;
+  civilite: 'M.' | 'Mme' | 'Mlle';
+  date_naissance: string;
+  part_fiscale: number;
+}
 
-const ListeClientsPage = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredClients, setFilteredClients] = useState(mockClients);
-  const [filter, setFilter] = useState({
-    abonnement: "all",
-    statut: "all",
-    score: "all"
-  });
+const UserManagement: React.FC = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const [users, setUsers] = useState<User[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success' as 'success' | 'error'
+  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const term = e.target.value.toLowerCase();
-    setSearchTerm(term);
-    
-    applyFilters(term, filter);
-  };
+  // Fetch users from Supabase
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        if (id && id !== 'new') {
+          const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', id)
+            .single();
 
-  const handleFilterChange = (key: string, value: string) => {
-    const newFilter = { ...filter, [key]: value };
-    setFilter(newFilter);
-    applyFilters(searchTerm, newFilter);
-  };
+          if (error) throw error;
+          setCurrentUser(data);
+        } else if (!id) {
+          const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-  const applyFilters = (term: string, currentFilter: typeof filter) => {
-    let results = mockClients;
-    
-    // Apply search term
-    if (term) {
-      results = results.filter(client => 
-        client.nom.toLowerCase().includes(term) || 
-        client.prenom.toLowerCase().includes(term) || 
-        client.email.toLowerCase().includes(term)
-      );
-    }
-
-    // Apply abonnement filter
-    if (currentFilter.abonnement !== "all") {
-      const isSubscribed = currentFilter.abonnement === "true";
-      results = results.filter(client => client.abonnement === isSubscribed);
-    }
-
-    // Apply statut filter
-    if (currentFilter.statut !== "all") {
-      results = results.filter(client => client.statutProfil === currentFilter.statut);
-    }
-
-    // Apply score filter
-    if (currentFilter.score !== "all") {
-      switch(currentFilter.score) {
-        case "high":
-          results = results.filter(client => client.scoreIA >= 80);
-          break;
-        case "medium":
-          results = results.filter(client => client.scoreIA >= 60 && client.scoreIA < 80);
-          break;
-        case "low":
-          results = results.filter(client => client.scoreIA < 60);
-          break;
+          if (error) throw error;
+          setUsers(data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        setSnackbar({
+          open: true,
+          message: 'Failed to fetch users',
+          severity: 'error'
+        });
+      } finally {
+        setLoading(false);
       }
+    };
+
+    fetchUsers();
+  }, [id]);
+
+  const handleSaveUser = async () => {
+    if (!currentUser) return;
+
+    setLoading(true);
+    try {
+      if (isNewUser) {
+        const { data, error } = await supabase
+          .from('users')
+          .insert([currentUser])
+          .select()
+          .single();
+
+        if (error) throw error;
+        
+        setSnackbar({
+          open: true,
+          message: 'User created successfully',
+          severity: 'success'
+        });
+        navigate(`/admin/users/${data.id}`);
+      } else {
+        const { error } = await supabase
+          .from('users')
+          .update(currentUser)
+          .eq('id', currentUser.id);
+
+        if (error) throw error;
+        
+        setSnackbar({
+          open: true,
+          message: 'User updated successfully',
+          severity: 'success'
+        });
+      }
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving user:', error);
+      setSnackbar({
+        open: true,
+        message: 'Failed to save user',
+        severity: 'error'
+      });
+    } finally {
+      setLoading(false);
     }
-    
-    setFilteredClients(results);
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('fr-FR', { 
-      style: 'currency', 
-      currency: 'EUR',
-      maximumFractionDigits: 0 
-    }).format(value);
+  const handleDeleteUser = async () => {
+    if (!currentUser) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', currentUser.id);
+
+      if (error) throw error;
+      
+      setSnackbar({
+        open: true,
+        message: 'User deleted successfully',
+        severity: 'success'
+      });
+      navigate('/admin/users');
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      setSnackbar({
+        open: true,
+        message: 'Failed to delete user',
+        severity: 'error'
+      });
+    } finally {
+      setLoading(false);
+      setOpenDeleteDialog(false);
+    }
   };
 
-  const handleClientClick = (clientId: number) => {
-    navigate(`/admin/clients/${clientId}`);
-  };
+  const filteredUsers = users.filter(user =>
+    `${user.first_name} ${user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (loading && !currentUser && id) {
+    return <Typography>Loading user data...</Typography>;
+  }
+
+  if (id) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+          <IconButton onClick={() => navigate('/admin/users')} sx={{ mr: 1 }}>
+            <ArrowBackIcon size={20} />
+          </IconButton>
+          <Typography variant="h4">
+            {isNewUser ? 'New User' : `${currentUser?.first_name} ${currentUser?.last_name}`}
+          </Typography>
+          
+          {!isEditing && !isNewUser && (
+            <Box sx={{ ml: 'auto' }}>
+              <Button
+                variant="contained"
+                startIcon={<EditIcon size={16} />}
+                onClick={() => setIsEditing(true)}
+                sx={{ mr: 2 }}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<DeleteIcon size={16} />}
+                onClick={() => setOpenDeleteDialog(true)}
+              >
+                Delete
+              </Button>
+            </Box>
+          )}
+        </Box>
+
+        <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)} sx={{ mb: 3 }}>
+          <Tab label="Profile" />
+          <Tab label="Related Data" />
+          <Tab label="Activity" />
+        </Tabs>
+
+        {tabValue === 0 && (
+          <Paper sx={{ p: 3 }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth margin="normal">
+                  <InputLabel>Title</InputLabel>
+                  <Select
+                    label="Title"
+                    name="civilite"
+                    value={currentUser?.civilite || 'M.'}
+                    onChange={(e) => currentUser && setCurrentUser({
+                      ...currentUser,
+                      civilite: e.target.value as 'M.' | 'Mme' | 'Mlle'
+                    })}
+                    disabled={!isEditing}
+                  >
+                    <MenuItem value="M.">Mr.</MenuItem>
+                    <MenuItem value="Mme">Mrs.</MenuItem>
+                    <MenuItem value="Mlle">Miss</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Power Level"
+                  name="power"
+                  type="number"
+                  value={currentUser?.power || ''}
+                  onChange={(e) => currentUser && setCurrentUser({
+                    ...currentUser,
+                    power: Number(e.target.value)
+                  })}
+                  margin="normal"
+                  disabled={!isEditing}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="First Name"
+                  name="first_name"
+                  value={currentUser?.first_name || ''}
+                  onChange={(e) => currentUser && setCurrentUser({
+                    ...currentUser,
+                    first_name: e.target.value
+                  })}
+                  margin="normal"
+                  disabled={!isEditing}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Last Name"
+                  name="last_name"
+                  value={currentUser?.last_name || ''}
+                  onChange={(e) => currentUser && setCurrentUser({
+                    ...currentUser,
+                    last_name: e.target.value
+                  })}
+                  margin="normal"
+                  disabled={!isEditing}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  name="email"
+                  type="email"
+                  value={currentUser?.email || ''}
+                  onChange={(e) => currentUser && setCurrentUser({
+                    ...currentUser,
+                    email: e.target.value
+                  })}
+                  margin="normal"
+                  disabled={!isEditing}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Birth Date"
+                  name="date_naissance"
+                  type="date"
+                  value={currentUser?.date_naissance?.split('T')[0] || ''}
+                  onChange={(e) => currentUser && setCurrentUser({
+                    ...currentUser,
+                    date_naissance: e.target.value
+                  })}
+                  margin="normal"
+                  InputLabelProps={{ shrink: true }}
+                  disabled={!isEditing}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Fiscal Part"
+                  name="part_fiscale"
+                  type="number"
+                  value={currentUser?.part_fiscale || ''}
+                  onChange={(e) => currentUser && setCurrentUser({
+                    ...currentUser,
+                    part_fiscale: Number(e.target.value)
+                  })}
+                  margin="normal"
+                  disabled={!isEditing}
+                />
+              </Grid>
+            </Grid>
+
+            {isEditing && (
+              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                  variant="outlined"
+                  onClick={() => isNewUser ? navigate('/admin/users') : setIsEditing(false)}
+                  sx={{ mr: 2 }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  startIcon={<SaveIcon size={16} />}
+                  onClick={handleSaveUser}
+                  disabled={loading}
+                >
+                  {loading ? 'Saving...' : 'Save'}
+                </Button>
+              </Box>
+            )}
+          </Paper>
+        )}
+
+        {tabValue === 1 && (
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Related Data
+            </Typography>
+            <Typography color="textSecondary">
+              User related data would be displayed here
+            </Typography>
+          </Paper>
+        )}
+
+        {tabValue === 2 && (
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              User Activity
+            </Typography>
+            <Typography color="textSecondary">
+              User activity logs would be displayed here
+            </Typography>
+          </Paper>
+        )}
+
+        <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
+          <DialogTitle>Confirm Deletion</DialogTitle>
+          <DialogContent>
+            Are you sure you want to delete this user? This action cannot be undone.
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenDeleteDialog(false)}>Cancel</Button>
+            <Button 
+              onClick={handleDeleteUser} 
+              color="error"
+              disabled={loading}
+            >
+              {loading ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Liste des clients</h1>
-        <Button 
-          className="flex items-center gap-2"
-          onClick={() => navigate("/admin/clients/new")}
+    <Box sx={{ p: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4">Users</Typography>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon size={16} />}
+          onClick={() => navigate('/admin/users/new')}
         >
-          <UserPlus className="h-4 w-4" />
-          Nouveau client
+          New User
         </Button>
-      </div>
+      </Box>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recherche et filtres</CardTitle>
-          <CardDescription>
-            Recherchez des clients par nom, prénom ou email et appliquez des filtres
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-grow">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher un client..."
-                value={searchTerm}
-                onChange={handleSearch}
-                className="pl-8"
-              />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Select 
-                defaultValue={filter.abonnement}
-                onValueChange={(value) => handleFilterChange('abonnement', value)}
-              >
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Abonnement" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous</SelectItem>
-                  <SelectItem value="true">Abonnés</SelectItem>
-                  <SelectItem value="false">Non abonnés</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Select 
-                defaultValue={filter.statut}
-                onValueChange={(value) => handleFilterChange('statut', value)}
-              >
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Statut profil" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous</SelectItem>
-                  <SelectItem value="complet">Complets</SelectItem>
-                  <SelectItem value="incomplet">Incomplets</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Select 
-                defaultValue={filter.score}
-                onValueChange={(value) => handleFilterChange('score', value)}
-              >
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Score IA" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous</SelectItem>
-                  <SelectItem value="high">Élevé (80+)</SelectItem>
-                  <SelectItem value="medium">Moyen (60-79)</SelectItem>
-                  <SelectItem value="low">Faible (&lt;60)</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Button variant="outline" size="icon">
-                <Filter className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <TextField
+        fullWidth
+        label="Search Users"
+        variant="outlined"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        sx={{ mb: 3 }}
+      />
 
-      <Card>
-        <CardContent className="pt-6 overflow-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="whitespace-nowrap">Nom</TableHead>
-                <TableHead className="whitespace-nowrap">Prénom</TableHead>
-                <TableHead className="whitespace-nowrap">Patrimoine global</TableHead>
-                <TableHead className="whitespace-nowrap">Téléphone</TableHead>
-                <TableHead className="whitespace-nowrap">Email</TableHead>
-                <TableHead className="whitespace-nowrap">Abonnement</TableHead>
-                <TableHead className="whitespace-nowrap">Score IA</TableHead>
-                <TableHead className="whitespace-nowrap">Statut</TableHead>
-                <TableHead className="whitespace-nowrap">Dernière activité</TableHead>
-                <TableHead className="whitespace-nowrap">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredClients.map((client) => (
-                <TableRow 
-                  key={client.id}
-                  className="cursor-pointer hover:bg-muted"
-                  onClick={() => handleClientClick(client.id)}
-                >
-                  <TableCell className="font-medium">{client.nom}</TableCell>
-                  <TableCell>{client.prenom}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <BriefcaseIcon className="h-4 w-4 text-muted-foreground"/>
-                      <span>{formatCurrency(client.patrimoineGlobal)}</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Actifs: {formatCurrency(client.actifs)} / Passifs: {formatCurrency(client.passifs)}
-                    </div>
-                  </TableCell>
-                  <TableCell>{client.telephone}</TableCell>
-                  <TableCell>{client.email}</TableCell>
-                  <TableCell>
-                    <Badge variant={client.abonnement ? "default" : "outline"}>
-                      {client.abonnement ? "Abonné" : "Non abonné"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge 
-                      className={`${
-                        client.scoreIA > 80 ? "bg-green-100 text-green-800" : 
-                        client.scoreIA > 60 ? "bg-yellow-100 text-yellow-800" : 
-                        "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {client.scoreIA}/100
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={client.statutProfil === "complet" ? "default" : "destructive"}>
-                      {client.statutProfil}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{client.derniereActivite}</TableCell>
-                  <TableCell>
-                    <div className="flex space-x-1">
-                      <Button 
-                        size="icon" 
-                        variant="outline" 
-                        className="h-8 w-8"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Add analysis action here
-                        }}
-                      >
-                        <BarChart className="h-4 w-4" />
-                        <span className="sr-only">Analyser</span>
-                      </Button>
-                      <Button 
-                        size="icon" 
-                        variant="outline" 
-                        className="h-8 w-8"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Add portfolio action here
-                        }}
-                      >
-                        <BriefcaseIcon className="h-4 w-4" />
-                        <span className="sr-only">Portfolio</span>
-                      </Button>
-                    </div>
-                  </TableCell>
+      {loading ? (
+        <Typography>Loading users...</Typography>
+      ) : (
+        <Paper>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell>Title</TableCell>
+                  <TableCell>Power</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+              </TableHead>
+              <TableBody>
+                {filteredUsers.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>{`${user.first_name} ${user.last_name}`}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.civilite}</TableCell>
+                    <TableCell>{user.power}</TableCell>
+                    <TableCell>
+                      <IconButton onClick={() => navigate(`/admin/users/${user.id}`)}>
+                        <EditIcon size={16} />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      )}
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Box>
   );
 };
 
-export default ListeClientsPage;
+export default UserManagement;
