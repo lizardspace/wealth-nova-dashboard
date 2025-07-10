@@ -1,20 +1,26 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  BarChart, 
-  Users, 
-  Briefcase, 
+import {
+  BarChart,
+  Users,
+  Briefcase,
   Settings,
-  FileText, 
-  Bell, 
-  Calendar, 
+  FileText,
+  Bell,
+  Calendar,
   Brain,
   Home,
   Shield,
   ChevronDown,
   ChevronRight,
   BookOpen,
-  Youtube
+  Youtube,
+  CreditCard,
+  Package,
+  DollarSign,
+  List,
+  Sunset,
+  Activity
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -127,11 +133,11 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
   ];
 
   const alertsItems = [
-  { to: "/admin/alertes", icon: Bell, label: "Vue d'ensemble", end: true },
-  { to: "/admin/alertes/inactifs", icon: Bell, label: "Clients inactifs" },
-  { to: "/admin/alertes/profils-incomplets", icon: Bell, label: "Profils incomplets" },
-  { to: "/admin/alertes/nouveaux-contacts", icon: Bell, label: "Nouveaux contacts" } // Nouvel élément ajouté
-];
+    { to: "/admin/alertes", icon: Bell, label: "Vue d'ensemble", end: true },
+    { to: "/admin/alertes/inactifs", icon: Bell, label: "Clients inactifs" },
+    { to: "/admin/alertes/profils-incomplets", icon: Bell, label: "Profils incomplets" },
+    { to: "/admin/alertes/nouveaux-contacts", icon: Bell, label: "Nouveaux contacts" } // Nouvel élément ajouté
+  ];
 
   const settingsItems = [
     { to: "/admin/parametres/roles", icon: Users, label: "Utilisateurs", end: true },
@@ -140,11 +146,43 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
   ];
 
   const blogItems = [
-  { to: "/admin/blog", icon: BookOpen, label: "Articles", end: true },
-  { to: "/admin/blog/videos", icon: Youtube, label: "Vidéos" },
-  { to: "/admin/blog/categories", icon: BookOpen, label: "Catégories" },
-  { to: "/admin/blog/commentaires", icon: BookOpen, label: "Commentaires" }
-];
+    { to: "/admin/blog", icon: BookOpen, label: "Articles", end: true },
+    { to: "/admin/blog/videos", icon: Youtube, label: "Vidéos" },
+    { to: "/admin/blog/categories", icon: BookOpen, label: "Catégories" },
+    { to: "/admin/blog/commentaires", icon: BookOpen, label: "Commentaires" }
+  ];
+
+  // Dans SidebarContent.tsx
+  const patrimoineItems = [
+    { to: "/admin/patrimoine", icon: Briefcase, label: "Vue d'ensemble", end: true },
+    { to: "/admin/patrimoine/assurance-vie", icon: Shield, label: "Assurances vie" },
+    { to: "/admin/patrimoine/biens-immobiliers", icon: Home, label: "Biens immobiliers" },
+    { to: "/admin/patrimoine/comptes-bancaires", icon: FileText, label: "Comptes bancaires" },
+    { to: "/admin/patrimoine/entreprises", icon: Briefcase, label: "Entreprises" },
+    { to: "/admin/patrimoine/credits", icon: CreditCard, label: "Crédits" },
+    { to: "/admin/patrimoine/autres-patrimoines", icon: Package, label: "Autres patrimoines" }
+  ];
+
+  const fiscaliteItems = [
+    { to: "/admin/fiscalite", icon: FileText, label: "Vue d'ensemble", end: true },
+    { to: "/admin/fiscalite/impot-revenu", icon: FileText, label: "Impôt revenu" },
+    { to: "/admin/fiscalite/ifi", icon: FileText, label: "IFI" }
+  ];
+
+  const budgetItems = [
+    { to: "/admin/budgets", icon: DollarSign, label: "Vue d'ensemble", end: true },
+    { to: "/admin/budgets/liste", icon: List, label: "Liste des budgets" }
+  ];
+
+  const retraiteItems = [
+    { to: "/admin/retraite", icon: Sunset, label: "Vue d'ensemble", end: true },
+    { to: "/admin/retraite/liste", icon: List, label: "Liste des retraites" }
+  ];
+
+  const trainDeVieItems = [
+    { to: "/admin/train-de-vie", icon: Activity, label: "Vue d'ensemble", end: true },
+    { to: "/admin/train-de-vie/liste", icon: List, label: "Dépenses" }
+  ];
 
   return (
     <div className="w-64 h-full flex flex-col bg-slate-50 border-r border-slate-200 overflow-y-auto">
@@ -158,6 +196,12 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
         <SidebarSection title="Alertes" items={alertsItems} onItemClick={onItemClick} />
         <SidebarSection title="Blog" items={blogItems} onItemClick={onItemClick} />
         <SidebarSection title="Paramètres" items={settingsItems} onItemClick={onItemClick} />
+        // Ajoutez ces nouvelles sections dans le return de SidebarContent
+        <SidebarSection title="Patrimoine" items={patrimoineItems} onItemClick={onItemClick} />
+        <SidebarSection title="Fiscalité" items={fiscaliteItems} onItemClick={onItemClick} />
+        <SidebarSection title="Budgets" items={budgetItems} onItemClick={onItemClick} />
+        <SidebarSection title="Retraite" items={retraiteItems} onItemClick={onItemClick} />
+        <SidebarSection title="Train de vie" items={trainDeVieItems} onItemClick={onItemClick} />
       </nav>
 
       <div className="p-4 border-t border-slate-200 bg-white">

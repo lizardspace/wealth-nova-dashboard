@@ -9,8 +9,13 @@ import AIRoutes from './AIRoutes';
 import DocumentsRoutes from './DocumentsRoutes';
 import AlertesRoutes from './AlertesRoutes';
 import SettingsRoutes from './SettingsRoutes';
-import BlogRoutes from './BlogRoutes'; // Importez le nouveau composant
-import ArticleView from '@/pages/admin/articles/ArticleView'; // Importez le composant de vue d'article
+import BlogRoutes from './BlogRoutes';
+import ArticleView from '@/pages/admin/articles/ArticleView';
+import PatrimoineRoutes from './PatrimoineRoutes'; // Nouveau
+import FiscaliteRoutes from './FiscaliteRoutes'; // Nouveau
+import BudgetRoutes from './BudgetRoutes'; // Nouveau
+import RetraiteRoutes from './RetraiteRoutes'; // Nouveau
+import TrainDeVieRoutes from './TrainDeVieRoutes'; // Nouveau
 
 const AdminRoutes = () => {
   return (
@@ -25,8 +30,15 @@ const AdminRoutes = () => {
       <Route path="/alertes/*" element={<AlertesRoutes />} />
       <Route path="/settings/*" element={<SettingsRoutes />} />
       <Route path="/blog/*" element={<BlogRoutes />} />
-      <Route path="/articles/*" element={<BlogRoutes />} /> {/* Modifié de /blog/* à /articles/* */}
+      <Route path="/articles/*" element={<BlogRoutes />} />
       <Route path="/article/:id" element={<ArticleView />} />
+      
+      {/* Nouvelles routes */}
+      <Route path="/patrimoine/*" element={<PatrimoineRoutes />} />
+      <Route path="/fiscalite/*" element={<FiscaliteRoutes />} />
+      <Route path="/budgets/*" element={<BudgetRoutes />} />
+      <Route path="/retraite/*" element={<RetraiteRoutes />} />
+      <Route path="/train-de-vie/*" element={<TrainDeVieRoutes />} />
     </Routes>
   );
 };
