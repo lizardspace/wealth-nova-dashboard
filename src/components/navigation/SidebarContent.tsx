@@ -196,7 +196,6 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
         <SidebarSection title="Alertes" items={alertsItems} onItemClick={onItemClick} />
         <SidebarSection title="Blog" items={blogItems} onItemClick={onItemClick} />
         <SidebarSection title="Paramètres" items={settingsItems} onItemClick={onItemClick} />
-        // Ajoutez ces nouvelles sections dans le return de SidebarContent
         <SidebarSection title="Patrimoine" items={patrimoineItems} onItemClick={onItemClick} />
         <SidebarSection title="Fiscalité" items={fiscaliteItems} onItemClick={onItemClick} />
         <SidebarSection title="Budgets" items={budgetItems} onItemClick={onItemClick} />
