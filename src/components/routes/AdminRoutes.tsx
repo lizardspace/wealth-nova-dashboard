@@ -16,6 +16,7 @@ import FiscaliteRoutes from './FiscaliteRoutes'; // Nouveau
 import BudgetRoutes from './BudgetRoutes'; // Nouveau
 import RetraiteRoutes from './RetraiteRoutes'; // Nouveau
 import TrainDeVieRoutes from './TrainDeVieRoutes'; // Nouveau
+import AnalyseClientsRoutes from './AnalyseClientsRoutes'; // Ajout de la nouvelle route
 
 const AdminRoutes = () => {
   return (
@@ -39,6 +40,7 @@ const AdminRoutes = () => {
       <Route path="/budgets/*" element={<BudgetRoutes />} />
       <Route path="/retraite/*" element={<RetraiteRoutes />} />
       <Route path="/train-de-vie/*" element={<TrainDeVieRoutes />} />
+      <Route path="/analyse-clients/*" element={<AnalyseClientsRoutes />} />
     </Routes>
   );
 };
