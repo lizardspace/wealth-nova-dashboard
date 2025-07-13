@@ -7,10 +7,12 @@ import BudgetLifestyle from '../../pages/admin/analyse-clients/BudgetLifestyle';
 import TaxAnalysis from '../../pages/admin/analyse-clients/TaxAnalysis';
 import InvestorProfiles from '../../pages/admin/analyse-clients/InvestorProfiles';
 import PatrimonyAnalysis from '../../pages/admin/analyse-clients/PatrimonyAnalysis';
+import FamilySummary from '../../pages/admin/analyse-clients/FamilySummary';
 
 const AnalyseClientsRoutes = () => {
   return (
     <Routes>
+      <Route path="/family-summary" element={<FamilySummary />} />
       <Route path="/credit-analysis" element={<CreditAnalysis />} />
       <Route path="/insurance-analysis" element={<InsuranceAnalysis />} />
       <Route path="/user-goals" element={<UserGoals />} />

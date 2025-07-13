@@ -186,6 +186,7 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
   ];
 
   const analyseClientsItems = [
+    { to: "/admin/analyse-clients/family-summary", icon: Users, label: "Synthèse familiale" },
     { to: "/admin/analyse-clients/credit-analysis", icon: CreditCard, label: "Analyse de Crédit" },
     { to: "/admin/analyse-clients/insurance-analysis", icon: Shield, label: "Analyse d'Assurance" },
     { to: "/admin/analyse-clients/user-goals", icon: Users, label: "Objectifs Financiers" },
