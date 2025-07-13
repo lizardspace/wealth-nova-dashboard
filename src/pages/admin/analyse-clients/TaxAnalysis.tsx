@@ -22,7 +22,7 @@ import {
   Snackbar,
   Alert,
   IconButton,
-  Tooltip,
+  Tooltip as MuiTooltip,
   useTheme
 } from '@mui/material';
 import {
@@ -37,14 +37,14 @@ import {
   School as KnowledgeIcon,
   TrendingUp as TrendIcon
 } from '@mui/icons-material';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip as ChartTooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import { supabase } from '../../../lib/supabase';
 
 // Enregistrer les composants ChartJS
 ChartJS.register(
   ArcElement,
-  Tooltip,
+  ChartTooltip,
   Legend,
   CategoryScale,
   LinearScale,
@@ -260,16 +260,16 @@ const TaxAnalysis: React.FC = () => {
           Analyse Fiscale des Clients
         </Typography>
         <Box>
-          <Tooltip title="Actualiser les données">
+          <MuiTooltip title="Actualiser les données">
             <IconButton onClick={handleRefresh} color="primary" sx={{ mr: 1 }}>
               <RefreshIcon />
             </IconButton>
-          </Tooltip>
-          <Tooltip title="Exporter les données">
+          </MuiTooltip>
+          <MuiTooltip title="Exporter les données">
             <IconButton onClick={handleExportData} color="primary">
               <DownloadIcon />
             </IconButton>
-          </Tooltip>
+          </MuiTooltip>
         </Box>
       </Box>
 
@@ -431,7 +431,7 @@ const TaxAnalysis: React.FC = () => {
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <CircularProgress />
+          <LinearProgress sx={{ width: '100%' }} />
         </Box>
       ) : (
         <Paper>

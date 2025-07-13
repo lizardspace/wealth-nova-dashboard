@@ -44,7 +44,26 @@ import {
 } from '@mui/icons-material';
 import { supabase } from '../../../lib/supabase';
 import { useNavigate } from 'react-router-dom';
-import { formatCurrency, formatPercentage } from '../../../utils/formatters';
+
+// Fonctions de formattage intégrées
+const formatCurrency = (value: number | null | undefined): string => {
+  if (value === null || value === undefined) return '0,00 €';
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value);
+};
+
+const formatPercentage = (value: number | null | undefined): string => {
+  if (value === null || value === undefined) return '0%';
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'percent',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value / 100); // Division par 100 car le composant attend des valeurs entre 0 et 1
+};
 
 interface BudgetLifestyle {
   user_id: string;
@@ -82,7 +101,6 @@ const BudgetLifestyle: React.FC = () => {
     totalBudgeted: 0
   });
 
-  // Expense categories with icons and colors
   const expenseCategories = [
     { key: 'rent', label: 'Loyer', icon: HomeIcon, color: theme.palette.primary.main },
     { key: 'housing_charges', label: 'Charges', icon: ChargesIcon, color: theme.palette.info.main },
@@ -95,7 +113,6 @@ const BudgetLifestyle: React.FC = () => {
     { key: 'miscellaneous', label: 'Divers', icon: MiscIcon, color: theme.palette.text.secondary }
   ];
 
-  // Fetch budget lifestyle data from view
   useEffect(() => {
     const fetchBudgetLifestyles = async () => {
       try {
@@ -111,7 +128,6 @@ const BudgetLifestyle: React.FC = () => {
 
         setBudgetLifestyles(data || []);
 
-        // Calculate statistics
         const totalExpenses = data.reduce((sum, budget) => sum + (budget.total_expenses || 0), 0);
         const avgExpenses = data.length > 0 ? totalExpenses / data.length : 0;
         const totalBudgeted = data.reduce((sum, budget) => sum + (budget.budgeted_expenses || 0), 0);
@@ -139,10 +155,8 @@ const BudgetLifestyle: React.FC = () => {
     fetchBudgetLifestyles();
   }, []);
 
-  // Calculate category averages
   const calculateCategoryAverages = () => {
     if (budgetLifestyles.length === 0) return {};
-
     return expenseCategories.reduce((acc, category) => {
       const total = budgetLifestyles.reduce(
         (sum, budget) => sum + (budget[category.key as keyof BudgetLifestyle] || 0), 0
@@ -155,13 +169,10 @@ const BudgetLifestyle: React.FC = () => {
   };
 
   const categoryAverages = calculateCategoryAverages();
-
-  // Filter budgets based on search term
   const filteredBudgets = budgetLifestyles.filter(budget =>
     `${budget.first_name} ${budget.last_name}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Get expense category
   const getExpenseCategory = (totalExpenses: number) => {
     if (!totalExpenses) return { label: 'Non renseigné', color: 'default' };
     if (totalExpenses < 1500) return { label: 'Très modeste', color: 'info' };
@@ -171,7 +182,6 @@ const BudgetLifestyle: React.FC = () => {
     return { label: 'Élevé', color: 'error' };
   };
 
-  // Handle row click to navigate to client detail
   const handleRowClick = (userId: string) => {
     navigate(`/clients/${userId}/budget`);
   };

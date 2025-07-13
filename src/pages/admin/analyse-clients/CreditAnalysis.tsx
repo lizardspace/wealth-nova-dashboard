@@ -23,7 +23,8 @@ import {
   Snackbar,
   Alert,
   IconButton,
-  Tooltip
+  Tooltip,
+  CircularProgress
 } from '@mui/material';
 import {
   FilterAlt as FilterIcon,
@@ -32,7 +33,7 @@ import {
   TrendingUp as TrendingUpIcon,
   CreditCard as CreditCardIcon,
   Percent as PercentIcon,
-  Users as UsersIcon,
+  People as PeopleIcon,
   Euro as EuroIcon,
   Scale as ScaleIcon,
   PieChart as PieChartIcon
@@ -213,7 +214,7 @@ const CreditAnalysis: React.FC = () => {
                     {creditAnalyses.length}
                   </Typography>
                 </Box>
-                <UsersIcon color="primary" fontSize="large" />
+                <PeopleIcon color="primary" fontSize="large" />
               </Box>
             </CardContent>
           </Card>

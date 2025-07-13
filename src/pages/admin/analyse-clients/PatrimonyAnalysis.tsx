@@ -38,7 +38,7 @@ import {
   TrendingUp as TrendingUpIcon,
   Info as InfoIcon
 } from '@mui/icons-material';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip as ChartTooltip, Legend } from 'chart.js';
 import { Bar, Pie } from 'react-chartjs-2';
 import { supabase } from '../../../lib/supabase';
 
@@ -49,7 +49,7 @@ ChartJS.register(
   BarElement,
   ArcElement,
   Title,
-  Tooltip,
+  ChartTooltip,
   Legend
 );
 

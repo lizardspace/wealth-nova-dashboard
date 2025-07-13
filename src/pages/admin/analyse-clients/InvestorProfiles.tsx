@@ -14,7 +14,6 @@ import {
   Chip,
   Card,
   CardContent,
-  LinearProgress,
   FormControl,
   InputLabel,
   Select,
@@ -22,8 +21,9 @@ import {
   Snackbar,
   Alert,
   IconButton,
-  Tooltip,
-  useTheme
+  Tooltip as MuiTooltip,
+  useTheme,
+  CircularProgress
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -32,23 +32,32 @@ import {
   Download as DownloadIcon,
   BarChart as BarChartIcon,
   PieChart as PieChartIcon,
-  Timeline as TimelineIcon,
   CalendarToday as CalendarIcon,
-  RiskAssessment as RiskAssessmentIcon,
+  Assessment as RiskAssessmentIcon,
   TrendingUp as TrendingUpIcon
 } from '@mui/icons-material';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
+import { 
+  Chart as ChartJS, 
+  ArcElement, 
+  Tooltip, 
+  Legend, 
+  CategoryScale, 
+  LinearScale, 
+  BarElement,
+  Title
+} from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import { supabase } from '../../../lib/supabase';
 
-// Enregistrer les composants ChartJS
+// Enregistrement des composants ChartJS
 ChartJS.register(
   ArcElement,
   Tooltip,
   Legend,
   CategoryScale,
   LinearScale,
-  BarElement
+  BarElement,
+  Title
 );
 
 interface InvestorProfile {
@@ -77,7 +86,6 @@ const InvestorProfiles: React.FC = () => {
     severity: 'success' as 'success' | 'error' | 'warning' | 'info'
   });
 
-  // Fetch investor profiles from view
   const fetchInvestorProfiles = async () => {
     setLoading(true);
     try {
@@ -141,7 +149,7 @@ const InvestorProfiles: React.FC = () => {
     return nameMatch && riskMatch && horizonMatch;
   });
 
-  // Statistics calculations
+  // Calculs statistiques
   const riskToleranceStats = investorProfiles.reduce((acc, profile) => {
     const risk = profile.risk_tolerance || 'Non défini';
     acc[risk] = (acc[risk] || 0) + 1;
@@ -164,7 +172,7 @@ const InvestorProfiles: React.FC = () => {
     return ['dynamique', 'agressif'].includes(risk.toLowerCase()) ? sum + count : sum;
   }, 0);
 
-  // Chart data for risk tolerance distribution
+  // Données pour les graphiques
   const riskToleranceChartData = {
     labels: Object.keys(riskToleranceStats),
     datasets: [
@@ -187,7 +195,6 @@ const InvestorProfiles: React.FC = () => {
     ],
   };
 
-  // Chart data for investment horizon distribution
   const horizonChartData = {
     labels: Object.keys(horizonStats),
     datasets: [
@@ -220,7 +227,6 @@ const InvestorProfiles: React.FC = () => {
   };
 
   const handleExportData = () => {
-    // Implement export functionality
     setSnackbar({
       open: true,
       message: 'Fonctionnalité d\'export à implémenter',
@@ -235,20 +241,20 @@ const InvestorProfiles: React.FC = () => {
           Analyse des Profils Investisseurs
         </Typography>
         <Box>
-          <Tooltip title="Actualiser les données">
+          <MuiTooltip title="Actualiser les données">
             <IconButton onClick={handleRefresh} color="primary" sx={{ mr: 1 }}>
               <RefreshIcon />
             </IconButton>
-          </Tooltip>
-          <Tooltip title="Exporter les données">
+          </MuiTooltip>
+          <MuiTooltip title="Exporter les données">
             <IconButton onClick={handleExportData} color="primary">
               <DownloadIcon />
             </IconButton>
-          </Tooltip>
+          </MuiTooltip>
         </Box>
       </Box>
 
-      {/* Statistics Cards */}
+      {/* Cartes de statistiques */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={3}>
           <Card>
@@ -323,7 +329,7 @@ const InvestorProfiles: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Charts Row */}
+      {/* Graphiques */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid item xs={12} md={6}>
           <Card>
@@ -332,7 +338,7 @@ const InvestorProfiles: React.FC = () => {
                 Répartition par Tolérance au Risque
               </Typography>
               <Box sx={{ height: 300 }}>
-                <Pie data={riskToleranceChartData} />
+                <Pie data={riskToleranceChartData} options={{ responsive: true, maintainAspectRatio: false }} />
               </Box>
             </CardContent>
           </Card>
@@ -344,15 +350,15 @@ const InvestorProfiles: React.FC = () => {
                 Répartition par Horizon d'Investissement
               </Typography>
               <Box sx={{ height: 300 }}>
-                <Pie data={horizonChartData} />
+                <Pie data={horizonChartData} options={{ responsive: true, maintainAspectRatio: false }} />
               </Box>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
 
-      {/* Search and Filter */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 2 }}>
+      {/* Recherche et Filtres */}
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 2, flexWrap: 'wrap' }}>
         <TextField
           fullWidth
           variant="outlined"
@@ -362,6 +368,7 @@ const InvestorProfiles: React.FC = () => {
           InputProps={{
             startAdornment: <SearchIcon color="action" sx={{ mr: 1 }} />
           }}
+          sx={{ minWidth: 300, flexGrow: 1 }}
         />
         <FormControl sx={{ minWidth: 200 }}>
           <InputLabel id="risk-tolerance-filter">Tolérance au Risque</InputLabel>
@@ -393,12 +400,13 @@ const InvestorProfiles: React.FC = () => {
         </FormControl>
       </Box>
 
+      {/* Tableau des profils */}
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
           <CircularProgress />
         </Box>
       ) : (
-        <Paper>
+        <Paper elevation={3}>
           <TableContainer>
             <Table>
               <TableHead>
@@ -417,9 +425,7 @@ const InvestorProfiles: React.FC = () => {
                 {filteredProfiles.length > 0 ? (
                   filteredProfiles.map((profile) => (
                     <TableRow key={profile.user_id} hover>
-                      <TableCell>
-                        {profile.first_name} {profile.last_name}
-                      </TableCell>
+                      <TableCell>{profile.first_name} {profile.last_name}</TableCell>
                       <TableCell>
                         <Chip 
                           label={profile.risk_tolerance || 'Non défini'} 
@@ -469,6 +475,7 @@ const InvestorProfiles: React.FC = () => {
         </Paper>
       )}
 
+      {/* Notification Snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}

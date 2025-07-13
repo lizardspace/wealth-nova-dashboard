@@ -48,7 +48,7 @@ import {
   TrendingUp as TrendingUpIcon,
   PieChart as PieChartIcon,
   BarChart as BarChartIcon,
-  Target as TargetIcon,
+  TrackChanges as TargetIcon,
   Schedule as ClockIcon,
   AttachMoney as DollarSignIcon,
   People as UsersIcon,
@@ -59,7 +59,9 @@ import {
   School as EducationIcon,
   Home as HomeIcon,
   Work as WorkIcon,
-  ChildCare as ChildIcon
+  ChildCare as ChildIcon,
+  TableChart as TableIcon,
+  ViewModule as ViewModuleIcon
 } from '@mui/icons-material';
 import { supabase } from './../../../lib/supabase';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
@@ -67,7 +69,7 @@ import { Doughnut, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   ArcElement,
-  Tooltip,
+  Tooltip as ChartTooltip,
   Legend,
   CategoryScale,
   LinearScale,
@@ -78,7 +80,7 @@ import {
 // Register ChartJS components
 ChartJS.register(
   ArcElement,
-  Tooltip,
+  ChartTooltip,
   Legend,
   CategoryScale,
   LinearScale,
@@ -1010,7 +1012,7 @@ const UserGoalsComponent: React.FC = () => {
                   {(!selectedGoal.patrimony_goals || selectedGoal.patrimony_goals.length === 0) && (
                     <ListItem sx={{ py: 0.5, pl: 0 }}>
                       <ListItemText primary="Aucun objectif défini" />
-                                          </ListItem>
+                    </ListItem>
                   )}
                 </List>
 
