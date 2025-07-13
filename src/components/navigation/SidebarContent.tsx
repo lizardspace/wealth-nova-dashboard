@@ -20,7 +20,8 @@ import {
   DollarSign,
   List,
   Sunset,
-  Activity
+  Activity,
+  FileSearch
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -184,11 +185,22 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
     { to: "/admin/train-de-vie/liste", icon: List, label: "Dépenses" }
   ];
 
+  const analyseClientsItems = [
+    { to: "/admin/analyse-clients/credit-analysis", icon: CreditCard, label: "Analyse de Crédit" },
+    { to: "/admin/analyse-clients/insurance-analysis", icon: Shield, label: "Analyse d'Assurance" },
+    { to: "/admin/analyse-clients/user-goals", icon: Users, label: "Objectifs Financiers" },
+    { to: "/admin/analyse-clients/budget-lifestyle", icon: DollarSign, label: "Budget et Style de Vie" },
+    { to: "/admin/analyse-clients/tax-analysis", icon: FileText, label: "Analyse Fiscale" },
+    { to: "/admin/analyse-clients/investor-profiles", icon: Users, label: "Profils d'Investisseur" },
+    { to: "/admin/analyse-clients/patrimony-analysis", icon: Briefcase, label: "Analyse de Patrimoine" }
+  ];
+
   return (
     <div className="w-64 h-full flex flex-col bg-slate-50 border-r border-slate-200 overflow-y-auto">
       <nav className="flex-1 px-3 py-4 space-y-4">
         <SidebarSection title="Tableau de bord" items={dashboardItems} onItemClick={onItemClick} />
         <SidebarSection title="Clients" items={clientsItems} onItemClick={onItemClick} />
+        <SidebarSection title="Analyse des clients" items={analyseClientsItems} onItemClick={onItemClick} />
         <SidebarSection title="Portefeuilles" items={portfolioItems} onItemClick={onItemClick} />
         <SidebarSection title="Outils" items={toolsItems} onItemClick={onItemClick} />
         <SidebarSection title="Intelligence Artificielle" items={aiItems} onItemClick={onItemClick} />
