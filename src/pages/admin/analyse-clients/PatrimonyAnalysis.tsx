@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import AssetDistributionChart from '../../../components/analytics/AssetDistributionChart';
+import PatrimonyEvolutionChart from '../../../components/analytics/PatrimonyEvolutionChart';
 import {
   BarChart3,
   PieChart,
@@ -713,22 +715,26 @@ const PatrimonyAnalysis: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Répartition des types d'actifs</h3>
-              <div className="h-64">
-                {/* Ici vous pourriez intégrer un graphique Pie ou Doughnut avec une librairie comme Chart.js */}
-                <div className="flex items-center justify-center h-full bg-gray-50 rounded-lg">
-                  <p className="text-gray-500">Graphique des actifs à implémenter</p>
-                </div>
-              </div>
+              <AssetDistributionChart data={[
+                { name: 'Liquidités', value: 400 },
+                { name: 'Immobilier', value: 300 },
+                { name: 'Assurance Vie', value: 300 },
+                { name: 'Entreprise', value: 200 },
+                { name: 'Autres', value: 278 },
+              ]} />
             </div>
             
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Évolution du patrimoine</h3>
-              <div className="h-64">
-                {/* Ici vous pourriez intégrer un graphique Line ou Bar avec une librairie comme Chart.js */}
-                <div className="flex items-center justify-center h-full bg-gray-50 rounded-lg">
-                  <p className="text-gray-500">Graphique d'évolution à implémenter</p>
-                </div>
-              </div>
+              <PatrimonyEvolutionChart data={[
+                { date: 'Jan', patrimoine: 4000 },
+                { date: 'Fev', patrimoine: 3000 },
+                { date: 'Mar', patrimoine: 2000 },
+                { date: 'Avr', patrimoine: 2780 },
+                { date: 'Mai', patrimoine: 1890 },
+                { date: 'Juin', patrimoine: 2390 },
+                { date: 'Juil', patrimoine: 3490 },
+              ]} />
             </div>
           </div>
         )}
