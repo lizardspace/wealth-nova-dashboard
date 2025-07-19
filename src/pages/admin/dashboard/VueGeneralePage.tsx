@@ -46,7 +46,7 @@ import {
 } from 'recharts';
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useDashboardData, useRealtimeStats, DashboardService } from '../../../hooks/useDashboardData';
+import { useDashboardData, useRealtimeStats, DashboardService } from './../../../hooks/useDashboardData';
 
 const COLORS = ['#8B5CF6', '#F97316', '#D946EF', '#0EA5E9', '#10B981', '#F59E0B', '#EF4444'];
 
