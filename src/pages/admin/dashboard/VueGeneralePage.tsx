@@ -89,10 +89,10 @@ const DashboardService = {
   },
   
   calculateTotalsFromExistingData(data: DashboardData) {
-    // Calcul à partir des données de répartition si disponibles
-    const repartitionData = data?.repartitionActifs || [];
-    const encoursTotalActuel = repartitionData.reduce((sum, item) => 
-      sum + (item.valeur_totale || 0), 0
+    // Le total des encours est la somme des actifs
+    const encoursTotalActuel = data.repartitionActifs.reduce(
+      (acc, actif) => acc + actif.valeur_totale,
+      0
     );
     
     // Calcul de l'épargne disponible
