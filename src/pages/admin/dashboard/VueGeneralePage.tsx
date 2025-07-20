@@ -106,16 +106,13 @@ const DEFAULT_DATA: DashboardData = {
 
 // Service pour récupérer les totaux en temps réel
 const DashboardService = {
-  async getCurrentTotals() {
+  async getCurrentTotals(data: DashboardData) {
     try {
       // En production, remplacer par un appel API réel
-      return {
-        encoursTotalActuel: 12500000, // 12.5M€
-        epargneDisponibleActuelle: 2500000 // 2.5M€
-      };
+      return this.calculateTotalsFromExistingData(data);
     } catch (error) {
       console.error('Erreur lors de la récupération des totaux:', error);
-      return this.calculateTotalsFromExistingData();
+      return { encoursTotalActuel: 0, epargneDisponibleActuelle: 0 };
     }
   },
   
@@ -156,7 +153,7 @@ const useCurrentTotals = (dashboardData: DashboardData) => {
     const fetchTotals = async () => {
       try {
         // Essayer d'abord de récupérer les totaux en temps réel
-        const apiTotals = await DashboardService.getCurrentTotals();
+        const apiTotals = await DashboardService.getCurrentTotals(dashboardData);
         setTotals({
           ...apiTotals,
           loading: false,
