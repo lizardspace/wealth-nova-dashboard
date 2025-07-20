@@ -47,7 +47,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery } from '@tanstack/react-query';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from '@/lib/supabase';
 
 const COLORS = ['#8B5CF6', '#F97316', '#D946EF', '#0EA5E9', '#10B981', '#F59E0B', '#EF4444'];
 
@@ -106,20 +106,18 @@ interface DashboardData {
   };
 }
 
-const fetchDashboardData = async () => {
-  const supabase = createClientComponentClient();
-
+const fetchDashboardData = async (): Promise<DashboardData> => {
   const [
-    { data: encoursStats },
-    { data: clientsStats },
-    { data: recentActivities },
-    { data: alertesOpportunites },
-    { data: repartitionActifs },
-    { data: prochainsRdv },
-    { data: epargneDisponible },
-    { data: realtimeStats },
-    { data: totalAssets },
-    { data: totalEpargne }
+    { data: encoursStats, error: encoursError },
+    { data: clientsStats, error: clientsError },
+    { data: recentActivities, error: activitiesError },
+    { data: alertesOpportunites, error: alertesError },
+    { data: repartitionActifs, error: repartitionError },
+    { data: prochainsRdv, error: rdvError },
+    { data: epargneDisponible, error: epargneError },
+    { data: realtimeStats, error: realtimeError },
+    { data: totalAssets, error: assetsError },
+    { data: totalEpargne, error: totalEpargneError }
   ] = await Promise.all([
     supabase.from('dashboard_encours_stats').select('*'),
     supabase.from('dashboard_clients_stats').select('*'),
@@ -132,6 +130,17 @@ const fetchDashboardData = async () => {
     supabase.from('dashboard_total_assets').select('*').single(),
     supabase.from('dashboard_total_epargne_disponible').select('*').single()
   ]);
+
+  const errors = [
+    encoursError, clientsError, activitiesError, alertesError,
+    repartitionError, rdvError, epargneError, realtimeError,
+    assetsError, totalEpargneError
+  ].filter(Boolean);
+
+  if (errors.length > 0) {
+    console.error('Errors fetching dashboard data:', errors);
+    throw new Error('Failed to fetch dashboard data');
+  }
 
   return {
     encoursStats: encoursStats || [],
@@ -157,19 +166,16 @@ const VueGeneralePage = () => {
     staleTime: 1000 * 60 * 5 // 5 minutes
   });
 
-  // Utility function for safe mapping with validation
   const safeMap = <T, U>(array: T[] | undefined | null, callback: (item: T, index: number) => U): U[] => {
     if (!Array.isArray(array)) return [];
     return array.filter(item => item != null).map(callback);
   };
 
-  // Function to validate and convert numbers
   const safeNumber = (value: any, defaultValue: number = 0): number => {
     const num = Number(value);
     return isNaN(num) ? defaultValue : num;
   };
 
-  // Data processing with enhanced protections
   const processEncourData = () => {
     if (!data?.encoursStats || data.encoursStats.length === 0) {
       return [{
@@ -213,7 +219,6 @@ const VueGeneralePage = () => {
       sum + safeNumber(item?.valeur_totale), 0
     );
     
-    // Use calculated total or encours as fallback
     const total = totalMontant > 0 ? totalMontant : safeNumber(data?.totalAssets?.encoursTotalActuel);
     
     if (total === 0) return [];
@@ -257,7 +262,6 @@ const VueGeneralePage = () => {
     }));
   };
 
-  // Data calculations with error handling
   let encoursData, clientsData, alertesData, repartitionData;
   
   try {
@@ -283,11 +287,12 @@ const VueGeneralePage = () => {
   const handleExport = async () => {
     try {
       setIsExporting(true);
-      const supabase = createClientComponentClient();
-      const { data: exportData } = await supabase
+      const { data: exportData, error } = await supabase
         .from('dashboard_export')
         .select('*')
         .single();
+      
+      if (error) throw error;
       
       if (exportData) {
         const blob = new Blob([JSON.stringify(exportData, null, 2)], {
@@ -378,7 +383,6 @@ const VueGeneralePage = () => {
         </div>
       </div>
 
-      {/* Key statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="overflow-hidden">
           <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-blue-100">
@@ -441,7 +445,6 @@ const VueGeneralePage = () => {
         </Card>
       </div>
 
-      {/* Main charts */}
       <Tabs defaultValue="encours" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="encours">Assets</TabsTrigger>
@@ -715,7 +718,6 @@ const VueGeneralePage = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Recent activities and available savings */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader>
