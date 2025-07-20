@@ -116,8 +116,8 @@ const fetchDashboardData = async (): Promise<DashboardData> => {
     { data: prochainsRdv, error: rdvError },
     { data: epargneDisponible, error: epargneError },
     { data: realtimeStats, error: realtimeError },
-    { data: totalEpargne, error: totalEpargneError },
-    { data: allAssets, error: assetsError }
+    { data: totalAssets, error: assetsError },
+    { data: totalEpargne, error: totalEpargneError }
   ] = await Promise.all([
     supabase.from('dashboard_encours_stats').select('*'),
     supabase.from('dashboard_clients_stats').select('*'),
@@ -127,8 +127,8 @@ const fetchDashboardData = async (): Promise<DashboardData> => {
     supabase.from('dashboard_prochains_rdv').select('*'),
     supabase.from('dashboard_epargne_disponible').select('*'),
     supabase.from('dashboard_realtime_stats').select('*').single(),
-    supabase.from('dashboard_total_epargne_disponible').select('*').single(),
-    supabase.from('assets').select('valeur')
+    supabase.from('dashboard_total_assets').select('*').single(),
+    supabase.from('dashboard_total_epargne_disponible').select('*').single()
   ]);
 
   const errors = [
@@ -142,8 +142,6 @@ const fetchDashboardData = async (): Promise<DashboardData> => {
     throw new Error('Failed to fetch dashboard data');
   }
 
-  const totalAssets = allAssets?.reduce((acc, asset) => acc + asset.valeur, 0) ?? 0;
-
   return {
     encoursStats: encoursStats || [],
     clientsStats: clientsStats || [],
@@ -153,7 +151,7 @@ const fetchDashboardData = async (): Promise<DashboardData> => {
     prochainsRdv: prochainsRdv || [],
     epargneDisponible: epargneDisponible || [],
     realtimeStats: realtimeStats || { totalClients: 0, nouveauxClients: 0, tauxConversion: 0 },
-    totalAssets: { encoursTotalActuel: totalAssets },
+    totalAssets: totalAssets || { encoursTotalActuel: 0 },
     totalEpargne: totalEpargne || { epargneDisponibleActuelle: 0 }
   };
 };
