@@ -151,9 +151,11 @@ const useCurrentTotals = (dashboardData: DashboardData) => {
 };
 
 const VueGeneralePage = () => {
+  console.log('VueGeneralePage: render start');
   const [periode, setPeriode] = React.useState("6mois");
   const [isExporting, setIsExporting] = React.useState(false);
   
+  console.log('VueGeneralePage: calling hooks');
   const { loading, error, refreshData, data = DEFAULT_DATA } = useDashboardData();
   const realtimeStats = useRealtimeStats();
   const { 
@@ -162,16 +164,29 @@ const VueGeneralePage = () => {
     loading: totalsLoading,
     error: totalsError
   } = useCurrentTotals(data);
+  console.log('VueGeneralePage: hooks called');
+
+  // Debug: Afficher les données reçues
+  React.useEffect(() => {
+    console.log('VueGeneralePage.useEffect: Données reçues depuis useDashboardData:', data);
+    console.log('VueGeneralePage.useEffect: Statistiques temps réel:', realtimeStats);
+    console.log('VueGeneralePage.useEffect: Totaux calculés:', { encoursTotalActuel, epargneDisponibleActuelle });
+  }, [data, realtimeStats, encoursTotalActuel, epargneDisponibleActuelle]);
 
   // Fonction utilitaire pour le mapping sécurisé
   const safeMap = <T, U>(array: T[] | undefined, callback: (item: T, index: number) => U): U[] => {
-    return Array.isArray(array) ? array.map(callback) : [];
+    console.log('VueGeneralePage.safeMap: input:', array); // Debug
+    const result = Array.isArray(array) ? array.map(callback) : [];
+    console.log('VueGeneralePage.safeMap: output:', result); // Debug
+    return result;
   };
 
   // Traitement des données avec protections
   const processEncourData = () => {
+    console.log('VueGeneralePage.processEncourData: Processing encours data:', data?.encoursStats); // Debug
     if (!data?.encoursStats || data.encoursStats.length === 0) {
-      return [{
+      console.log('VueGeneralePage.processEncourData: Aucune donnée encours, utilisation des totaux'); // Debug
+      const defaultData = [{
         month: new Date().toLocaleDateString('fr-FR', { month: 'short' }),
         banque: 0,
         assurance: 0,
@@ -179,9 +194,11 @@ const VueGeneralePage = () => {
         entreprise: 0,
         total: encoursTotalActuel
       }];
+      console.log('VueGeneralePage.processEncourData: returning default data:', defaultData); // Debug
+      return defaultData;
     }
     
-    return safeMap(data.encoursStats, (item) => ({
+    const processedData = safeMap(data.encoursStats, (item) => ({
       month: item?.month || '',
       banque: item?.encours_reels_banque || 0,
       assurance: item?.encours_reels_assurance_vie || 0,
@@ -189,30 +206,44 @@ const VueGeneralePage = () => {
       entreprise: item?.encours_reels_entreprise || 0,
       total: item?.encours_reels_total || 0
     }));
+    console.log('VueGeneralePage.processEncourData: returning processed data:', processedData); // Debug
+    return processedData;
   };
 
   const processClientData = () => {
-    return safeMap(data?.clientsStats, (item) => ({
+    console.log('VueGeneralePage.processClientData: Processing client data:', data?.clientsStats); // Debug
+    const processedData = safeMap(data?.clientsStats, (item) => ({
       month: item?.month ? new Date(item.month).toLocaleDateString('fr-FR', { month: 'short' }) : '',
       total: item?.total_clients || 0,
       nouveaux: item?.nouveaux_clients || 0
     }));
+    console.log('VueGeneralePage.processClientData: returning processed data:', processedData); // Debug
+    return processedData;
   };
 
   const processRepartitionData = () => {
+    console.log('VueGeneralePage.processRepartitionData: Processing repartition data:', data?.repartitionActifs); // Debug
     const totalActifs = safeMap(data?.repartitionActifs, item => item?.valeur_totale || 0)
                       .reduce((sum, value) => sum + value, 0);
     
-    if (totalActifs === 0) return [];
+    console.log('VueGeneralePage.processRepartitionData: Total actifs calculé:', totalActifs); // Debug
+
+    if (totalActifs === 0) {
+      console.log('VueGeneralePage.processRepartitionData: Total actifs is 0, returning empty array'); // Debug
+      return [];
+    }
     
-    return safeMap(data?.repartitionActifs, (item) => ({
+    const processedData = safeMap(data?.repartitionActifs, (item) => ({
       name: item?.classe_actif || 'Autre',
       value: Math.round(((item?.valeur_totale || 0) / totalActifs) * 100),
       montant: item?.valeur_totale || 0
     })).filter(item => item.value > 0);
+    console.log('VueGeneralePage.processRepartitionData: returning processed data:', processedData); // Debug
+    return processedData;
   };
 
   const processAlertesData = () => {
+    console.log('VueGeneralePage.processAlertesData: Processing alertes data:', data?.alertesOpportunites); // Debug
     const colorMap: { [key: string]: string } = {
       amber: '#F59E0B',
       red: '#EF4444',
@@ -220,7 +251,7 @@ const VueGeneralePage = () => {
       purple: '#8B5CF6'
     };
 
-    return safeMap(data?.alertesOpportunites, (item) => ({
+    const processedData = safeMap(data?.alertesOpportunites, (item) => ({
       type_alerte: item?.type_alerte || '',
       nombre: item?.nombre || 0,
       couleur: item?.couleur || 'gray',
@@ -232,8 +263,11 @@ const VueGeneralePage = () => {
         'Optimisations fiscales possibles': 'Audit fiscal'
       }[item?.type_alerte || ''] || 'Action requise'
     }));
+    console.log('VueGeneralePage.processAlertesData: returning processed data:', processedData); // Debug
+    return processedData;
   };
 
+  console.log('VueGeneralePage: processing data');
   const encoursData = processEncourData();
   const clientsData = processClientData();
   const alertesData = processAlertesData();
@@ -242,11 +276,26 @@ const VueGeneralePage = () => {
   const tauxConversion = realtimeStats?.tauxConversion || 0;
   const clientsActuels = realtimeStats?.totalClients || 0;
   const nouveauxClients = realtimeStats?.nouveauxClients || 0;
+  console.log('VueGeneralePage: data processed');
+
+  console.log('VueGeneralePage: Données transformées:', { // Debug
+    encoursData,
+    clientsData,
+    alertesData,
+    repartitionData,
+    tauxConversion,
+    clientsActuels,
+    nouveauxClients,
+    totalAlertes
+  });
 
   const handleExport = async () => {
+    console.log('VueGeneralePage.handleExport: starting export');
     try {
       setIsExporting(true);
+      console.log('VueGeneralePage.handleExport: Début de l\'export des données...'); // Debug
       const exportData = await DashboardService.exportDashboardData();
+      console.log('VueGeneralePage.handleExport: Données à exporter:', exportData); // Debug
       const blob = new Blob([JSON.stringify(exportData, null, 2)], {
         type: 'application/json'
       });
@@ -258,14 +307,17 @@ const VueGeneralePage = () => {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+      console.log('VueGeneralePage.handleExport: Export terminé avec succès'); // Debug
     } catch (error) {
-      console.error('Erreur lors de l\'export:', error);
+      console.error('VueGeneralePage.handleExport: Erreur lors de l\'export:', error);
     } finally {
       setIsExporting(false);
+      console.log('VueGeneralePage.handleExport: finished export');
     }
   };
 
   if (loading || totalsLoading) {
+    console.log('VueGeneralePage: rendering loading state');
     return (
       <div className="flex items-center justify-center h-96">
         <div className="flex items-center space-x-2">
@@ -277,6 +329,7 @@ const VueGeneralePage = () => {
   }
 
   if (error || totalsError) {
+    console.error('VueGeneralePage: rendering error state:', { error, totalsError }); // Debug
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
@@ -293,6 +346,14 @@ const VueGeneralePage = () => {
       </div>
     );
   }
+
+  console.log('VueGeneralePage: Rendu du composant avec les données:', { // Debug
+    encoursData,
+    clientsData,
+    alertesData,
+    repartitionData
+  });
+  console.log('VueGeneralePage: render end');
 
   return (
     <div className="space-y-6">
