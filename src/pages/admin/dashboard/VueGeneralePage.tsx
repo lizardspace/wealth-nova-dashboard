@@ -12,23 +12,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { 
   ArrowUpRight, 
-  ArrowDownRight, 
   Users, 
   Briefcase, 
   AlertTriangle, 
   Brain,
   CalendarClock, 
   Mail,
-  MessageSquare,
-  BarChart,
-  PieChart,
-  Phone,
   FileText,
   RefreshCw,
   Download,
-  Loader2
+  Loader2,
+  Phone,
+  BarChart as BarChartIcon,
+  PieChart as PieChartIcon
 } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
 import {
   BarChart as ReBarChart,
   Bar,
@@ -393,7 +390,7 @@ const VueGeneralePage = () => {
           </CardHeader>
           <CardContent className="pt-4">
             <div className="text-sm text-muted-foreground flex items-center">
-              <BarChart className="mr-2 h-4 w-4" />
+              <BarChartIcon className="mr-2 h-4 w-4" />
               All products combined
             </div>
           </CardContent>
@@ -502,7 +499,7 @@ const VueGeneralePage = () => {
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full">
-                    <BarChart className="h-12 w-12 text-gray-400 mb-4" />
+                    <BarChartIcon className="h-12 w-12 text-gray-400 mb-4" />
                     <p className="text-gray-500">No data available</p>
                   </div>
                 )}
@@ -542,7 +539,7 @@ const VueGeneralePage = () => {
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full">
-                    <PieChart className="h-12 w-12 text-gray-400 mb-4" />
+                    <PieChartIcon className="h-12 w-12 text-gray-400 mb-4" />
                     <p className="text-gray-500">No data available</p>
                   </div>
                 )}
