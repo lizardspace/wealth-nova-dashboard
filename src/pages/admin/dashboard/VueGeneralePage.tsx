@@ -46,140 +46,114 @@ import {
 } from 'recharts';
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useDashboardData, useRealtimeStats } from './../../../hooks/useDashboardData';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 
 const COLORS = ['#8B5CF6', '#F97316', '#D946EF', '#0EA5E9', '#10B981', '#F59E0B', '#EF4444'];
 
-import { EncoursStat, ClientStat, ActiviteRecente, AlerteOpportunite, RepartitionActif, ProchainRdv } from './../../../hooks/useDashboardData';
-
 interface DashboardData {
-  encoursStats: EncoursStat[];
-  clientsStats: ClientStat[];
-  recentActivities: ActiviteRecente[];
-  alertesOpportunites: AlerteOpportunite[];
-  repartitionActifs: RepartitionActif[];
-  prochainsRdv: ProchainRdv[];
+  encoursStats: Array<{
+    month: string;
+    encours_reels_banque: number;
+    encours_reels_assurance_vie: number;
+    encours_reels_capitalisation: number;
+    encours_reels_entreprise: number;
+    encours_reels_total: number;
+  }>;
+  clientsStats: Array<{
+    month: string;
+    total_clients: number;
+    nouveaux_clients: number;
+  }>;
+  recentActivities: Array<{
+    client: string;
+    action: string;
+    produit: string;
+    montant: number;
+    date_action: string;
+    type: string;
+  }>;
+  alertesOpportunites: Array<{
+    type_alerte: string;
+    couleur: string;
+    nombre: number;
+  }>;
+  repartitionActifs: Array<{
+    classe_actif: string;
+    valeur_totale: number;
+  }>;
+  prochainsRdv: Array<{
+    client: string;
+    theme: string;
+    date_rdv: string;
+    heure: string;
+  }>;
   epargneDisponible: Array<{
     client: string;
     value: number;
     produit: string;
   }>;
+  realtimeStats: {
+    totalClients: number;
+    nouveauxClients: number;
+    tauxConversion: number;
+  };
+  totalAssets: {
+    encoursTotalActuel: number;
+  };
+  totalEpargne: {
+    epargneDisponibleActuelle: number;
+  };
 }
 
-const DEFAULT_DATA: DashboardData = {
-  encoursStats: [],
-  clientsStats: [],
-  recentActivities: [],
-  alertesOpportunites: [],
-  repartitionActifs: [],
-  prochainsRdv: [],
-  epargneDisponible: []
-};
+const fetchDashboardData = async () => {
+  const [
+    encoursStats,
+    clientsStats,
+    recentActivities,
+    alertesOpportunites,
+    repartitionActifs,
+    prochainsRdv,
+    epargneDisponible,
+    realtimeStats,
+    totalAssets,
+    totalEpargne
+  ] = await Promise.all([
+    axios.get('/api/dashboard/encours-stats'),
+    axios.get('/api/dashboard/clients-stats'),
+    axios.get('/api/dashboard/recent-activities'),
+    axios.get('/api/dashboard/alertes-opportunites'),
+    axios.get('/api/dashboard/repartition-actifs'),
+    axios.get('/api/dashboard/prochains-rdv'),
+    axios.get('/api/dashboard/epargne-disponible'),
+    axios.get('/api/dashboard/realtime-stats'),
+    axios.get('/api/dashboard/total-assets'),
+    axios.get('/api/dashboard/total-epargne')
+  ]);
 
-// Service for real-time totals
-const DashboardService = {
-  async getCurrentTotals(data: DashboardData) {
-    try {
-      // In production, replace with real API call
-      return this.calculateTotalsFromExistingData(data);
-    } catch (error) {
-      console.error('Error fetching totals:', error);
-      return { encoursTotalActuel: 0, epargneDisponibleActuelle: 0 };
-    }
-  },
-  
-  calculateTotalsFromExistingData(data: DashboardData) {
-    // Secure calculation of total assets
-    let encoursTotalActuel = 0;
-    
-    if (data?.repartitionActifs && Array.isArray(data.repartitionActifs)) {
-      encoursTotalActuel = data.repartitionActifs.reduce((acc, actif) => {
-        const valeur = Number(actif?.valeur_totale) || 0;
-        return acc + valeur;
-      }, 0);
-    }
-    
-    // Fallback to encours stats if no repartition data
-    if (encoursTotalActuel === 0 && data?.encoursStats && Array.isArray(data.encoursStats) && data.encoursStats.length > 0) {
-      const dernierMois = data.encoursStats[data.encoursStats.length - 1];
-      encoursTotalActuel = Number(dernierMois?.encours_reels_total) || 0;
-    }
-    
-    // Secure calculation of available savings
-    let epargneDisponibleActuelle = 0;
-    
-    if (data?.epargneDisponible && Array.isArray(data.epargneDisponible)) {
-      epargneDisponibleActuelle = data.epargneDisponible.reduce((sum, item) => {
-        const valeur = Number(item?.value) || 0;
-        return sum + valeur;
-      }, 0);
-    }
-    
-    return { encoursTotalActuel, epargneDisponibleActuelle };
-  },
-
-  async exportDashboardData() {
-    // Mock implementation for example
-    return {
-      date: new Date().toISOString(),
-      data: "Exported data"
-    };
-  }
-};
-
-// Custom hook for totals with enhanced error handling
-const useCurrentTotals = (dashboardData: DashboardData) => {
-  const [totals, setTotals] = React.useState({
-    encoursTotalActuel: 0,
-    epargneDisponibleActuelle: 0,
-    loading: true,
-    error: null
-  });
-  
-  React.useEffect(() => {
-    const fetchTotals = async () => {
-      try {
-        setTotals(prev => ({ ...prev, loading: true, error: null }));
-        
-        // Calculate totals securely
-        const calculatedTotals = DashboardService.calculateTotalsFromExistingData(dashboardData);
-        
-        setTotals({
-          ...calculatedTotals,
-          loading: false,
-          error: null
-        });
-      } catch (error) {
-        console.error('Error calculating totals:', error);
-        setTotals({
-          encoursTotalActuel: 0,
-          epargneDisponibleActuelle: 0,
-          loading: false,
-          error: error instanceof Error ? error : new Error('Error calculating totals')
-        });
-      }
-    };
-    
-    // Add delay to avoid repeated calculations
-    const timeoutId = setTimeout(fetchTotals, 100);
-    return () => clearTimeout(timeoutId);
-  }, [dashboardData]);
-  
-  return totals;
+  return {
+    encoursStats: encoursStats.data,
+    clientsStats: clientsStats.data,
+    recentActivities: recentActivities.data,
+    alertesOpportunites: alertesOpportunites.data,
+    repartitionActifs: repartitionActifs.data,
+    prochainsRdv: prochainsRdv.data,
+    epargneDisponible: epargneDisponible.data,
+    realtimeStats: realtimeStats.data,
+    totalAssets: totalAssets.data,
+    totalEpargne: totalEpargne.data
+  };
 };
 
 const VueGeneralePage = () => {
   const [periode, setPeriode] = React.useState("6mois");
   const [isExporting, setIsExporting] = React.useState(false);
   
-  const { loading, error, refreshData, data = DEFAULT_DATA } = useDashboardData();
-  const realtimeStats = useRealtimeStats();
-  const { 
-    encoursTotalActuel, 
-    epargneDisponibleActuelle,
-    loading: totalsLoading,
-    error: totalsError
-  } = useCurrentTotals(data);
+  const { data, isLoading, error, refetch } = useQuery<DashboardData>({
+    queryKey: ['dashboard'],
+    queryFn: fetchDashboardData,
+    staleTime: 1000 * 60 * 5 // 5 minutes
+  });
 
   // Utility function for safe mapping with validation
   const safeMap = <T, U>(array: T[] | undefined | null, callback: (item: T, index: number) => U): U[] => {
@@ -195,19 +169,19 @@ const VueGeneralePage = () => {
 
   // Data processing with enhanced protections
   const processEncourData = () => {
-    if (!data?.encoursStats || !Array.isArray(data.encoursStats) || data.encoursStats.length === 0) {
+    if (!data?.encoursStats || data.encoursStats.length === 0) {
       return [{
         month: new Date().toLocaleDateString('fr-FR', { month: 'short' }),
         banque: 0,
         assurance: 0,
         capitalisation: 0,
         entreprise: 0,
-        total: safeNumber(encoursTotalActuel)
+        total: safeNumber(data?.totalAssets?.encoursTotalActuel)
       }];
     }
     
     return safeMap(data.encoursStats, (item) => ({
-      month: item?.month || 'N/A',
+      month: item?.month ? new Date(item.month + '-01').toLocaleDateString('fr-FR', { month: 'short' }) : 'N/A',
       banque: safeNumber(item?.encours_reels_banque),
       assurance: safeNumber(item?.encours_reels_assurance_vie),
       capitalisation: safeNumber(item?.encours_reels_capitalisation),
@@ -217,19 +191,19 @@ const VueGeneralePage = () => {
   };
 
   const processClientData = () => {
-    if (!data?.clientsStats || !Array.isArray(data.clientsStats)) {
+    if (!data?.clientsStats || data.clientsStats.length === 0) {
       return [];
     }
     
     return safeMap(data.clientsStats, (item) => ({
-      month: item?.month ? new Date(item.month).toLocaleDateString('fr-FR', { month: 'short' }) : 'N/A',
+      month: item?.month ? new Date(item.month + '-01').toLocaleDateString('fr-FR', { month: 'short' }) : 'N/A',
       total: safeNumber(item?.total_clients),
       nouveaux: safeNumber(item?.nouveaux_clients)
     }));
   };
 
   const processRepartitionData = () => {
-    if (!data?.repartitionActifs || !Array.isArray(data.repartitionActifs)) {
+    if (!data?.repartitionActifs || data.repartitionActifs.length === 0) {
       return [];
     }
     
@@ -238,7 +212,7 @@ const VueGeneralePage = () => {
     );
     
     // Use calculated total or encours as fallback
-    const total = totalMontant > 0 ? totalMontant : safeNumber(encoursTotalActuel);
+    const total = totalMontant > 0 ? totalMontant : safeNumber(data?.totalAssets?.encoursTotalActuel);
     
     if (total === 0) return [];
     
@@ -255,7 +229,7 @@ const VueGeneralePage = () => {
   };
 
   const processAlertesData = () => {
-    if (!data?.alertesOpportunites || !Array.isArray(data.alertesOpportunites)) {
+    if (!data?.alertesOpportunites || data.alertesOpportunites.length === 0) {
       return [];
     }
     
@@ -298,15 +272,17 @@ const VueGeneralePage = () => {
   }
 
   const totalAlertes = alertesData.reduce((sum, item) => sum + safeNumber(item?.nombre), 0);
-  const tauxConversion = safeNumber(realtimeStats?.tauxConversion);
-  const clientsActuels = safeNumber(realtimeStats?.totalClients);
-  const nouveauxClients = safeNumber(realtimeStats?.nouveauxClients);
+  const tauxConversion = safeNumber(data?.realtimeStats?.tauxConversion);
+  const clientsActuels = safeNumber(data?.realtimeStats?.totalClients);
+  const nouveauxClients = safeNumber(data?.realtimeStats?.nouveauxClients);
+  const encoursTotalActuel = safeNumber(data?.totalAssets?.encoursTotalActuel);
+  const epargneDisponibleActuelle = safeNumber(data?.totalEpargne?.epargneDisponibleActuelle);
 
   const handleExport = async () => {
     try {
       setIsExporting(true);
-      const exportData = await DashboardService.exportDashboardData();
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+      const exportData = await axios.get('/api/dashboard/export');
+      const blob = new Blob([JSON.stringify(exportData.data, null, 2)], {
         type: 'application/json'
       });
       const url = URL.createObjectURL(blob);
@@ -324,7 +300,7 @@ const VueGeneralePage = () => {
     }
   };
 
-  if (loading || totalsLoading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="flex items-center space-x-2">
@@ -335,16 +311,16 @@ const VueGeneralePage = () => {
     );
   }
 
-  if (error || totalsError) {
+  if (error) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">Loading error</h3>
           <p className="text-muted-foreground mb-4">
-            {error?.message || totalsError?.message || 'An error occurred'}
+            {error.message || 'An error occurred while loading dashboard data'}
           </p>
-          <Button onClick={refreshData} variant="outline">
+          <Button onClick={() => refetch()} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
             Try again
           </Button>
@@ -359,12 +335,12 @@ const VueGeneralePage = () => {
         <h1 className="text-3xl font-bold">Wealth Management Dashboard</h1>
         <div className="flex gap-2">
           <Button 
-            onClick={refreshData} 
+            onClick={() => refetch()} 
             variant="outline" 
             size="sm"
-            disabled={loading}
+            disabled={isLoading}
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
           <Select value={periode} onValueChange={setPeriode}>
@@ -399,7 +375,7 @@ const VueGeneralePage = () => {
           <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-blue-100">
             <CardDescription>Total assets</CardDescription>
             <CardTitle className="text-2xl text-blue-700">
-              {(safeNumber(encoursTotalActuel) / 1000000).toFixed(2)} M€
+              {(encoursTotalActuel / 1000000).toFixed(2)} M€
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
@@ -414,7 +390,7 @@ const VueGeneralePage = () => {
           <CardHeader className="pb-2 bg-gradient-to-r from-emerald-50 to-emerald-100">
             <CardDescription>Available savings</CardDescription>
             <CardTitle className="text-2xl text-emerald-700">
-              {(safeNumber(epargneDisponibleActuelle) / 1000000).toFixed(2)} M€
+              {(epargneDisponibleActuelle / 1000000).toFixed(2)} M€
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
