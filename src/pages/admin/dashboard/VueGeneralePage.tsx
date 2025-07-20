@@ -47,7 +47,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 const COLORS = ['#8B5CF6', '#F97316', '#D946EF', '#0EA5E9', '#10B981', '#F59E0B', '#EF4444'];
 
@@ -107,41 +107,43 @@ interface DashboardData {
 }
 
 const fetchDashboardData = async () => {
+  const supabase = createClientComponentClient();
+
   const [
-    encoursStats,
-    clientsStats,
-    recentActivities,
-    alertesOpportunites,
-    repartitionActifs,
-    prochainsRdv,
-    epargneDisponible,
-    realtimeStats,
-    totalAssets,
-    totalEpargne
+    { data: encoursStats },
+    { data: clientsStats },
+    { data: recentActivities },
+    { data: alertesOpportunites },
+    { data: repartitionActifs },
+    { data: prochainsRdv },
+    { data: epargneDisponible },
+    { data: realtimeStats },
+    { data: totalAssets },
+    { data: totalEpargne }
   ] = await Promise.all([
-    axios.get('/api/dashboard/encours-stats'),
-    axios.get('/api/dashboard/clients-stats'),
-    axios.get('/api/dashboard/recent-activities'),
-    axios.get('/api/dashboard/alertes-opportunites'),
-    axios.get('/api/dashboard/repartition-actifs'),
-    axios.get('/api/dashboard/prochains-rdv'),
-    axios.get('/api/dashboard/epargne-disponible'),
-    axios.get('/api/dashboard/realtime-stats'),
-    axios.get('/api/dashboard/total-assets'),
-    axios.get('/api/dashboard/total-epargne')
+    supabase.from('dashboard_encours_stats').select('*'),
+    supabase.from('dashboard_clients_stats').select('*'),
+    supabase.from('dashboard_recent_activities').select('*'),
+    supabase.from('dashboard_alertes_opportunites').select('*'),
+    supabase.from('dashboard_repartition_actifs').select('*'),
+    supabase.from('dashboard_prochains_rdv').select('*'),
+    supabase.from('dashboard_epargne_disponible').select('*'),
+    supabase.from('dashboard_realtime_stats').select('*').single(),
+    supabase.from('dashboard_total_assets').select('*').single(),
+    supabase.from('dashboard_total_epargne_disponible').select('*').single()
   ]);
 
   return {
-    encoursStats: encoursStats.data,
-    clientsStats: clientsStats.data,
-    recentActivities: recentActivities.data,
-    alertesOpportunites: alertesOpportunites.data,
-    repartitionActifs: repartitionActifs.data,
-    prochainsRdv: prochainsRdv.data,
-    epargneDisponible: epargneDisponible.data,
-    realtimeStats: realtimeStats.data,
-    totalAssets: totalAssets.data,
-    totalEpargne: totalEpargne.data
+    encoursStats: encoursStats || [],
+    clientsStats: clientsStats || [],
+    recentActivities: recentActivities || [],
+    alertesOpportunites: alertesOpportunites || [],
+    repartitionActifs: repartitionActifs || [],
+    prochainsRdv: prochainsRdv || [],
+    epargneDisponible: epargneDisponible || [],
+    realtimeStats: realtimeStats || { totalClients: 0, nouveauxClients: 0, tauxConversion: 0 },
+    totalAssets: totalAssets || { encoursTotalActuel: 0 },
+    totalEpargne: totalEpargne || { epargneDisponibleActuelle: 0 }
   };
 };
 
@@ -281,18 +283,25 @@ const VueGeneralePage = () => {
   const handleExport = async () => {
     try {
       setIsExporting(true);
-      const exportData = await axios.get('/api/dashboard/export');
-      const blob = new Blob([JSON.stringify(exportData.data, null, 2)], {
-        type: 'application/json'
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `dashboard-export-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      const supabase = createClientComponentClient();
+      const { data: exportData } = await supabase
+        .from('dashboard_export')
+        .select('*')
+        .single();
+      
+      if (exportData) {
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+          type: 'application/json'
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `dashboard-export-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
     } catch (error) {
       console.error('Export error:', error);
     } finally {
