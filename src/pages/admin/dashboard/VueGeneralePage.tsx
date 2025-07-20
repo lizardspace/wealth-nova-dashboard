@@ -50,16 +50,17 @@ import { useDashboardData, useRealtimeStats } from './../../../hooks/useDashboar
 
 const COLORS = ['#8B5CF6', '#F97316', '#D946EF', '#0EA5E9', '#10B981', '#F59E0B', '#EF4444'];
 
+// Types importés depuis le hook
 import { EncoursStat, ClientStat, ActiviteRecente, AlerteOpportunite, RepartitionActif, ProchainRdv } from './../../../hooks/useDashboardData';
 
 interface DashboardData {
-  encoursStats: EncoursStat[];
-  clientsStats: ClientStat[];
-  recentActivities: ActiviteRecente[];
-  alertesOpportunites: AlerteOpportunite[];
-  repartitionActifs: RepartitionActif[];
-  prochainsRdv: ProchainRdv[];
-  epargneDisponible: Array<{ // Garder cette définition locale si elle n'est pas dans le hook
+  encoursStats?: EncoursStat[];
+  clientsStats?: ClientStat[];
+  recentActivities?: ActiviteRecente[];
+  alertesOpportunites?: AlerteOpportunite[];
+  repartitionActifs?: RepartitionActif[];
+  prochainsRdv?: ProchainRdv[];
+  epargneDisponible?: Array<{
     client: string;
     value: number;
     produit: string;
@@ -90,15 +91,16 @@ const DashboardService = {
   
   calculateTotalsFromExistingData(data: DashboardData) {
     // Le total des encours est la somme des actifs
-    const encoursTotalActuel = data.repartitionActifs.reduce(
-      (acc, actif) => acc + actif.valeur_totale,
+    const encoursTotalActuel = (data?.repartitionActifs || []).reduce(
+      (acc, actif) => acc + (actif?.valeur_totale || 0),
       0
     );
     
     // Calcul de l'épargne disponible
-    const epargneDisponibleActuelle = data?.epargneDisponible?.reduce((sum, item) => 
-      sum + (item.value || 0), 0
-    ) || 0;
+    const epargneDisponibleActuelle = (data?.epargneDisponible || []).reduce(
+      (sum, item) => sum + (item?.value || 0), 
+      0
+    );
     
     return { encoursTotalActuel, epargneDisponibleActuelle };
   },
@@ -118,7 +120,7 @@ const useCurrentTotals = (dashboardData: DashboardData) => {
     encoursTotalActuel: 0,
     epargneDisponibleActuelle: 0,
     loading: true,
-    error: null
+    error: null as Error | null
   });
   
   React.useEffect(() => {
@@ -180,12 +182,12 @@ const VueGeneralePage = () => {
     }
     
     return safeMap(data.encoursStats, (item) => ({
-      month: item.month,
-      banque: item.encours_reels_banque,
-      assurance: item.encours_reels_assurance_vie,
-      capitalisation: item.encours_reels_capitalisation,
-      entreprise: item.encours_reels_entreprise,
-      total: item.encours_reels_total
+      month: item?.month || '',
+      banque: item?.encours_reels_banque || 0,
+      assurance: item?.encours_reels_assurance_vie || 0,
+      capitalisation: item?.encours_reels_capitalisation || 0,
+      entreprise: item?.encours_reels_entreprise || 0,
+      total: item?.encours_reels_total || 0
     }));
   };
 
@@ -198,12 +200,14 @@ const VueGeneralePage = () => {
   };
 
   const processRepartitionData = () => {
-    const total = safeMap(data?.repartitionActifs, item => item?.valeur_totale || 0)
-                  .reduce((sum, value) => sum + value, 0) || encoursTotalActuel;
+    const totalActifs = safeMap(data?.repartitionActifs, item => item?.valeur_totale || 0)
+                      .reduce((sum, value) => sum + value, 0);
+    
+    if (totalActifs === 0) return [];
     
     return safeMap(data?.repartitionActifs, (item) => ({
       name: item?.classe_actif || 'Autre',
-      value: total > 0 ? Math.round(((item?.valeur_totale || 0) / total) * 100) : 0,
+      value: Math.round(((item?.valeur_totale || 0) / totalActifs) * 100),
       montant: item?.valeur_totale || 0
     })).filter(item => item.value > 0);
   };
@@ -217,7 +221,9 @@ const VueGeneralePage = () => {
     };
 
     return safeMap(data?.alertesOpportunites, (item) => ({
-      ...item,
+      type_alerte: item?.type_alerte || '',
+      nombre: item?.nombre || 0,
+      couleur: item?.couleur || 'gray',
       color: item?.couleur ? colorMap[item.couleur] || '#6B7280' : '#6B7280',
       action: {
         'Profils incomplets': 'Compléter le profil',
@@ -482,7 +488,7 @@ const VueGeneralePage = () => {
                       <Tooltip 
                         formatter={(value, name, props) => [
                           `${value}%`,
-                          `${(props.payload.montant / 1000).toFixed(1)} k€`
+                          `${((props?.payload?.montant || 0) / 1000).toFixed(1)} k€`
                         ]}
                       />
                     </RePieChart>
@@ -533,7 +539,7 @@ const VueGeneralePage = () => {
                 <CardDescription>Agenda des consultations</CardDescription>
               </CardHeader>
               <CardContent>
-                {data?.prochainsRdv?.length > 0 ? (
+                {data?.prochainsRdv && data.prochainsRdv.length > 0 ? (
                   <ScrollArea className="h-[340px] pr-4">
                     <div className="space-y-3">
                       {safeMap(data.prochainsRdv, (rdv, index) => (
@@ -543,14 +549,14 @@ const VueGeneralePage = () => {
                               <CalendarClock className="h-5 w-5" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{rdv?.client}</p>
-                              <p className="text-sm text-muted-foreground">{rdv?.theme}</p>
+                              <p className="font-medium truncate">{rdv?.client || 'Client inconnu'}</p>
+                              <p className="text-sm text-muted-foreground">{rdv?.theme || 'Thème non défini'}</p>
                             </div>
                             <div className="ml-4 text-right">
                               <Badge variant="outline" className="mb-1">
-                                {rdv?.date_rdv}
+                                {rdv?.date_rdv || 'Date inconnue'}
                               </Badge>
-                              <p className="text-sm font-medium">{rdv?.heure}</p>
+                              <p className="text-sm font-medium">{rdv?.heure || 'Heure inconnue'}</p>
                             </div>
                           </div>
                         </div>
@@ -594,7 +600,7 @@ const VueGeneralePage = () => {
                       <Tooltip 
                         formatter={(value, name, props) => [
                           value,
-                          `Action recommandée: ${props.payload.action}`
+                          `Action recommandée: ${props?.payload?.action || 'Action inconnue'}`
                         ]}
                       />
                       <Bar dataKey="nombre" name="Nombre d'alertes">
@@ -673,16 +679,17 @@ const VueGeneralePage = () => {
             <CardDescription>Dernières actions sur la plateforme</CardDescription>
           </CardHeader>
           <CardContent>
-            {data?.recentActivities?.length > 0 ? (
+            {data?.recentActivities && data.recentActivities.length > 0 ? (
               <div className="space-y-4">
                 {safeMap(data.recentActivities, (activity, index) => (
                   <div key={index} className="flex items-start pb-4 last:pb-0">
                     <div className="relative flex-shrink-0">
                       <div className="flex items-center justify-center w-10 h-10 rounded-full bg-secondary">
-                        {activity.type === 'email' && <Mail className="h-5 w-5" />}
-                        {activity.type === 'call' && <Phone className="h-5 w-5" />}
-                        {activity.type === 'meeting' && <CalendarClock className="h-5 w-5" />}
-                        {activity.type === 'document' && <FileText className="h-5 w-5" />}
+                        {activity?.type === 'email' && <Mail className="h-5 w-5" />}
+                        {activity?.type === 'call' && <Phone className="h-5 w-5" />}
+                        {activity?.type === 'meeting' && <CalendarClock className="h-5 w-5" />}
+                        {activity?.type === 'document' && <FileText className="h-5 w-5" />}
+                        {!activity?.type && <FileText className="h-5 w-5" />}
                       </div>
                       {index < (data.recentActivities?.length || 0) - 1 && (
                         <div className="absolute left-5 top-10 w-px h-full bg-border" />
@@ -690,13 +697,13 @@ const VueGeneralePage = () => {
                     </div>
                     <div className="ml-4 space-y-1">
                       <p className="text-sm font-medium leading-none">
-                        {activity.client} - {activity.action}
+                        {activity?.client || 'Client inconnu'} - {activity?.action || 'Action inconnue'}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {activity.produit} • {activity.montant?.toLocaleString('fr-FR')} €
+                        {activity?.produit || 'Produit inconnu'} • {(activity?.montant || 0).toLocaleString('fr-FR')} €
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {activity.date_action ? new Date(activity.date_action).toLocaleString('fr-FR', {
+                        {activity?.date_action ? new Date(activity.date_action).toLocaleString('fr-FR', {
                           day: 'numeric',
                           month: 'short',
                           hour: '2-digit',
