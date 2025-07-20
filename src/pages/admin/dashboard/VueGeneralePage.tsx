@@ -50,44 +50,16 @@ import { useDashboardData, useRealtimeStats } from './../../../hooks/useDashboar
 
 const COLORS = ['#8B5CF6', '#F97316', '#D946EF', '#0EA5E9', '#10B981', '#F59E0B', '#EF4444'];
 
+import { EncoursStat, ClientStat, ActiviteRecente, AlerteOpportunite, RepartitionActif, ProchainRdv } from './../../../hooks/useDashboardData';
+
 interface DashboardData {
-  encoursStats: Array<{
-    month: string;
-    encours_reels_banque: number;
-    encours_reels_assurance_vie: number;
-    encours_reels_capitalisation: number;
-    encours_reels_entreprise: number;
-    epargne_disponible: number;
-  }>;
-  clientsStats: Array<{
-    month: string;
-    total_clients: number;
-    nouveaux_clients: number;
-  }>;
-  recentActivities: Array<{
-    client: string;
-    action: string;
-    date_action: string;
-    montant: number;
-    produit: string;
-    type: string;
-  }>;
-  alertesOpportunites: Array<{
-    type_alerte: string;
-    nombre: number;
-    couleur: string;
-  }>;
-  repartitionActifs: Array<{
-    classe_actif: string;
-    valeur_totale: number;
-  }>;
-  prochainsRdv: Array<{
-    client: string;
-    theme: string;
-    date_rdv: string;
-    heure: string;
-  }>;
-  epargneDisponible: Array<{
+  encoursStats: EncoursStat[];
+  clientsStats: ClientStat[];
+  recentActivities: ActiviteRecente[];
+  alertesOpportunites: AlerteOpportunite[];
+  repartitionActifs: RepartitionActif[];
+  prochainsRdv: ProchainRdv[];
+  epargneDisponible: Array<{ // Garder cette définition locale si elle n'est pas dans le hook
     client: string;
     value: number;
     produit: string;
@@ -196,7 +168,6 @@ const VueGeneralePage = () => {
 
   // Traitement des données avec protections
   const processEncourData = () => {
-    // Si pas de données d'historique, utiliser les totaux actuels
     if (!data?.encoursStats || data.encoursStats.length === 0) {
       return [{
         month: new Date().toLocaleDateString('fr-FR', { month: 'short' }),
@@ -204,22 +175,17 @@ const VueGeneralePage = () => {
         assurance: 0,
         capitalisation: 0,
         entreprise: 0,
-        disponible: epargneDisponibleActuelle,
         total: encoursTotalActuel
       }];
     }
     
     return safeMap(data.encoursStats, (item) => ({
-      month: item?.month ? new Date(item.month).toLocaleDateString('fr-FR', { month: 'short' }) : '',
-      banque: item?.encours_reels_banque || 0,
-      assurance: item?.encours_reels_assurance_vie || 0,
-      capitalisation: item?.encours_reels_capitalisation || 0,
-      entreprise: item?.encours_reels_entreprise || 0,
-      disponible: item?.epargne_disponible || 0,
-      total: (item?.encours_reels_banque || 0) + 
-             (item?.encours_reels_assurance_vie || 0) + 
-             (item?.encours_reels_capitalisation || 0) + 
-             (item?.encours_reels_entreprise || 0)
+      month: item.month,
+      banque: item.encours_reels_banque,
+      assurance: item.encours_reels_assurance_vie,
+      capitalisation: item.encours_reels_capitalisation,
+      entreprise: item.encours_reels_entreprise,
+      total: item.encours_reels_total
     }));
   };
 

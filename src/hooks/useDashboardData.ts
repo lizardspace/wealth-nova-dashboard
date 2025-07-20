@@ -4,6 +4,10 @@ import { supabase } from '../lib/supabase';
 
 export interface EncoursStat {
   month: string;
+  encours_reels_banque: number;
+  encours_reels_assurance_vie: number;
+  encours_reels_capitalisation: number;
+  encours_reels_entreprise: number;
   encours_reels_total: number;
   encours_theoriques: number;
   epargne_disponible: number;
@@ -84,18 +88,22 @@ export const useDashboardData = () => {
       if (rdvResult.error) throw rdvResult.error;
 
       // Traitement des données d'encours
-      const processedEncours = (encoursResult.data || []).map(row => ({
-        month: new Date(row.month).toLocaleDateString('fr-FR', { month: 'short' }),
-        encours_reels_total: (row.encours_reels_banque || 0) + 
-                            (row.encours_reels_assurance_vie || 0) + 
-                            (row.encours_reels_capitalisation || 0) + 
-                            (row.encours_reels_entreprise || 0),
-        encours_theoriques: ((row.encours_reels_banque || 0) + 
-                           (row.encours_reels_assurance_vie || 0) + 
-                           (row.encours_reels_capitalisation || 0) + 
-                           (row.encours_reels_entreprise || 0)) * 1.6, // Simulation théorique
-        epargne_disponible: row.epargne_disponible || 0
-      }));
+      const processedEncours = (encoursResult.data || []).map(row => {
+        const totalReel = (row.encours_reels_banque || 0) +
+                          (row.encours_reels_assurance_vie || 0) +
+                          (row.encours_reels_capitalisation || 0) +
+                          (row.encours_reels_entreprise || 0);
+        return {
+          month: new Date(row.month).toLocaleDateString('fr-FR', { month: 'short' }),
+          encours_reels_banque: row.encours_reels_banque || 0,
+          encours_reels_assurance_vie: row.encours_reels_assurance_vie || 0,
+          encours_reels_capitalisation: row.encours_reels_capitalisation || 0,
+          encours_reels_entreprise: row.encours_reels_entreprise || 0,
+          encours_reels_total: totalReel,
+          encours_theoriques: totalReel * 1.6, // Simulation théorique
+          epargne_disponible: row.epargne_disponible || 0
+        };
+      });
 
       // Mise à jour des états
       setEncourStats(processedEncours);
