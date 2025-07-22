@@ -2,14 +2,9 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
-// Import des composants UI (y compris Dialog et Table pour les modales)
+// ... (tous les autres imports restent les mêmes)
 import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle, 
-  CardFooter
+  Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,53 +12,22 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription, 
-  DialogFooter 
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter 
 } from "@/components/ui/dialog";
 import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from "@/components/ui/table";
 import { 
-  ArrowUpRight, 
-  Users, 
-  Briefcase, 
-  AlertTriangle, 
-  Brain,
-  CalendarClock, 
-  Mail,
-  FileText,
-  RefreshCw,
-  Download,
-  Loader2,
-  Phone,
-  BarChart as BarChartIcon,
-  PieChart as PieChartIcon,
-  Edit
+  ArrowUpRight, Users, Briefcase, AlertTriangle, Brain, CalendarClock, Mail,
+  FileText, RefreshCw, Download, Loader2, Phone, BarChart as BarChartIcon,
+  PieChart as PieChartIcon, Edit
 } from "lucide-react";
 import {
-  BarChart as ReBarChart,
-  Bar,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart as RePieChart,
-  Pie,
-  Cell
+  BarChart as ReBarChart, Bar, LineChart, Line, XAxis, YAxis,
+  CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart as RePieChart,
+  Pie, Cell
 } from 'recharts';
+
 
 const COLORS = ['#8B5CF6', '#F97316', '#D946EF', '#0EA5E9', '#10B981', '#F59E0B', '#EF4444'];
 
@@ -81,6 +45,7 @@ interface DashboardData {
   totalEpargne: { epargneDisponibleActuelle: number; };
 }
 
+// --- FONCTION CORRIGÉE ---
 const fetchDashboardData = async (): Promise<DashboardData> => {
   const [
     { data: encoursStats, error: encoursError },
@@ -102,8 +67,9 @@ const fetchDashboardData = async (): Promise<DashboardData> => {
     supabase.from('dashboard_prochains_rdv').select('*'),
     supabase.from('dashboard_epargne_disponible').select('*'),
     supabase.from('dashboard_realtime_stats').select('*').single(),
-    supabase.from('dashboard_total_assets').select('encoursTotalActuel').limit(1),
-    supabase.from('dashboard_total_epargne_disponible').select('epargneDisponibleActuelle').limit(1)
+    // Correction : Utiliser les noms de colonnes en minuscules
+    supabase.from('dashboard_total_assets').select('encourstotalactuel').limit(1),
+    supabase.from('dashboard_total_epargne_disponible').select('epargnedisponibleactuelle').limit(1)
   ]);
 
   const errors = [encoursError, clientsError, activitiesError, alertesError, repartitionError, rdvError, epargneError, realtimeError, assetsError, totalEpargneError].filter(Boolean);
@@ -112,8 +78,9 @@ const fetchDashboardData = async (): Promise<DashboardData> => {
     throw new Error('Failed to fetch dashboard data');
   }
 
-  const totalAssets = totalAssetsData?.[0] || { encoursTotalActuel: 0 };
-  const totalEpargne = totalEpargneData?.[0] || { epargneDisponibleActuelle: 0 };
+  // Correction : Lire les propriétés en minuscules et les assigner aux propriétés camelCase attendues par le reste du code
+  const totalAssets = totalAssetsData?.[0] ? { encoursTotalActuel: totalAssetsData[0].encourstotalactuel } : { encoursTotalActuel: 0 };
+  const totalEpargne = totalEpargneData?.[0] ? { epargneDisponibleActuelle: totalEpargneData[0].epargnedisponibleactuelle } : { epargneDisponibleActuelle: 0 };
 
   return {
     encoursStats: encoursStats || [],
@@ -128,6 +95,9 @@ const fetchDashboardData = async (): Promise<DashboardData> => {
     totalEpargne
   };
 };
+
+// ... (Le reste du composant VueGeneralePage, DetailModal, etc. reste identique)
+// Le code ci-dessous est le même que dans la réponse précédente.
 
 // Composant pour la modale affichant les détails
 const DetailModal = ({ isOpen, onClose, title, description, data, isLoading }) => {
