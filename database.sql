@@ -599,6 +599,22 @@ CREATE TABLE public.users (
   CONSTRAINT users_pkey PRIMARY KEY (id)
 );
 
+CREATE TABLE public.appointments (
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    title text,
+    type text,
+    date text,
+    time text,
+    client text,
+    advisor text,
+    status text,
+    location text,
+    notes text,
+    start_time text,
+    end_time text,
+    CONSTRAINT appointments_pkey PRIMARY KEY (id)
+);
+
 CREATE TABLE public.alerts (
     id uuid NOT NULL DEFAULT uuid_generate_v4(),
     user_id uuid,
