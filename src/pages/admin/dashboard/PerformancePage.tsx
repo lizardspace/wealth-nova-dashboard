@@ -2,66 +2,60 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, BarChart, Bar, AreaChart, Area } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, BarChart, Bar, AreaChart, Area } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Download, Calendar, TrendingUp, TrendingDown } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
-// Sample data for performance charts
-const performanceData = [
-  { month: "Jan", global: 1.2, benchmark: 0.9, immobilier: 0.8, placements: 1.5 },
-  { month: "Fév", global: 0.9, benchmark: 0.7, immobilier: 0.5, placements: 1.2 },
-  { month: "Mar", global: 1.5, benchmark: 0.9, immobilier: 1.0, placements: 1.8 },
-  { month: "Avr", global: 1.8, benchmark: 1.3, immobilier: 1.2, placements: 2.1 },
-  { month: "Mai", global: 1.4, benchmark: 1.1, immobilier: 0.9, placements: 1.7 },
-  { month: "Juin", global: 1.0, benchmark: 0.8, immobilier: 0.7, placements: 1.2 },
-  { month: "Juil", global: 1.3, benchmark: 1.0, immobilier: 0.8, placements: 1.6 },
-  { month: "Août", global: 1.6, benchmark: 1.2, immobilier: 1.1, placements: 1.9 },
-  { month: "Sept", global: 1.9, benchmark: 1.5, immobilier: 1.3, placements: 2.2 },
-  { month: "Oct", global: 2.1, benchmark: 1.7, immobilier: 1.5, placements: 2.4 },
-  { month: "Nov", global: 1.7, benchmark: 1.4, immobilier: 1.2, placements: 2.0 },
-  { month: "Déc", global: 2.2, benchmark: 1.8, immobilier: 1.6, placements: 2.5 },
-];
-
-const yearlyPerformance = [
-  { year: "2020", performance: 4.2, benchmark: 3.8 },
-  { year: "2021", performance: 5.8, benchmark: 4.5 },
-  { year: "2022", performance: 3.7, benchmark: 3.2 },
-  { year: "2023", performance: 6.5, benchmark: 5.1 },
-  { year: "2024", performance: 8.3, benchmark: 6.7 },
-];
-
-const assetClassPerformance = [
-  { name: "Assurance Vie", ytd: 4.2, yr1: 3.9, yr3: 11.5 },
-  { name: "PER", ytd: 3.8, yr1: 3.6, yr3: 10.8 },
-  { name: "SCPI", ytd: 5.1, yr1: 4.9, yr3: 14.2 },
-  { name: "Actions", ytd: 7.3, yr1: 6.8, yr3: 22.5 },
-  { name: "Fonds €", ytd: 2.5, yr1: 2.3, yr3: 6.9 },
-  { name: "Immobilier", ytd: 3.6, yr1: 3.4, yr3: 9.8 },
-];
-
-// Performance comparison across advisors
-const advisorsPerformance = [
-  { name: "Conseiller A", performance: 8.3 },
-  { name: "Conseiller B", performance: 7.8 },
-  { name: "Conseiller C", performance: 8.5 },
-  { name: "Conseiller D", performance: 8.1 },
-  { name: "Conseiller E", performance: 7.6 },
-  { name: "Moyenne", performance: 8.0 },
-];
+import { usePerformanceData } from "@/hooks/usePerformanceData";
 
 const PerformancePage = () => {
+  const { performanceData, loading, error } = usePerformanceData();
   const [period, setPeriod] = useState<"ytd" | "yr1" | "yr3">("ytd");
-  
+
   const periodLabels = {
     ytd: "Depuis le début d'année",
     yr1: "Sur 1 an",
     yr3: "Sur 3 ans",
   };
-  
+
   const currentPerformance = 8.3;
   const benchmarkPerformance = 6.7;
   const performanceDelta = currentPerformance - benchmarkPerformance;
+
+  // Hardcoded data for other charts for now
+  const yearlyPerformance = [
+    { year: "2020", performance: 4.2, benchmark: 3.8 },
+    { year: "2021", performance: 5.8, benchmark: 4.5 },
+    { year: "2022", performance: 3.7, benchmark: 3.2 },
+    { year: "2023", performance: 6.5, benchmark: 5.1 },
+    { year: "2024", performance: 8.3, benchmark: 6.7 },
+  ];
+
+  const assetClassPerformance = [
+    { name: "Assurance Vie", ytd: 4.2, yr1: 3.9, yr3: 11.5 },
+    { name: "PER", ytd: 3.8, yr1: 3.6, yr3: 10.8 },
+    { name: "SCPI", ytd: 5.1, yr1: 4.9, yr3: 14.2 },
+    { name: "Actions", ytd: 7.3, yr1: 6.8, yr3: 22.5 },
+    { name: "Fonds €", ytd: 2.5, yr1: 2.3, yr3: 6.9 },
+    { name: "Immobilier", ytd: 3.6, yr1: 3.4, yr3: 9.8 },
+  ];
+
+  const advisorsPerformance = [
+    { name: "Conseiller A", performance: 8.3 },
+    { name: "Conseiller B", performance: 7.8 },
+    { name: "Conseiller C", performance: 8.5 },
+    { name: "Conseiller D", performance: 8.1 },
+    { name: "Conseiller E", performance: 7.6 },
+    { name: "Moyenne", performance: 8.0 },
+  ];
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
 
   return (
     <div className="space-y-6">
