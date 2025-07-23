@@ -27,34 +27,7 @@ import {
   Cell,
 } from 'recharts';
 import { Search, FileDown, ArrowUpDown } from 'lucide-react';
-
-// Données fictives pour les encours réels
-const encoursData = [
-  { mois: 'Jan', assuranceVie: 580000, per: 320000, immobilier: 120000, scpi: 180000, autre: 50000 },
-  { mois: 'Fév', assuranceVie: 610000, per: 340000, immobilier: 120000, scpi: 185000, autre: 55000 },
-  { mois: 'Mars', assuranceVie: 650000, per: 370000, immobilier: 120000, scpi: 195000, autre: 65000 },
-  { mois: 'Avr', assuranceVie: 680000, per: 390000, immobilier: 120000, scpi: 210000, autre: 80000 },
-  { mois: 'Mai', assuranceVie: 720000, per: 420000, immobilier: 120000, scpi: 225000, autre: 95000 },
-  { mois: 'Juin', assuranceVie: 750000, per: 460000, immobilier: 120000, scpi: 240000, autre: 120000 },
-];
-
-// Données pour la répartition par actif
-const repartitionData = [
-  { name: 'Assurance Vie', value: 750000 },
-  { name: 'PER', value: 460000 },
-  { name: 'Immobilier', value: 120000 },
-  { name: 'SCPI', value: 240000 },
-  { name: 'Autre', value: 120000 },
-];
-
-// Données pour les clients
-const clientsData = [
-  { id: 1, nom: "Dupont", prenom: "Jean", assuranceVie: 180000, per: 120000, scpi: 50000, autre: 0, total: 350000 },
-  { id: 2, nom: "Martin", prenom: "Sophie", assuranceVie: 250000, per: 80000, scpi: 60000, autre: 30000, total: 420000 },
-  { id: 3, nom: "Bernard", prenom: "Pierre", assuranceVie: 110000, per: 40000, scpi: 30000, autre: 0, total: 180000 },
-  { id: 4, nom: "Petit", prenom: "Marie", assuranceVie: 290000, per: 150000, scpi: 70000, autre: 40000, total: 550000 },
-  { id: 5, nom: "Robert", prenom: "Antoine", assuranceVie: 200000, per: 110000, scpi: 50000, autre: 40000, total: 400000 },
-];
+import { useEncoursReelsData } from '@/hooks/useEncoursReelsData';
 
 const COLORS = ['#8B5CF6', '#D946EF', '#F97316', '#0EA5E9', '#22D3EE'];
 
@@ -63,9 +36,15 @@ const EncoursReelsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortColumn, setSortColumn] = useState("total");
   const [sortDirection, setSortDirection] = useState("desc");
+  const { loading, error, encoursData, repartitionData, clientsData, totalEncours } = useEncoursReelsData();
 
-  // Calcul du total des encours
-  const totalEncours = repartitionData.reduce((sum, item) => sum + item.value, 0);
+  if (loading) {
+    return <div>Chargement...</div>;
+  }
+
+  if (error) {
+    return <div>Erreur: {error}</div>;
+  }
   
   // Préparation des données pour l'affichage des tableaux
   const formattedClients = [...clientsData].sort((a, b) => {
