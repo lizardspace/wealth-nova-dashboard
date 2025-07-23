@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -7,31 +7,38 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { PieChart, Pie, Cell } from "recharts";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, Bell, FileText, Users, TrendingUp, TrendingDown } from "lucide-react";
-
-// Mock data for alerts
-const alertsByTypeData = [
-  { name: "Inactivité", value: 35 },
-  { name: "Profil incomplet", value: 22 },
-  { name: "Simulation sans suite", value: 18 },
-  { name: "Objectif sans solution", value: 12 },
-  { name: "Rendez-vous à planifier", value: 9 },
-];
+import { supabase } from "@/lib/supabase";
+import { generateAlerts } from "@/lib/alerts";
 
 const COLORS = ['#EF4444', '#F59E0B', '#8B5CF6', '#3B82F6', '#10B981'];
 
-// Mock data for alert list
-const alertsList = [
-  { id: 1, type: "Inactivité", client: "Dupont Jean", niveau: "critique", jours: 45, action: "Relance" },
-  { id: 2, type: "Profil incomplet", client: "Martin Sophie", niveau: "important", champs: "Objectifs", action: "Email" },
-  { id: 3, type: "Simulation sans suite", client: "Bernard Marc", niveau: "moyen", simulation: "Retraite", action: "Appel" },
-  { id: 4, type: "Inactivité", client: "Petit Marie", niveau: "critique", jours: 60, action: "Relance" },
-  { id: 5, type: "Objectif sans solution", client: "Robert Pierre", niveau: "important", objectif: "Transmission", action: "RDV" },
-  { id: 6, type: "Profil incomplet", client: "Durand Emilie", niveau: "moyen", champs: "Patrimoine", action: "Email" },
-  { id: 7, type: "Simulation sans suite", client: "Moreau Thomas", niveau: "moyen", simulation: "Immobilier", action: "Appel" },
-  { id: 8, type: "Inactivité", client: "Richard Julie", niveau: "critique", jours: 52, action: "Relance" },
-];
-
 const AlertesPage = () => {
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [alertsByTypeData, setAlertsByTypeData] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      await generateAlerts();
+      const { data, error } = await supabase.from('alerts').select('*');
+      if (error) {
+        console.error('Error fetching alerts:', error);
+      } else {
+        setAlerts(data);
+        const alertsByType = data.reduce((acc, alert) => {
+          const existing = acc.find((item: any) => item.name === alert.type);
+          if (existing) {
+            existing.value += 1;
+          } else {
+            acc.push({ name: alert.type, value: 1 });
+          }
+          return acc;
+        }, []);
+        setAlertsByTypeData(alertsByType);
+      }
+    };
+    fetchAlerts();
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
@@ -56,7 +63,7 @@ const AlertesPage = () => {
         <Card className="hover:shadow-md transition-all border-slate-200 hover:border-blue-200">
           <CardHeader className="pb-2">
             <CardDescription>Total alertes</CardDescription>
-            <CardTitle className="text-2xl">96</CardTitle>
+            <CardTitle className="text-2xl">{alerts.length}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center text-red-600 font-medium text-sm">
@@ -69,7 +76,7 @@ const AlertesPage = () => {
         <Card className="hover:shadow-md transition-all border-slate-200 hover:border-blue-200">
           <CardHeader className="pb-2">
             <CardDescription>Alertes prioritaires</CardDescription>
-            <CardTitle className="text-2xl">35</CardTitle>
+            <CardTitle className="text-2xl">{alerts.filter(a => a.level === 'critique' || a.level === 'important').length}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-sm text-muted-foreground">
@@ -150,7 +157,7 @@ const AlertesPage = () => {
               <AlertTriangle className="h-4 w-4 text-red-500" />
               <AlertTitle className="text-red-700">Attention</AlertTitle>
               <AlertDescription className="text-red-600">
-                35 clients sont inactifs depuis plus de 30 jours et nécessitent une relance urgente.
+                {alerts.filter(a => a.type === 'Inactivité').length} clients sont inactifs depuis plus de 30 jours et nécessitent une relance urgente.
               </AlertDescription>
             </Alert>
             
@@ -158,7 +165,7 @@ const AlertesPage = () => {
               <AlertTriangle className="h-4 w-4 text-amber-500" />
               <AlertTitle className="text-amber-700">Opportunités</AlertTitle>
               <AlertDescription className="text-amber-600">
-                22 clients ont un profil incomplet, ce qui limite les recommandations IA et les opportunités commerciales.
+                {alerts.filter(a => a.type === 'Profil incomplet').length} clients ont un profil incomplet, ce qui limite les recommandations IA et les opportunités commerciales.
               </AlertDescription>
             </Alert>
 
@@ -193,36 +200,31 @@ const AlertesPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {alertsList.map((alert) => (
+                {alerts.map((alert) => (
                   <tr key={alert.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="py-3">{alert.type}</td>
-                    <td className="py-3 font-medium group-hover:text-blue-600 transition-colors">{alert.client}</td>
+                    <td className="py-3 font-medium group-hover:text-blue-600 transition-colors">{alert.user_id}</td>
                     <td className="py-3">
                       <Badge className={
-                        alert.niveau === "critique" ? "bg-red-500 hover:bg-red-600" :
-                        alert.niveau === "important" ? "bg-amber-500 hover:bg-amber-600" : "bg-blue-500 hover:bg-blue-600"
+                        alert.level === "critique" ? "bg-red-500 hover:bg-red-600" :
+                        alert.level === "important" ? "bg-amber-500 hover:bg-amber-600" : "bg-blue-500 hover:bg-blue-600"
                       }>
-                        {alert.niveau}
+                        {alert.level}
                       </Badge>
                     </td>
                     <td className="py-3">
-                      {alert.type === "Inactivité" && `${alert.jours} jours`}
-                      {alert.type === "Profil incomplet" && `Champs: ${alert.champs}`}
-                      {alert.type === "Simulation sans suite" && `Type: ${alert.simulation}`}
-                      {alert.type === "Objectif sans solution" && `Objectif: ${alert.objectif}`}
+                      {alert.message}
                     </td>
                     <td className="py-3">
                       <Button
                         variant="outline"
                         size="sm"
                         className={
-                          alert.action === "Relance" ? "text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300" :
-                          alert.action === "Email" ? "text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-300" :
-                          alert.action === "Appel" ? "text-amber-600 border-amber-200 hover:bg-amber-50 hover:border-amber-300" :
-                          "text-green-600 border-green-200 hover:bg-green-50 hover:border-green-300"
+                          alert.level === "critique" ? "text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300" :
+                          "text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-300"
                         }
                       >
-                        {alert.action}
+                        {alert.level === 'critique' ? 'Relance' : 'Email'}
                       </Button>
                     </td>
                   </tr>
