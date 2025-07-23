@@ -26,37 +26,21 @@ import {
   LineChart,
   Line,
 } from 'recharts';
-
-// Données fictives
-const encoursTotalData = [
-  { name: 'Jan', reels: 1200000, theoriques: 2800000 },
-  { name: 'Fév', reels: 1300000, theoriques: 2900000 },
-  { name: 'Mars', reels: 1500000, theoriques: 3000000 },
-  { name: 'Avr', reels: 1700000, theoriques: 2950000 },
-  { name: 'Mai', reels: 1950000, theoriques: 3100000 },
-];
-
-const repartitionActifs = [
-  { name: 'Immobilier', value: 55 },
-  { name: 'Assurance vie', value: 20 },
-  { name: 'PER', value: 10 },
-  { name: 'Liquidités', value: 8 },
-  { name: 'Actions', value: 5 },
-  { name: 'Autre', value: 2 },
-];
+import useGlobalPortfolioData from '@/hooks/useGlobalPortfolioData'; // Import the hook
 
 const COLORS = ['#8B5CF6', '#D946EF', '#F97316', '#0EA5E9', '#22D3EE', '#A3E635'];
 
-const clientsEncoursData = [
-  { id: 1, nom: "Dupont", prenom: "Jean", encoursReel: 350000, encoursTheorique: 750000, tauxConversion: 46.6 },
-  { id: 2, nom: "Martin", prenom: "Sophie", encoursReel: 420000, encoursTheorique: 620000, tauxConversion: 67.7 },
-  { id: 3, nom: "Bernard", prenom: "Pierre", encoursReel: 180000, encoursTheorique: 900000, tauxConversion: 20.0 },
-  { id: 4, nom: "Petit", prenom: "Marie", encoursReel: 550000, encoursTheorique: 750000, tauxConversion: 73.3 },
-  { id: 5, nom: "Robert", prenom: "Antoine", encoursReel: 400000, encoursTheorique: 480000, tauxConversion: 83.3 },
-];
-
 const VueGlobalePage = () => {
   const [periode, setPeriode] = useState("6mois");
+  const { encoursTotalData, repartitionActifs, clientsEncoursData, loading, error } = useGlobalPortfolioData();
+
+  if (loading) {
+    return <div>Chargement des données...</div>;
+  }
+
+  if (error) {
+    return <div>Erreur: {error.message}</div>;
+  }
 
   const totalReels = clientsEncoursData.reduce((sum, client) => sum + (client.encoursReel || 0), 0);
   const totalTheoriques = clientsEncoursData.reduce((sum, client) => sum + (client.encoursTheorique || 0), 0);
