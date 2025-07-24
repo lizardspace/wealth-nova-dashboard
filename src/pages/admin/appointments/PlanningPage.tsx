@@ -5,10 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { supabase } from '@/lib/supabase';
 import { 
-  events, 
-  calendarEvents, 
-  appointments,
   AppointmentType,
   Event,
   HistoricalAppointment
@@ -27,9 +25,23 @@ export default function PlanningPage(): React.ReactNode {
   const [view, setView] = useState<'day' | 'week'>('day');
   const [selectedAdvisor, setSelectedAdvisor] = useState<string>("tous");
   const [selectedTypes, setSelectedTypes] = useState<AppointmentType[]>([]);
-  const [filteredEvents, setFilteredEvents] = useState<Event[]>(events);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [activeTab, setActiveTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      const { data, error } = await supabase.from('appointments').select('*');
+      if (error) {
+        console.error('Error fetching appointments:', error);
+      } else {
+        setEvents(data as Event[]);
+      }
+    };
+
+    fetchAppointments();
+  }, []);
   
   const weekDays = eachDayOfInterval({
     start: startOfWeek(date, { weekStartsOn: 1 }),
@@ -43,17 +55,17 @@ export default function PlanningPage(): React.ReactNode {
     // Filter by date based on active tab
     if (activeTab === "today") {
       filtered = filtered.filter(event => {
-        const eventDate = parseDate(event.date);
+        const eventDate = new Date(event.date);
         return isToday(eventDate);
       });
     } else if (activeTab === "week") {
       filtered = filtered.filter(event => {
-        const eventDate = parseDate(event.date);
+        const eventDate = new Date(event.date);
         return isThisWeek(eventDate, { weekStartsOn: 1 });
       });
     } else if (activeTab === "month") {
       filtered = filtered.filter(event => {
-        const eventDate = parseDate(event.date);
+        const eventDate = new Date(event.date);
         return isThisMonth(eventDate);
       });
     } else if (activeTab === "upcoming") {
@@ -84,7 +96,7 @@ export default function PlanningPage(): React.ReactNode {
     }
     
     setFilteredEvents(filtered);
-  }, [date, selectedAdvisor, selectedTypes, activeTab, searchQuery]);
+  }, [date, selectedAdvisor, selectedTypes, activeTab, searchQuery, events]);
 
   // Helper function to parse date strings like "15/04/2025" to Date objects
   const parseDate = (dateString: string): Date => {
@@ -121,22 +133,22 @@ export default function PlanningPage(): React.ReactNode {
 
   // Filter appointments for HistoryView
   const filterHistoricalAppointments = (): HistoricalAppointment[] => {
-    let filtered = [...appointments];
+    let filtered = [...events];
     
     // Apply active tab filters
     if (activeTab === "today") {
       filtered = filtered.filter(app => {
-        const appDate = parseDate(app.date);
+        const appDate = new Date(app.date);
         return isToday(appDate);
       });
     } else if (activeTab === "week") {
       filtered = filtered.filter(app => {
-        const appDate = parseDate(app.date);
+        const appDate = new Date(app.date);
         return isThisWeek(appDate, { weekStartsOn: 1 });
       });
     } else if (activeTab === "month") {
       filtered = filtered.filter(app => {
-        const appDate = parseDate(app.date);
+        const appDate = new Date(app.date);
         return isThisMonth(appDate);
       });
     } else if (activeTab === "upcoming") {
@@ -167,12 +179,12 @@ export default function PlanningPage(): React.ReactNode {
       );
     }
     
-    return filtered;
+    return filtered as HistoricalAppointment[];
   };
 
   // Filter calendarEvents for CalendarView
   const filterCalendarEvents = () => {
-    let filtered = [...calendarEvents];
+    let filtered = [...events];
     
     // Apply advisor filter
     if (selectedAdvisor !== "tous") {

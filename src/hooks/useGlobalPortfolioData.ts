@@ -22,8 +22,10 @@ const useGlobalPortfolioData = (): PortfolioData => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch users
-        const { data: users, error: usersError } = await supabase.from('users').select('id, first_name, last_name');
+        // Fetch users and their portfolios
+        const { data: users, error: usersError } = await supabase
+          .from('users')
+          .select('id, first_name, last_name, portfolios (encours_theorique)');
         if (usersError) throw usersError;
 
         // Fetch assets for all users
@@ -50,14 +52,14 @@ const useGlobalPortfolioData = (): PortfolioData => {
         // Process data
         const encoursReelByUser = users.reduce((acc, user) => {
           const totalAssets = [
-            ...immobilier.filter(i => i.user_id === user.id),
-            ...assuranceVie.filter(a => a.user_id === user.id),
-            ...comptes.filter(c => c.user_id === user.id),
-            ...contrats.filter(c => c.user_id === user.id),
-            ...entreprises.filter(e => e.user_id === user.id)
+            ...(immobilier?.filter(i => i.user_id === user.id) || []),
+            ...(assuranceVie?.filter(a => a.user_id === user.id) || []),
+            ...(comptes?.filter(c => c.user_id === user.id) || []),
+            ...(contrats?.filter(c => c.user_id === user.id) || []),
+            ...(entreprises?.filter(e => e.user_id === user.id) || [])
           ].reduce((sum, asset) => sum + (asset.value || 0), 0);
 
-          const totalCredits = credits
+          const totalCredits = (credits || [])
             .filter(c => c.user_id === user.id)
             .reduce((sum, credit) => sum + (credit.capital_restant_du || 0), 0);
 
@@ -70,32 +72,42 @@ const useGlobalPortfolioData = (): PortfolioData => {
           nom: user.last_name,
           prenom: user.first_name,
           encoursReel: encoursReelByUser[user.id] || 0,
-          encoursTheorique: (encoursReelByUser[user.id] || 0) * (1 + Math.random()), // Placeholder for theorique
-          tauxConversion: 0, // Placeholder
+          encoursTheorique: user.portfolios[0]?.encours_theorique || 0,
+          tauxConversion: 0,
         })).sort((a, b) => b.encoursReel - a.encoursReel).slice(0, 5);
 
         clientsEncoursData.forEach(client => {
           client.tauxConversion = client.encoursTheorique > 0 ? parseFloat(((client.encoursReel / client.encoursTheorique) * 100).toFixed(1)) : 0;
         });
 
-        const totalImmobilier = immobilier.reduce((sum, item) => sum + item.value, 0);
-        const totalAssuranceVie = assuranceVie.reduce((sum, item) => sum + item.value, 0);
-        const totalComptes = comptes.reduce((sum, item) => sum + item.value, 0);
-        const totalContrats = contrats.reduce((sum, item) => sum + item.value, 0);
-        const totalEntreprises = entreprises.reduce((sum, item) => sum + item.value, 0);
+        const totalImmobilier = immobilier?.reduce((sum, item) => sum + item.value, 0) || 0;
+        const totalAssuranceVie = assuranceVie?.reduce((sum, item) => sum + item.value, 0) || 0;
+        const totalComptes = comptes?.reduce((sum, item) => sum + item.value, 0) || 0;
+        const totalContrats = contrats?.reduce((sum, item) => sum + item.value, 0) || 0;
+        const totalEntreprises = entreprises?.reduce((sum, item) => sum + item.value, 0) || 0;
 
         const totalActifs = totalImmobilier + totalAssuranceVie + totalComptes + totalContrats + totalEntreprises;
 
-        const repartitionActifs = [
+        const repartitionActifs = totalActifs > 0 ? [
           { name: 'Immobilier', value: totalImmobilier / totalActifs * 100 },
           { name: 'Assurance vie', value: totalAssuranceVie / totalActifs * 100 },
           { name: 'Liquidités', value: totalComptes / totalActifs * 100 },
           { name: 'PER', value: totalContrats / totalActifs * 100 },
           { name: 'Actions', value: totalEntreprises / totalActifs * 100 },
-        ];
+        ] : [];
+
+        // Placeholder for historical data
+        const encoursTotalData = [
+            { name: 'Jan', reels: 4000, theoriques: 2400 },
+            { name: 'Fev', reels: 3000, theoriques: 1398 },
+            { name: 'Mar', reels: 2000, theoriques: 9800 },
+            { name: 'Avr', reels: 2780, theoriques: 3908 },
+            { name: 'Mai', reels: 1890, theoriques: 4800 },
+            { name: 'Juin', reels: 2390, theoriques: 3800 },
+          ];
 
         setData({
-          encoursTotalData: [], // Placeholder for historical data
+          encoursTotalData,
           repartitionActifs,
           clientsEncoursData,
         });

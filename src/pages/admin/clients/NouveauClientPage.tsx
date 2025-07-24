@@ -36,6 +36,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/lib/supabase';
 
 // Schéma de validation
 const formSchema = z.object({
@@ -58,8 +59,14 @@ const formSchema = z.object({
   profession: z.string().min(2, { message: "Veuillez indiquer votre profession" }),
   
   // Informations financières
-  revenuAnnuel: z.string().min(1, { message: "Veuillez saisir un revenu annuel" }),
-  patrimoineEstime: z.string().min(1, { message: "Veuillez saisir un patrimoine estimé" })
+  revenuAnnuel: z.preprocess(
+    (a) => parseFloat(z.string().parse(a)),
+    z.number().min(0, { message: "Le revenu annuel doit être un nombre positif" })
+  ),
+  patrimoineEstime: z.preprocess(
+    (a) => parseFloat(z.string().parse(a)),
+    z.number().min(0, { message: "Le patrimoine estimé doit être un nombre positif" })
+  )
 });
 
 const NouveauClientPage = () => {
@@ -84,12 +91,63 @@ const NouveauClientPage = () => {
     }
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    toast({
-      title: "Client créé avec succès",
-      description: `${values.prenom} ${values.nom} a été ajouté à la base de données.`,
-    });
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log("Form values:", values);
+    try {
+      // Étape 1: Insérer dans la table 'users'
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .insert([
+          {
+            first_name: values.prenom,
+            last_name: values.nom,
+            email: values.email,
+            civilite: values.civilite,
+            date_naissance: values.dateNaissance,
+          },
+        ])
+        .select();
+
+      if (userError) throw userError;
+      if (!userData) throw new Error("La création de l'utilisateur a échoué.");
+
+      const userId = userData[0].id;
+
+      // Étape 2: Insérer dans la table 'personalinfo'
+      const { error: personalInfoError } = await supabase
+        .from('personalinfo')
+        .insert([
+          {
+            user_id: userId,
+            phone: parseInt(values.telephone, 10),
+            address: values.adresse,
+            postal_code: parseInt(values.codePostal, 10),
+            city: values.ville,
+            situation_matrimoniale: values.situationFamiliale,
+            nb_enfants_charge: parseInt(values.nombreEnfants, 10),
+            profession: values.profession,
+            revenu_annuel: values.revenuAnnuel,
+            capacite_epargne: 0, // Valeur par défaut
+            epargne_precaution: 0, // Valeur par défaut
+            patrimoine_estime: values.patrimoineEstime,
+          },
+        ]);
+
+      if (personalInfoError) throw personalInfoError;
+
+      toast({
+        title: "Client créé avec succès",
+        description: `${values.prenom} ${values.nom} a été ajouté à la base de données.`,
+      });
+      form.reset(); // Réinitialiser le formulaire
+    } catch (error) {
+      console.error("Erreur lors de la création du client:", error);
+      toast({
+        title: "Erreur lors de la création",
+        description: "Une erreur s'est produite. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    }
   }
 
   return (
@@ -132,8 +190,8 @@ const NouveauClientPage = () => {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="monsieur">Monsieur</SelectItem>
-                              <SelectItem value="madame">Madame</SelectItem>
+                              <SelectItem value="M.">Monsieur</SelectItem>
+                              <SelectItem value="Mme">Madame</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
