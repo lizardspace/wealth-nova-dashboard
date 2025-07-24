@@ -92,6 +92,7 @@ const NouveauClientPage = () => {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log("Form values:", values);
     try {
       // Étape 1: Insérer dans la table 'users'
       const { data: userData, error: userError } = await supabase
@@ -189,8 +190,8 @@ const NouveauClientPage = () => {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="monsieur">Monsieur</SelectItem>
-                              <SelectItem value="madame">Madame</SelectItem>
+                              <SelectItem value="M.">Monsieur</SelectItem>
+                              <SelectItem value="Mme">Madame</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
