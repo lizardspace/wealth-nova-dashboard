@@ -28,6 +28,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from '@/lib/supabase';
 
 // Types et données fictives
 type FieldCategory = 'personal' | 'financial' | 'fiscal' | 'products' | 'simulations' | 'scores';
@@ -93,28 +94,27 @@ const exportFields: ExportField[] = [
   { id: 'horizonInvestissement', label: 'Horizon d\'investissement', category: 'scores', selected: false },
 ];
 
-// Liste des clients fictifs
-const mockClients = [
-  { id: 1, nom: "Dupont", prenom: "Jean", selected: false },
-  { id: 2, nom: "Martin", prenom: "Sophie", selected: false },
-  { id: 3, nom: "Bernard", prenom: "Pierre", selected: false },
-  { id: 4, nom: "Petit", prenom: "Marie", selected: false },
-  { id: 5, nom: "Robert", prenom: "Antoine", selected: false },
-  { id: 6, nom: "Durand", prenom: "Claire", selected: false },
-  { id: 7, nom: "Leroy", prenom: "Thomas", selected: false },
-  { id: 8, nom: "Moreau", prenom: "Isabelle", selected: false },
-  { id: 9, nom: "Simon", prenom: "Michel", selected: false },
-  { id: 10, nom: "Laurent", prenom: "Emma", selected: false }
-];
-
 export default function ExportDonneesPage() {
   const [activeTab, setActiveTab] = useState<string>('fields');
   const [fields, setFields] = useState<ExportField[]>(exportFields);
-  const [clients, setClients] = useState(mockClients);
+  const [clients, setClients] = useState<any[]>([]);
   const [format, setFormat] = useState<string>('csv');
   const [selectedCategory, setSelectedCategory] = useState<FieldCategory | 'all'>('all');
   const [selectAllClients, setSelectAllClients] = useState(false);
   const [selectAllFields, setSelectAllFields] = useState(false);
+
+  React.useEffect(() => {
+    const fetchClients = async () => {
+      const { data, error } = await supabase.from('clients').select('*');
+      if (error) {
+        console.error('Error fetching clients:', error);
+      } else {
+        setClients(data.map(client => ({ ...client, selected: false })));
+      }
+    };
+
+    fetchClients();
+  }, []);
 
   const handleFieldToggle = (fieldId: string) => {
     setFields(fields.map(field => 
