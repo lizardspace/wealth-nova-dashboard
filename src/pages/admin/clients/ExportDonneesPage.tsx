@@ -28,8 +28,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Database } from '@/types/supabase';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import Papa from 'papaparse';
 
@@ -41,7 +40,7 @@ interface ExportField {
   label: string;
   category: FieldCategory;
   selected: boolean;
-  table?: keyof Database['public']['Tables'];
+  table?: string;
   column?: string;
 }
 
@@ -115,7 +114,6 @@ const exportFields: ExportField[] = [
 ];
 
 export default function ExportDonneesPage() {
-  const supabase = createClientComponentClient<Database>();
   const [activeTab, setActiveTab] = useState<string>('fields');
   const [fields, setFields] = useState<ExportField[]>(exportFields);
   const [users, setUsers] = useState<User[]>([]);
