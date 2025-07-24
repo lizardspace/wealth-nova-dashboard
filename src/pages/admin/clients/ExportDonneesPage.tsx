@@ -28,7 +28,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { supabase } from '@/lib/supabase';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { Database } from '@/types/supabase';
 import { toast } from 'sonner';
 import Papa from 'papaparse';
 
@@ -40,7 +41,7 @@ interface ExportField {
   label: string;
   category: FieldCategory;
   selected: boolean;
-  table?: string;
+  table?: keyof Database['public']['Tables'];
   column?: string;
 }
 
@@ -114,6 +115,7 @@ const exportFields: ExportField[] = [
 ];
 
 export default function ExportDonneesPage() {
+  const supabase = createClientComponentClient<Database>();
   const [activeTab, setActiveTab] = useState<string>('fields');
   const [fields, setFields] = useState<ExportField[]>(exportFields);
   const [users, setUsers] = useState<User[]>([]);
@@ -159,7 +161,7 @@ export default function ExportDonneesPage() {
   };
 
   const handleUserToggle = (userId: string) => {
-    setUsers(users.map(user => 
+    setUsers(users.map(user =>
       user.id === userId ? { ...user, selected: !user.selected } : user
     ));
   };
@@ -235,7 +237,6 @@ export default function ExportDonneesPage() {
       // Formater les données pour l'export
       const formattedData = data.map(user => {
         const result: Record<string, any> = {};
-        
         fieldsToExport.forEach(field => {
           if (field.table === 'users') {
             result[field.label] = user[field.column as keyof typeof user];
@@ -336,13 +337,13 @@ export default function ExportDonneesPage() {
       case 'complet':
         return fields.map(f => ({ ...f, selected: true }));
       case 'financier':
-        return fields.map(f => ({ 
-          ...f, 
+        return fields.map(f => ({
+          ...f,
           selected: ['personal', 'financial', 'scores'].includes(f.category)
         }));
       case 'fiscal':
-        return fields.map(f => ({ 
-          ...f, 
+        return fields.map(f => ({
+          ...f,
           selected: ['personal', 'fiscal'].includes(f.category)
         }));
       default:
@@ -470,7 +471,7 @@ export default function ExportDonneesPage() {
               </div>
               <CardDescription>
                 {activeTab === 'fields' ? 
-                  "Sélectionnez les champs à inclure dans l'export (basé sur le schéma Supabase)" : 
+                  "Sélectionnez les champs à inclure dans l'export (basé sur le schéma Supabase)" :
                   "Sélectionnez les clients à inclure dans l'export"}
               </CardDescription>
             </CardHeader>
@@ -519,7 +520,7 @@ export default function ExportDonneesPage() {
                             .map(field => (
                               <div key={field.id} className="flex items-center justify-between space-x-2 p-2 border rounded-md">
                                 <div className="flex items-center space-x-2">
-                                  <Checkbox 
+                                  <Checkbox
                                     id={`field-${field.id}`}
                                     checked={field.selected}
                                     onCheckedChange={() => handleFieldToggle(field.id)}
@@ -573,7 +574,7 @@ export default function ExportDonneesPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {users.map(user => (
                         <div key={user.id} className="flex items-center space-x-2 border p-3 rounded-md">
-                          <Checkbox 
+                          <Checkbox
                             id={`user-${user.id}`}
                             checked={user.selected}
                             onCheckedChange={() => handleUserToggle(user.id)}
