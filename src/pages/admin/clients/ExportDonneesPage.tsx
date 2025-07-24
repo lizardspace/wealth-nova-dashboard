@@ -237,7 +237,6 @@ export default function ExportDonneesPage() {
       // Formater les données pour l'export
       const formattedData = data.map(user => {
         const result: Record<string, any> = {};
-
         fieldsToExport.forEach(field => {
           if (field.table === 'users') {
             result[field.label] = user[field.column as keyof typeof user];

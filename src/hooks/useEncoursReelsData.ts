@@ -67,7 +67,6 @@ export const useEncoursReelsData = () => {
           };
         });
         setClientsData(clients);
-
         // Mocked for now, as we don't have historical data
         const encours = [
             { mois: 'Jan', assuranceVie: 580000, per: 320000, immobilier: 120000, scpi: 180000, autre: 50000 },
