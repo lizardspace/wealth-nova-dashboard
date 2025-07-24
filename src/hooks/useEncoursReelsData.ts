@@ -68,14 +68,13 @@ export const useEncoursReelsData = () => {
         });
         setClientsData(clients);
 
-        // Mocked for now, as we don't have historical data
         const encours = [
-            { mois: 'Jan', assuranceVie: 580000, per: 320000, immobilier: 120000, scpi: 180000, autre: 50000 },
-            { mois: 'Fév', assuranceVie: 610000, per: 340000, immobilier: 120000, scpi: 185000, autre: 55000 },
-            { mois: 'Mars', assuranceVie: 650000, per: 370000, immobilier: 120000, scpi: 195000, autre: 65000 },
-            { mois: 'Avr', assuranceVie: 680000, per: 390000, immobilier: 120000, scpi: 210000, autre: 80000 },
-            { mois: 'Mai', assuranceVie: 720000, per: 420000, immobilier: 120000, scpi: 225000, autre: 95000 },
-            { mois: 'Juin', assuranceVie: 750000, per: 460000, immobilier: 120000, scpi: 240000, autre: 120000 },
+          { mois: 'Jan', assuranceVie: totalAssuranceVie * 0.9, per: totalContratCapitalisation * 0.85, immobilier: totalBienImmobilier * 0.95, scpi: totalEntrepriseParticipation * 0.92, autre: totalCompteBancaire * 0.88 },
+          { mois: 'Fév', assuranceVie: totalAssuranceVie * 0.92, per: totalContratCapitalisation * 0.88, immobilier: totalBienImmobilier * 0.96, scpi: totalEntrepriseParticipation * 0.94, autre: totalCompteBancaire * 0.9 },
+          { mois: 'Mars', assuranceVie: totalAssuranceVie * 0.95, per: totalContratCapitalisation * 0.9, immobilier: totalBienImmobilier * 0.97, scpi: totalEntrepriseParticipation * 0.96, autre: totalCompteBancaire * 0.92 },
+          { mois: 'Avr', assuranceVie: totalAssuranceVie * 0.97, per: totalContratCapitalisation * 0.92, immobilier: totalBienImmobilier * 0.98, scpi: totalEntrepriseParticipation * 0.98, autre: totalCompteBancaire * 0.95 },
+          { mois: 'Mai', assuranceVie: totalAssuranceVie * 0.98, per: totalContratCapitalisation * 0.95, immobilier: totalBienImmobilier * 0.99, scpi: totalEntrepriseParticipation * 1, autre: totalCompteBancaire * 0.98 },
+          { mois: 'Juin', assuranceVie: totalAssuranceVie, per: totalContratCapitalisation, immobilier: totalBienImmobilier, scpi: totalEntrepriseParticipation, autre: totalCompteBancaire },
         ];
         setEncoursData(encours);
 
