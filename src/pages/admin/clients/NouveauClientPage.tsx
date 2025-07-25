@@ -46,16 +46,25 @@ const formSchema = z.object({
   prenom: z.string().min(2, { message: "Le prénom doit contenir au moins 2 caractères" }),
   dateNaissance: z.string().min(1, { message: "Veuillez saisir une date de naissance" }),
   email: z.string().email({ message: "Veuillez saisir une adresse email valide" }),
-  telephone: z.string().min(10, { message: "Veuillez saisir un numéro de téléphone valide" }),
+  telephone: z.preprocess(
+    (a) => parseInt(z.string().parse(a), 10),
+    z.number().min(1000000000, { message: "Veuillez saisir un numéro de téléphone valide" })
+  ),
   
   // Adresse
   adresse: z.string().min(5, { message: "L'adresse doit contenir au moins 5 caractères" }),
-  codePostal: z.string().min(5, { message: "Veuillez saisir un code postal valide" }),
+  codePostal: z.preprocess(
+    (a) => parseInt(z.string().parse(a), 10),
+    z.number().min(10000, { message: "Veuillez saisir un code postal valide" })
+  ),
   ville: z.string().min(2, { message: "Veuillez saisir une ville" }),
   
   // Situation
   situationFamiliale: z.string().min(1, { message: "Veuillez sélectionner une situation familiale" }),
-  nombreEnfants: z.string().min(1, { message: "Veuillez indiquer le nombre d'enfants" }),
+  nombreEnfants: z.preprocess(
+    (a) => parseInt(z.string().parse(a), 10),
+    z.number().min(0, { message: "Veuillez indiquer le nombre d'enfants" })
+  ),
   profession: z.string().min(2, { message: "Veuillez indiquer votre profession" }),
   
   // Informations financières
@@ -84,10 +93,10 @@ const NouveauClientPage = () => {
       codePostal: "",
       ville: "",
       situationFamiliale: "",
-      nombreEnfants: "0",
+      nombreEnfants: 0,
       profession: "",
-      revenuAnnuel: "",
-      patrimoineEstime: ""
+      revenuAnnuel: 0,
+      patrimoineEstime: 0
     }
   });
 
@@ -119,12 +128,12 @@ const NouveauClientPage = () => {
         .insert([
           {
             user_id: userId,
-            phone: parseInt(values.telephone, 10),
+            phone: values.telephone,
             address: values.adresse,
-            postal_code: parseInt(values.codePostal, 10),
+            postal_code: values.codePostal,
             city: values.ville,
             situation_matrimoniale: values.situationFamiliale,
-            nb_enfants_charge: parseInt(values.nombreEnfants, 10),
+            nb_enfants_charge: values.nombreEnfants,
             profession: values.profession,
             revenu_annuel: values.revenuAnnuel,
             capacite_epargne: 0, // Valeur par défaut
