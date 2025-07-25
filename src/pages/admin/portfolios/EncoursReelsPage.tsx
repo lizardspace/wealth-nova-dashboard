@@ -28,6 +28,7 @@ import {
 } from 'recharts';
 import { Search, FileDown, ArrowUpDown } from 'lucide-react';
 import { useEncoursReelsData } from '@/hooks/useEncoursReelsData';
+import { supabase } from '@/lib/supabase';
 
 const COLORS = ['#8B5CF6', '#D946EF', '#F97316', '#0EA5E9', '#22D3EE'];
 
@@ -157,11 +158,9 @@ const EncoursReelsPage = () => {
                   <YAxis />
                   <Tooltip formatter={(value) => `${(value as number / 1000).toFixed(0)} K€`} />
                   <Legend />
-                  <Line type="monotone" dataKey="assuranceVie" name="Assurance Vie" stroke="#8B5CF6" strokeWidth={2} />
-                  <Line type="monotone" dataKey="per" name="PER" stroke="#D946EF" strokeWidth={2} />
-                  <Line type="monotone" dataKey="immobilier" name="Immobilier" stroke="#F97316" strokeWidth={2} />
-                  <Line type="monotone" dataKey="scpi" name="SCPI" stroke="#0EA5E9" strokeWidth={2} />
-                  <Line type="monotone" dataKey="autre" name="Autre" stroke="#22D3EE" strokeWidth={2} />
+                  {repartitionData.map((item, index) => (
+                    <Line key={item.name} type="monotone" dataKey={item.name.toLowerCase().replace(' ', '')} name={item.name} stroke={COLORS[index % COLORS.length]} strokeWidth={2} />
+                  ))}
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
@@ -249,42 +248,18 @@ const EncoursReelsPage = () => {
                   <thead>
                     <tr className="border-b">
                       <th className="text-left py-3 px-4">Client</th>
-                      <th 
-                        className="text-right py-3 px-4 cursor-pointer hover:bg-muted/50"
-                        onClick={() => handleSort('assuranceVie')}
-                      >
-                        <div className="flex items-center justify-end">
-                          Assurance Vie
-                          <ArrowUpDown className="ml-1 h-3 w-3" />
-                        </div>
-                      </th>
-                      <th 
-                        className="text-right py-3 px-4 cursor-pointer hover:bg-muted/50"
-                        onClick={() => handleSort('per')}
-                      >
-                        <div className="flex items-center justify-end">
-                          PER
-                          <ArrowUpDown className="ml-1 h-3 w-3" />
-                        </div>
-                      </th>
-                      <th 
-                        className="text-right py-3 px-4 cursor-pointer hover:bg-muted/50"
-                        onClick={() => handleSort('scpi')}
-                      >
-                        <div className="flex items-center justify-end">
-                          SCPI
-                          <ArrowUpDown className="ml-1 h-3 w-3" />
-                        </div>
-                      </th>
-                      <th 
-                        className="text-right py-3 px-4 cursor-pointer hover:bg-muted/50"
-                        onClick={() => handleSort('autre')}
-                      >
-                        <div className="flex items-center justify-end">
-                          Autre
-                          <ArrowUpDown className="ml-1 h-3 w-3" />
-                        </div>
-                      </th>
+                      {repartitionData.map((item) => (
+                        <th
+                          key={item.name}
+                          className="text-right py-3 px-4 cursor-pointer hover:bg-muted/50"
+                          onClick={() => handleSort(item.name.toLowerCase().replace(' ', ''))}
+                        >
+                          <div className="flex items-center justify-end">
+                            {item.name}
+                            <ArrowUpDown className="ml-1 h-3 w-3" />
+                          </div>
+                        </th>
+                      ))}
                       <th 
                         className="text-right py-3 px-4 cursor-pointer hover:bg-muted/50"
                         onClick={() => handleSort('total')}
@@ -302,18 +277,11 @@ const EncoursReelsPage = () => {
                         <td className="py-3 px-4 font-medium">
                           {client.prenom} {client.nom}
                         </td>
-                        <td className="text-right py-3 px-4">
-                          {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(client.assuranceVie)}
-                        </td>
-                        <td className="text-right py-3 px-4">
-                          {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(client.per)}
-                        </td>
-                        <td className="text-right py-3 px-4">
-                          {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(client.scpi)}
-                        </td>
-                        <td className="text-right py-3 px-4">
-                          {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(client.autre)}
-                        </td>
+                        {repartitionData.map((item) => (
+                          <td key={item.name} className="text-right py-3 px-4">
+                            {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(client[item.name.toLowerCase().replace(' ', '')])}
+                          </td>
+                        ))}
                         <td className="text-right py-3 px-4 font-medium text-blue-600">
                           {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(client.total)}
                         </td>
@@ -323,26 +291,13 @@ const EncoursReelsPage = () => {
                   <tfoot>
                     <tr className="bg-muted/50">
                       <td className="py-3 px-4 font-medium">TOTAL</td>
-                      <td className="text-right py-3 px-4 font-medium">
-                        {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(
-                          formattedClients.reduce((sum, client) => sum + client.assuranceVie, 0)
-                        )}
-                      </td>
-                      <td className="text-right py-3 px-4 font-medium">
-                        {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(
-                          formattedClients.reduce((sum, client) => sum + client.per, 0)
-                        )}
-                      </td>
-                      <td className="text-right py-3 px-4 font-medium">
-                        {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(
-                          formattedClients.reduce((sum, client) => sum + client.scpi, 0)
-                        )}
-                      </td>
-                      <td className="text-right py-3 px-4 font-medium">
-                        {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(
-                          formattedClients.reduce((sum, client) => sum + client.autre, 0)
-                        )}
-                      </td>
+                      {repartitionData.map((item) => (
+                        <td key={item.name} className="text-right py-3 px-4 font-medium">
+                          {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(
+                            formattedClients.reduce((sum, client) => sum + client[item.name.toLowerCase().replace(' ', '')], 0)
+                          )}
+                        </td>
+                      ))}
                       <td className="text-right py-3 px-4 font-medium text-blue-600">
                         {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(
                           formattedClients.reduce((sum, client) => sum + client.total, 0)
