@@ -87,6 +87,7 @@ const StatsClientsPage = () => {
 
   const [totalClients, setTotalClients] = useState(0);
   const [activeClients, setActiveClients] = useState(0);
+  const [inactiveClients, setInactiveClients] = useState(0);
   const [completedProfiles, setCompletedProfiles] = useState(0);
   const [averageScore, setAverageScore] = useState(0);
 
@@ -152,7 +153,9 @@ const StatsClientsPage = () => {
         setTotalClients(users.length);
         const oneMonthAgo = new Date();
         oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-        setActiveClients(users.filter(u => new Date(u.last_login) > oneMonthAgo).length);
+        const activeClients = users.filter(u => new Date(u.last_login) > oneMonthAgo).length;
+        setActiveClients(activeClients);
+        setInactiveClients(users.length - activeClients);
         setCompletedProfiles(profiles.length);
         setAverageScore(profiles.reduce((acc, p) => acc + p.score, 0) / profiles.length);
 
@@ -199,7 +202,7 @@ const StatsClientsPage = () => {
       </div>
 
       {/* Top Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
         <Card className="min-h-[180px] flex flex-col">
           <CardHeader className="pb-2">
             <CardDescription>Total clients</CardDescription>
@@ -216,11 +219,23 @@ const StatsClientsPage = () => {
         <Card className="min-h-[180px] flex flex-col">
           <CardHeader className="pb-2">
             <CardDescription>Clients actifs</CardDescription>
-            <CardTitle className="text-2xl">{activeClients} ({Math.round((activeClients/totalClients)*100)}%)</CardTitle>
+            <CardTitle className="text-2xl">{activeClients} ({totalClients > 0 ? Math.round((activeClients/totalClients)*100) : 0}%)</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 flex items-end">
             <div className="text-sm text-muted-foreground">
               Connexion dans les 30 derniers jours
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="min-h-[180px] flex flex-col">
+          <CardHeader className="pb-2">
+            <CardDescription>Clients inactifs</CardDescription>
+            <CardTitle className="text-2xl">{inactiveClients} ({totalClients > 0 ? Math.round((inactiveClients/totalClients)*100) : 0}%)</CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 flex items-end">
+            <div className="text-sm text-muted-foreground">
+              Aucune connexion depuis 30 jours
             </div>
           </CardContent>
         </Card>
