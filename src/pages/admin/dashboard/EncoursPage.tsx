@@ -1,11 +1,12 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Download, TrendingUp, TrendingDown } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { supabase } from "@/lib/supabase";
 
 // Sample data for the charts
 const encoursMockData = [
@@ -42,10 +43,97 @@ const formatCurrency = (value: number) => {
 };
 
 const EncoursPage = () => {
-  const totalReel = encoursMockData[encoursMockData.length - 1].reel;
-  const totalTheorique = encoursMockData[encoursMockData.length - 1].theorique;
-  const conversionRate = Math.round((totalReel / totalTheorique) * 100);
-  const evolutionMensuelle = Math.round(((encoursMockData[encoursMockData.length - 1].reel - encoursMockData[encoursMockData.length - 2].reel) / encoursMockData[encoursMockData.length - 2].reel) * 100);
+  const [encoursData, setEncoursData] = useState<any[]>([]);
+  const [assetClass, setAssetClass] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchEncoursData = async () => {
+      const tables = [
+        'bienimmobilier',
+        'assurancevie',
+        'comptebancaire',
+        'contratcapitalisation',
+        'entrepriseparticipation',
+        'autrepatrimoine'
+      ];
+
+      const promises = tables.map(table => supabase.from(table).select('*'));
+      const results = await Promise.all(promises);
+
+      const allData: any[] = [];
+      results.forEach((res, index) => {
+        if (res.error) {
+          console.error(`Error fetching data from ${tables[index]}:`, res.error);
+        } else {
+          allData.push(...res.data);
+        }
+      });
+
+      const processedData = allData.map(item => {
+        let assetType = 'Autre';
+        if (item.hasOwnProperty('type_immobilier')) assetType = 'Immobilier';
+        else if (item.hasOwnProperty('type_assurance')) assetType = 'Assurance Vie';
+        else if (item.hasOwnProperty('type_compte')) assetType = 'Liquidités';
+        else if (item.hasOwnProperty('regime')) assetType = 'PER';
+        else if (item.hasOwnProperty('type_entreprise')) assetType = 'Actions';
+
+        return {
+          ...item,
+          assetType,
+          isReel: item.contrat_gere === true,
+        };
+      });
+
+      const monthlyData: { [key: string]: { reel: number; theorique: number } } = {};
+      const assetClassTotals: { [key: string]: { reel: number; theorique: number } } = {};
+
+      processedData.forEach(item => {
+        const date = new Date(item.date_acquisition);
+        const month = date.toLocaleString('default', { month: 'short' });
+        const value = item.value || 0;
+
+        if (!monthlyData[month]) {
+          monthlyData[month] = { reel: 0, theorique: 0 };
+        }
+        if (item.isReel) {
+          monthlyData[month].reel += value;
+        } else {
+          monthlyData[month].theorique += value;
+        }
+
+        if (!assetClassTotals[item.assetType]) {
+          assetClassTotals[item.assetType] = { reel: 0, theorique: 0 };
+        }
+        if (item.isReel) {
+          assetClassTotals[item.assetType].reel += value;
+        } else {
+          assetClassTotals[item.assetType].theorique += value;
+        }
+      });
+
+      const encoursChartData = Object.keys(monthlyData).map(month => ({
+        month,
+        reel: monthlyData[month].reel,
+        theorique: monthlyData[month].theorique,
+      }));
+
+      const assetClassChartData = Object.keys(assetClassTotals).map(name => ({
+        name,
+        reel: assetClassTotals[name].reel,
+        theorique: assetClassTotals[name].theorique,
+      }));
+
+      setEncoursData(encoursChartData);
+      setAssetClass(assetClassChartData);
+    };
+
+    fetchEncoursData();
+  }, []);
+
+  const totalReel = assetClass.reduce((acc, item) => acc + item.reel, 0);
+  const totalTheorique = assetClass.reduce((acc, item) => acc + item.theorique, 0);
+  const conversionRate = totalTheorique > 0 ? Math.round((totalReel / totalTheorique) * 100) : 0;
+  const evolutionMensuelle = encoursData.length > 1 ? Math.round(((encoursData[encoursData.length - 1].reel - encoursData[encoursData.length - 2].reel) / encoursData[encoursData.length - 2].reel) * 100) : 0;
 
   return (
     <div className="space-y-6">
@@ -127,7 +215,7 @@ const EncoursPage = () => {
               reel: { color: "#8B5CF6" },
               theorique: { color: "#D1D5DB" },
             }}>
-              <LineChart data={encoursMockData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <LineChart data={encoursData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.4} />
                 <XAxis dataKey="month" />
                 <YAxis tickFormatter={(value) => `${Math.round(value / 1000)}k€`} />
@@ -168,7 +256,7 @@ const EncoursPage = () => {
               reel: { color: "#8B5CF6" },
               theorique: { color: "#D1D5DB" },
             }}>
-              <BarChart data={assetClassData} layout="vertical" margin={{ top: 5, right: 30, left: 60, bottom: 5 }}>
+              <BarChart data={assetClass} layout="vertical" margin={{ top: 5, right: 30, left: 60, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.4} />
                 <XAxis type="number" tickFormatter={(value) => `${Math.round(value / 1000)}k€`} />
                 <YAxis type="category" dataKey="name" width={80} />

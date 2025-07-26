@@ -598,3 +598,30 @@ CREATE TABLE public.users (
   part_fiscale numeric,
   CONSTRAINT users_pkey PRIMARY KEY (id)
 );
+
+CREATE TABLE public.appointments (
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    title text,
+    type text,
+    date text,
+    time text,
+    client text,
+    advisor text,
+    status text,
+    location text,
+    notes text,
+    start_time text,
+    end_time text,
+    CONSTRAINT appointments_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE public.alerts (
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    user_id uuid,
+    type text,
+    message text,
+    level text,
+    created_at timestamp with time zone DEFAULT now(),
+    CONSTRAINT alerts_pkey PRIMARY KEY (id),
+    CONSTRAINT alerts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);

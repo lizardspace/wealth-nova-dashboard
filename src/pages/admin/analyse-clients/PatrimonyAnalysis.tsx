@@ -47,21 +47,6 @@ interface PatrimonySummary {
   net_worth: number;
 }
 
-interface AssetDistribution {
-  user_id: string;
-  last_name: string;
-  first_name: string;
-  bank_assets: number;
-  life_insurance: number;
-  real_estate: number;
-  business_assets: number;
-  other_assets: number;
-  bank_percentage: number | null;
-  life_insurance_percentage: number | null;
-  real_estate_percentage: number | null;
-  business_assets_percentage: number | null;
-  other_assets_percentage: number | null;
-}
 
 interface MetricCard {
   title: string;
@@ -268,48 +253,102 @@ const AssetBreakdownChart: React.FC<{ client: PatrimonySummary }> = ({ client })
 
 const PatrimonyAnalysis: React.FC = () => {
   const [patrimonySummaries, setPatrimonySummaries] = useState<PatrimonySummary[]>([]);
-  const [assetDistributions, setAssetDistributions] = useState<AssetDistribution[]>([]);
-  const [selectedTab, setSelectedTab] = useState<'overview' | 'clients' | 'analytics'>('overview');
+  const [selectedTab, setSelectedTab] = useState<'overview' | 'clients'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'name' | 'assets' | 'networth'>('assets');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [loading, setLoading] = useState({
-    summaries: true,
-    distributions: true
+    summaries: true
   });
   const [error, setError] = useState<string | null>(null);
 
   // Fetch data from Supabase
   const fetchData = async () => {
     try {
-      setLoading({ summaries: true, distributions: true });
+      setLoading({ summaries: true });
       setError(null);
 
-      // Fetch patrimony summaries
-      const { data: summariesData, error: summariesError } = await supabase
-        .from('user_patrimony_summary')
-        .select('*')
-        .order('total_assets', { ascending: false });
+      const { data: users, error: usersError } = await supabase
+        .from('users')
+        .select('id, last_name, first_name, email, date_naissance, civilite');
 
-      if (summariesError) throw summariesError;
+      if (usersError) throw usersError;
 
-      // Fetch asset distributions
-      const { data: distributionsData, error: distributionsError } = await supabase
-        .from('asset_distribution')
-        .select('*')
-        .order('bank_assets', { ascending: false });
+      const summaries = await Promise.all(users.map(async (user) => {
+        const { data: bank_assets, error: bankError } = await supabase
+          .from('comptebancaire')
+          .select('value')
+          .eq('user_id', user.id);
 
-      if (distributionsError) throw distributionsError;
+        const { data: life_insurance, error: insuranceError } = await supabase
+          .from('assurancevie')
+          .select('value')
+          .eq('user_id', user.id);
 
-      setPatrimonySummaries(summariesData || []);
-      setAssetDistributions(distributionsData || []);
+        const { data: real_estate, error: estateError } = await supabase
+          .from('bienimmobilier')
+          .select('value')
+          .eq('user_id', user.id);
+
+        const { data: business_assets, error: businessError } = await supabase
+          .from('entrepriseparticipation')
+          .select('value')
+          .eq('user_id', user.id);
+
+        const { data: other_assets, error: otherError } = await supabase
+          .from('autrepatrimoine')
+          .select('value')
+          .eq('user_id', user.id);
+
+        const { data: loans, error: loansError } = await supabase
+          .from('credit')
+          .select('capital_restant_du')
+          .eq('user_id', user.id);
+
+        if (bankError || insuranceError || estateError || businessError || otherError || loansError) {
+          console.error('Error fetching patrimony data for user', user.id);
+          return null;
+        }
+
+        const total_bank_assets = bank_assets?.reduce((acc, asset) => acc + asset.value, 0) || 0;
+        const total_life_insurance = life_insurance?.reduce((acc, asset) => acc + asset.value, 0) || 0;
+        const total_real_estate = real_estate?.reduce((acc, asset) => acc + asset.value, 0) || 0;
+        const total_business_assets = business_assets?.reduce((acc, asset) => acc + asset.value, 0) || 0;
+        const total_other_assets = other_assets?.reduce((acc, asset) => acc + asset.value, 0) || 0;
+        const total_loans = loans?.reduce((acc, loan) => acc + loan.capital_restant_du, 0) || 0;
+
+        const total_assets = total_bank_assets + total_life_insurance + total_real_estate + total_business_assets + total_other_assets;
+        const net_worth = total_assets - total_loans;
+
+        return {
+          user_id: user.id,
+          last_name: user.last_name,
+          first_name: user.first_name,
+          email: user.email,
+          date_naissance: user.date_naissance,
+          civilite: user.civilite,
+          total_bank_assets,
+          total_life_insurance,
+          total_real_estate,
+          total_business_assets,
+          total_other_assets,
+          total_assets,
+          total_loans,
+          net_worth,
+        };
+      }));
+
+      const validSummaries = summaries.filter((s): s is PatrimonySummary => s !== null);
+
+      setPatrimonySummaries(validSummaries);
+
     } catch (err) {
       console.error('Error fetching data:', err);
       setError('Erreur lors du chargement des données. Veuillez réessayer.');
     } finally {
-      setLoading({ summaries: false, distributions: false });
+      setLoading({ summaries: false });
     }
   };
 
@@ -398,7 +437,7 @@ const PatrimonyAnalysis: React.FC = () => {
     console.log('Exporting data...');
   };
 
-  if (loading.summaries && loading.distributions) {
+  if (loading.summaries) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -463,8 +502,7 @@ const PatrimonyAnalysis: React.FC = () => {
         <div className="flex space-x-1 mt-4">
           {[
             { key: 'overview', label: 'Vue d\'ensemble', icon: <BarChart3 className="w-4 h-4" /> },
-            { key: 'clients', label: 'Clients', icon: <Users className="w-4 h-4" /> },
-            { key: 'analytics', label: 'Analyses', icon: <PieChart className="w-4 h-4" /> }
+            { key: 'clients', label: 'Clients', icon: <Users className="w-4 h-4" /> }
           ].map(tab => (
             <button
               key={tab.key}
@@ -711,33 +749,6 @@ const PatrimonyAnalysis: React.FC = () => {
           </div>
         )}
 
-        {selectedTab === 'analytics' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Répartition des types d'actifs</h3>
-              <AssetDistributionChart data={[
-                { name: 'Liquidités', value: 400 },
-                { name: 'Immobilier', value: 300 },
-                { name: 'Assurance Vie', value: 300 },
-                { name: 'Entreprise', value: 200 },
-                { name: 'Autres', value: 278 },
-              ]} />
-            </div>
-            
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Évolution du patrimoine</h3>
-              <PatrimonyEvolutionChart data={[
-                { date: 'Jan', patrimoine: 4000 },
-                { date: 'Fev', patrimoine: 3000 },
-                { date: 'Mar', patrimoine: 2000 },
-                { date: 'Avr', patrimoine: 2780 },
-                { date: 'Mai', patrimoine: 1890 },
-                { date: 'Juin', patrimoine: 2390 },
-                { date: 'Juil', patrimoine: 3490 },
-              ]} />
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

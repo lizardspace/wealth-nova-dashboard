@@ -1,17 +1,11 @@
-
 // src/pages/admin/ai/recommendationColumns.tsx
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Database } from "@/lib/database.types";
 
-export type Recommendation = {
-  id: string;
-  client: string;
-  recommendation: string;
-  date: string;
-  status: "En attente" | "Acceptée" | "Rejetée";
-};
+export type Recommendation = Database['public']['Tables']['ia_recommendations']['Row'];
 
 export const columns: ColumnDef<Recommendation>[] = [
   {
@@ -27,7 +21,7 @@ export const columns: ColumnDef<Recommendation>[] = [
     ),
   },
   {
-    accessorKey: "recommendation",
+    accessorKey: "description",
     header: "Recommandation",
   },
   {
