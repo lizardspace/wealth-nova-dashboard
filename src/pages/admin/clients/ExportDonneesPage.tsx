@@ -58,13 +58,15 @@ interface User {
 
 // Configuration des champs d'export basée sur le schéma Supabase
 const exportFields: ExportField[] = [
-  // Données personnelles (table users + personalinfo)
+  // Données personnelles (table users)
   { id: 'civilite', label: 'Civilité', category: 'personal', selected: true, table: 'users', column: 'civilite' },
   { id: 'nom', label: 'Nom', category: 'personal', selected: true, table: 'users', column: 'last_name' },
   { id: 'prenom', label: 'Prénom', category: 'personal', selected: true, table: 'users', column: 'first_name' },
   { id: 'email', label: 'Email', category: 'personal', selected: true, table: 'users', column: 'email' },
   { id: 'dateNaissance', label: 'Date de naissance', category: 'personal', selected: true, table: 'users', column: 'date_naissance' },
   { id: 'partFiscale', label: 'Part fiscale', category: 'personal', selected: false, table: 'users', column: 'part_fiscale' },
+
+  // Données personnelles (table personalinfo)
   { id: 'telephone', label: 'Téléphone', category: 'personal', selected: true, table: 'personalinfo', column: 'phone' },
   { id: 'age', label: 'Âge', category: 'personal', selected: false, table: 'personalinfo', column: 'age' },
   { id: 'adresse', label: 'Adresse complète', category: 'personal', selected: false, table: 'personalinfo', column: 'address' },
@@ -74,44 +76,58 @@ const exportFields: ExportField[] = [
   { id: 'contratMariage', label: 'Contrat de mariage', category: 'personal', selected: false, table: 'personalinfo', column: 'contrat_mariage' },
   { id: 'enfantsACharge', label: 'Enfants à charge', category: 'personal', selected: false, table: 'personalinfo', column: 'nb_enfants_charge' },
   { id: 'profession', label: 'Profession', category: 'personal', selected: false, table: 'personalinfo', column: 'profession' },
-  
-  // Données financières
+  { id: 'objectifsPatrimoniaux', label: 'Objectifs patrimoniaux', category: 'personal', selected: false, table: 'personalinfo', column: 'objectifs_patrimoniaux' },
+
+  // Données financières (table personalinfo)
   { id: 'revenuAnnuel', label: 'Revenu annuel', category: 'financial', selected: true, table: 'personalinfo', column: 'revenu_annuel' },
   { id: 'capaciteEpargne', label: 'Capacité d\'épargne', category: 'financial', selected: true, table: 'personalinfo', column: 'capacite_epargne' },
   { id: 'epargnePrecaution', label: 'Épargne de précaution', category: 'financial', selected: true, table: 'personalinfo', column: 'epargne_precaution' },
+
+  // Données financières (table patrimoineimmo)
   { id: 'valeurBiens', label: 'Valeur des biens immobiliers', category: 'financial', selected: false, table: 'patrimoineimmo', column: 'valeur_biens' },
   { id: 'mensualitesCredit', label: 'Mensualités crédit', category: 'financial', selected: false, table: 'patrimoineimmo', column: 'mensualites_credit' },
+
+  // Données financières (table retraite)
   { id: 'montantEpargneRetraite', label: 'Montant épargne retraite', category: 'financial', selected: false, table: 'retraite', column: 'montant_epargne' },
+
+  // Données financières (table traindevie)
   { id: 'trainDeVieTotal', label: 'Train de vie total', category: 'financial', selected: false, table: 'traindevie', column: 'total' },
-  
-  // Données fiscales (tables impotrevenu, ifi)
+
+  // Données fiscales (table impotrevenu)
   { id: 'revenuFiscalReference', label: 'Revenu fiscal de référence', category: 'fiscal', selected: false, table: 'impotrevenu', column: 'revenu_fiscal_reference' },
   { id: 'deductionRevenu', label: 'Déduction revenu', category: 'fiscal', selected: false, table: 'impotrevenu', column: 'deduction_revenu' },
   { id: 'reductionImpot', label: 'Réduction d\'impôt', category: 'fiscal', selected: false, table: 'impotrevenu', column: 'reduction_impot' },
   { id: 'optionFiscale', label: 'Option fiscale', category: 'fiscal', selected: false, table: 'impotrevenu', column: 'option_fiscale' },
+
+  // Données fiscales (table ifi)
   { id: 'ifiMontant', label: 'Montant IFI', category: 'fiscal', selected: false, table: 'ifi', column: 'ifi' },
   { id: 'ifiReduction', label: 'Réduction IFI', category: 'fiscal', selected: false, table: 'ifi', column: 'reduction' },
-  
-  // Produits souscrits (comptes bancaires, assurance vie, etc.)
-  { id: 'comptesBancaires', label: 'Comptes bancaires', category: 'products', selected: false, table: 'comptebancaire', column: 'id' },
-  { id: 'assurancesVie', label: 'Assurances vie', category: 'products', selected: false, table: 'assurancevie', column: 'id' },
-  { id: 'biensImmobiliers', label: 'Biens immobiliers', category: 'products', selected: false, table: 'bienimmobilier', column: 'id' },
-  { id: 'credits', label: 'Crédits', category: 'products', selected: false, table: 'credit', column: 'id' },
-  { id: 'contratsPrevoyance', label: 'Contrats prévoyance', category: 'products', selected: false, table: 'prevoyance', column: 'id' },
-  
-  // Simulations et analyses
-  { id: 'connaisanceFiscale', label: 'Connaissance fiscale', category: 'simulations', selected: false, table: 'fiscalite', column: 'connaissance_fiscale' },
+
+  // Produits souscrits
+  { id: 'comptesBancaires', label: 'Comptes bancaires', category: 'products', selected: false, table: 'comptebancaire' },
+  { id: 'assurancesVie', label: 'Assurances vie', category: 'products', selected: false, table: 'assurancevie' },
+  { id: 'biensImmobiliers', label: 'Biens immobiliers', category: 'products', selected: false, table: 'bienimmobilier' },
+  { id: 'credits', label: 'Crédits', category: 'products', selected: false, table: 'credit' },
+  { id: 'contratsPrevoyance', label: 'Contrats prévoyance', category: 'products', selected: false, table: 'prevoyance' },
+  { id: 'autrePatrimoine', label: 'Autre patrimoine', category: 'products', selected: false, table: 'autrepatrimoine' },
+  { id: 'contratCapitalisation', label: 'Contrat de capitalisation', category: 'products', selected: false, table: 'contratcapitalisation' },
+  { id: 'entrepriseParticipation', label: 'Entreprise et participation', category: 'products', selected: false, table: 'entrepriseparticipation' },
+  { id: 'retraiteComplementaire', label: 'Retraite complémentaire', category: 'products', selected: false, table: 'retraitecomplementaire' },
+
+  // Simulations et analyses (table fiscalite)
+  { id: 'connaissanceFiscale', label: 'Connaissance fiscale', category: 'simulations', selected: false, table: 'fiscalite', column: 'connaissance_fiscale' },
   { id: 'dispositifsUtilises', label: 'Dispositifs utilisés', category: 'simulations', selected: false, table: 'fiscalite', column: 'dispositifs_utilises' },
+
+  // Simulations et analyses (table patrimoinefinancier)
   { id: 'horizonInvestissement', label: 'Horizon d\'investissement', category: 'simulations', selected: false, table: 'patrimoinefinancier', column: 'horizon_investissement' },
   { id: 'repartitionActifRisque', label: 'Répartition actif risque', category: 'simulations', selected: false, table: 'patrimoinefinancier', column: 'repartition_activ_risque' },
-  
-  // Scores et profils (profileinvestisseur)
+
+  // Scores et profils (table profileinvestisseur)
   { id: 'scoreInvestisseur', label: 'Score investisseur', category: 'scores', selected: true, table: 'profileinvestisseur', column: 'score' },
   { id: 'profilInvestisseur', label: 'Profil investisseur', category: 'scores', selected: true, table: 'profileinvestisseur', column: 'profil' },
   { id: 'toleranceRisque', label: 'Tolérance au risque', category: 'scores', selected: false, table: 'profileinvestisseur', column: 'tolerance_risque' },
   { id: 'reactionBaisse', label: 'Réaction à la baisse', category: 'scores', selected: false, table: 'profileinvestisseur', column: 'reaction_baisse' },
   { id: 'produitsComplexes', label: 'Produits complexes', category: 'scores', selected: false, table: 'profileinvestisseur', column: 'produits_complexes' },
-  { id: 'objectifsPatrimoniaux', label: 'Objectifs patrimoniaux', category: 'scores', selected: false, table: 'personalinfo', column: 'objectifs_patrimoniaux' },
 ];
 
 export default function ExportDonneesPage() {
@@ -224,7 +240,11 @@ export default function ExportDonneesPage() {
           credit (*),
           prevoyance (*),
           fiscalite (*),
-          patrimoinefinancier (*)
+          patrimoinefinancier (*),
+          autrepatrimoine (*),
+          contratcapitalisation (*),
+          entrepriseparticipation (*),
+          retraitecomplementaire (*)
         `)
         .in('id', userIds);
 
@@ -240,39 +260,19 @@ export default function ExportDonneesPage() {
         fieldsToExport.forEach(field => {
           if (field.table === 'users') {
             result[field.label] = user[field.column as keyof typeof user];
-          } else if (field.table === 'personalinfo' && user.personalinfo) {
-            result[field.label] = user.personalinfo[field.column as keyof typeof user.personalinfo];
-          } else if (field.table === 'profileinvestisseur' && user.profileinvestisseur) {
-            result[field.label] = user.profileinvestisseur[field.column as keyof typeof user.profileinvestisseur];
-          } else if (field.table === 'patrimoineimmo' && user.patrimoineimmo) {
-            result[field.label] = user.patrimoineimmo[field.column as keyof typeof user.patrimoineimmo];
-          } else if (field.table === 'retraite' && user.retraite) {
-            result[field.label] = user.retraite[field.column as keyof typeof user.retraite];
-          } else if (field.table === 'traindevie' && user.traindevie) {
-            result[field.label] = user.traindevie[field.column as keyof typeof user.traindevie];
-          } else if (field.table === 'impotrevenu' && user.impotrevenu) {
-            result[field.label] = user.impotrevenu[field.column as keyof typeof user.impotrevenu];
-          } else if (field.table === 'ifi' && user.ifi) {
-            result[field.label] = user.ifi[field.column as keyof typeof user.ifi];
-          } else if (field.table === 'comptebancaire' && user.comptebancaire) {
-            result[field.label] = user.comptebancaire.length;
-          } else if (field.table === 'assurancevie' && user.assurancevie) {
-            result[field.label] = user.assurancevie.length;
-          } else if (field.table === 'bienimmobilier' && user.bienimmobilier) {
-            result[field.label] = user.bienimmobilier.length;
-          } else if (field.table === 'credit' && user.credit) {
-            result[field.label] = user.credit.length;
-          } else if (field.table === 'prevoyance' && user.prevoyance) {
-            result[field.label] = user.prevoyance.length;
-          } else if (field.table === 'fiscalite' && user.fiscalite) {
-            result[field.label] = user.fiscalite[field.column as keyof typeof user.fiscalite];
-          } else if (field.table === 'patrimoinefinancier' && user.patrimoinefinancier) {
-            result[field.label] = user.patrimoinefinancier[field.column as keyof typeof user.patrimoinefinancier];
+          } else if (field.table && user[field.table]) {
+            const tableData = user[field.table];
+            if (Array.isArray(tableData)) {
+              // For one-to-many relationships, we can export the count or a summary
+              result[field.label] = tableData.length;
+            } else if (typeof tableData === 'object' && tableData !== null) {
+              // For one-to-one relationships
+              result[field.label] = tableData[field.column as keyof typeof tableData];
+            }
           } else {
             result[field.label] = null;
           }
         });
-
         return result;
       });
 
@@ -534,7 +534,7 @@ export default function ExportDonneesPage() {
                                     </label>
                                     {field.table && (
                                       <p className="text-xs text-muted-foreground">
-                                        {field.table}.{field.column}
+                                        {field.table}{field.column ? `.${field.column}`: ''}
                                       </p>
                                     )}
                                   </div>
