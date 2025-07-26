@@ -34,3 +34,42 @@ export async function getTableColumns(tableName: string) {
 
   return data.map(column => column.column_name);
 }
+
+export async function getDocumentsToSign() {
+  const { data, error } = await supabase
+    .from('documents_to_sign')
+    .select('*');
+
+  if (error) {
+    console.error('Error fetching documents to sign:', error);
+    return [];
+  }
+
+  return data;
+}
+
+export async function getArchivedDocuments() {
+  const { data, error } = await supabase
+    .from('documents_archive')
+    .select('*');
+
+  if (error) {
+    console.error('Error fetching archived documents:', error);
+    return [];
+  }
+
+  return data;
+}
+
+export async function getSignedDocuments() {
+  const { data, error } = await supabase
+    .from('documents_signed')
+    .select('*');
+
+  if (error) {
+    console.error('Error fetching signed documents:', error);
+    return [];
+  }
+
+  return data;
+}

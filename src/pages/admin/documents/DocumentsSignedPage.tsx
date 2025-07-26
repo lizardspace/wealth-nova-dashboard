@@ -15,59 +15,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useEffect, useState } from "react";
+import { getSignedDocuments } from "@/lib/supabase";
 
 type SignedDocument = {
   id: string;
-  title: string;
-  client: string;
-  type: string;
-  signatureDate: string;
-  signedBy: string;
-  method: "electronique" | "manuscrite" | "certification";
+  document_name: string;
+  client_name: string;
+  document_type: string;
+  signature_date: string;
+  signed_by: string;
+  signature_method: "Électronique" | "Manuscrite" | "Certification";
 };
-
-const documents: SignedDocument[] = [
-  {
-    id: "1",
-    title: "Contrat Assurance Vie - XYZ",
-    client: "Dupont Jean",
-    type: "Contrat",
-    signatureDate: "15/03/2024",
-    signedBy: "J. Dupont",
-    method: "electronique",
-  },
-  {
-    id: "2",
-    title: "Mandat de gestion - Portefeuille principal",
-    client: "Martin Sophie",
-    type: "Mandat",
-    signatureDate: "10/02/2024",
-    signedBy: "S. Martin",
-    method: "electronique",
-  },
-  {
-    id: "3",
-    title: "Avenant contrat PER - Modification bénéficiaires",
-    client: "Bernard Pierre",
-    type: "Avenant",
-    signatureDate: "20/03/2024",
-    signedBy: "P. Bernard",
-    method: "manuscrite",
-  },
-  {
-    id: "4",
-    title: "Souscription SCPI - Primovie",
-    client: "Petit Marie",
-    type: "Contrat",
-    signatureDate: "05/04/2024",
-    signedBy: "M. Petit",
-    method: "certification",
-  },
-];
 
 const columns: ColumnDef<SignedDocument>[] = [
   {
-    accessorKey: "title",
+    accessorKey: "document_name",
     header: "Document",
     cell: ({ row }) => (
       <div>
@@ -75,46 +38,42 @@ const columns: ColumnDef<SignedDocument>[] = [
           to={`/admin/documents/detail/${row.original.id}`}
           className="font-medium hover:underline text-primary"
         >
-          {row.getValue("title")}
+          {row.getValue("document_name")}
         </Link>
         <p className="text-xs text-muted-foreground">
-          {row.original.type}
+          {row.original.document_type}
         </p>
       </div>
     ),
   },
   {
-    accessorKey: "client",
+    accessorKey: "client_name",
     header: "Client",
   },
   {
-    accessorKey: "signatureDate",
+    accessorKey: "signature_date",
     header: "Date de signature",
   },
   {
-    accessorKey: "signedBy",
+    accessorKey: "signed_by",
     header: "Signataire",
   },
   {
-    accessorKey: "method",
+    accessorKey: "signature_method",
     header: "Méthode",
     cell: ({ row }) => {
-      const method = row.getValue("method") as SignedDocument["method"];
+      const method = row.getValue("signature_method") as SignedDocument["signature_method"];
       return (
         <Badge
           variant={
-            method === "electronique"
+            method === "Électronique"
               ? "default"
-              : method === "manuscrite"
+              : method === "Manuscrite"
               ? "outline"
               : "secondary"
           }
         >
-          {method === "electronique"
-            ? "Électronique"
-            : method === "manuscrite"
-            ? "Manuscrite"
-            : "Certification"}
+          {method}
         </Badge>
       );
     },
@@ -135,6 +94,17 @@ const columns: ColumnDef<SignedDocument>[] = [
 ];
 
 export default function DocumentsSignedPage() {
+  const [documents, setDocuments] = useState<SignedDocument[]>([]);
+
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      const data = await getSignedDocuments();
+      setDocuments(data);
+    };
+
+    fetchDocuments();
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
