@@ -8,59 +8,22 @@ import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getDocumentsToSign } from "@/lib/supabase";
 
 type Document = {
   id: string;
-  title: string;
-  client: string;
-  date: string;
-  type: string;
-  expiryDate: string;
-  status: "waiting" | "expired" | "reminded";
+  document_name: string;
+  client_name: string;
+  sending_date: string;
+  document_type: string;
+  expiration_date: string;
+  status: "En attente" | "Expiré" | "Rappel envoyé";
 };
-
-const documents: Document[] = [
-  {
-    id: "1",
-    title: "Contrat Assurance Vie",
-    client: "Dupont Jean",
-    date: "15/04/2024",
-    type: "Contrat",
-    expiryDate: "29/04/2024",
-    status: "waiting",
-  },
-  {
-    id: "2",
-    title: "Mandat de gestion",
-    client: "Martin Sophie",
-    date: "10/04/2024",
-    type: "Mandat",
-    expiryDate: "24/04/2024",
-    status: "waiting",
-  },
-  {
-    id: "3",
-    title: "Avenant contrat PER",
-    client: "Bernard Pierre",
-    date: "01/04/2024",
-    type: "Avenant",
-    expiryDate: "15/04/2024",
-    status: "expired",
-  },
-  {
-    id: "4",
-    title: "Souscription SCPI",
-    client: "Petit Marie",
-    date: "12/04/2024",
-    type: "Contrat",
-    expiryDate: "26/04/2024",
-    status: "reminded",
-  },
-];
 
 const columns: ColumnDef<Document>[] = [
   {
-    accessorKey: "title",
+    accessorKey: "document_name",
     header: "Document",
     cell: ({ row }) => (
       <div>
@@ -68,24 +31,24 @@ const columns: ColumnDef<Document>[] = [
           to={`/admin/documents/detail/${row.original.id}`}
           className="font-medium hover:underline text-primary"
         >
-          {row.getValue("title")}
+          {row.getValue("document_name")}
         </Link>
         <p className="text-xs text-muted-foreground">
-          {row.original.type}
+          {row.original.document_type}
         </p>
       </div>
     ),
   },
   {
-    accessorKey: "client",
+    accessorKey: "client_name",
     header: "Client",
   },
   {
-    accessorKey: "date",
+    accessorKey: "sending_date",
     header: "Date d'envoi",
   },
   {
-    accessorKey: "expiryDate",
+    accessorKey: "expiration_date",
     header: "Expire le",
   },
   {
@@ -96,18 +59,14 @@ const columns: ColumnDef<Document>[] = [
       return (
         <Badge
           variant={
-            status === "waiting"
+            status === "En attente"
               ? "outline"
-              : status === "expired"
+              : status === "Expiré"
               ? "destructive"
               : "secondary"
           }
         >
-          {status === "waiting"
-            ? "En attente"
-            : status === "expired"
-            ? "Expiré"
-            : "Rappel envoyé"}
+          {status}
         </Badge>
       );
     },
@@ -128,6 +87,17 @@ const columns: ColumnDef<Document>[] = [
 ];
 
 export default function DocumentsToSignPage() {
+  const [documents, setDocuments] = useState<Document[]>([]);
+
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      const data = await getDocumentsToSign();
+      setDocuments(data);
+    };
+
+    fetchDocuments();
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
