@@ -6,8 +6,20 @@ import {
   BienImmobilier,
   EntrepriseParticipation,
   CompteBancaire,
-  User
 } from '../types/types';
+
+// This is a new User type that matches the structure of the auth.users table.
+export type User = {
+  id: string;
+  email?: string;
+  user_metadata: {
+    [key: string]: any;
+    first_name?: string;
+    last_name?: string;
+  };
+  [key: string]: any;
+};
+
 
 export const useEncoursReelsData = () => {
   const [loading, setLoading] = useState(true);
@@ -20,7 +32,7 @@ export const useEncoursReelsData = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data: users, error: usersError } = await supabase.from('users').select('*');
+        const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
         if (usersError) throw new Error(usersError.message);
 
         const { data: assuranceVie, error: assuranceVieError } = await supabase.from('assurancevie').select('*');
@@ -57,7 +69,7 @@ export const useEncoursReelsData = () => {
         ];
         setRepartitionData(repartition);
 
-        const clients = (users as unknown as User[]).map(user => {
+        const clients = (users as User[]).map(user => {
           const userAssuranceVie = (assuranceVie as unknown as AssuranceVie[]).filter(item => item.user_id === user.id).reduce((sum, item) => sum + item.value, 0);
           const userContratCapitalisation = (contratCapitalisation as unknown as ContratCapitalisation[]).filter(item => item.user_id === user.id).reduce((sum, item) => sum + item.value, 0);
           const userBienImmobilier = (bienImmobilier as unknown as BienImmobilier[]).filter(item => item.user_id === user.id).reduce((sum, item) => sum + item.value, 0);
@@ -66,8 +78,8 @@ export const useEncoursReelsData = () => {
           const total = userAssuranceVie + userContratCapitalisation + userBienImmobilier + userEntrepriseParticipation + userCompteBancaire;
           return {
             id: user.id,
-            nom: user.last_name,
-            prenom: user.first_name,
+            nom: user.user_metadata.last_name || '',
+            prenom: user.user_metadata.first_name || '',
             assuranceVie: userAssuranceVie,
             per: userContratCapitalisation,
             scpi: userEntrepriseParticipation,
@@ -76,15 +88,54 @@ export const useEncoursReelsData = () => {
           };
         });
         setClientsData(clients);
-        // Mocked for now, as we don't have historical data
-        const encours = [
-            { mois: 'Jan', assuranceVie: 580000, per: 320000, immobilier: 120000, scpi: 180000, autre: 50000 },
-            { mois: 'Fév', assuranceVie: 610000, per: 340000, immobilier: 120000, scpi: 185000, autre: 55000 },
-            { mois: 'Mars', assuranceVie: 650000, per: 370000, immobilier: 120000, scpi: 195000, autre: 65000 },
-            { mois: 'Avr', assuranceVie: 680000, per: 390000, immobilier: 120000, scpi: 210000, autre: 80000 },
-            { mois: 'Mai', assuranceVie: 720000, per: 420000, immobilier: 120000, scpi: 225000, autre: 95000 },
-            { mois: 'Juin', assuranceVie: 750000, per: 460000, immobilier: 120000, scpi: 240000, autre: 120000 },
+
+        const allAssets = [
+          ...(assuranceVie as unknown as AssuranceVie[]),
+          ...(contratCapitalisation as unknown as ContratCapitalisation[]),
+          ...(bienImmobilier as unknown as BienImmobilier[]),
+          ...(entrepriseParticipation as unknown as EntrepriseParticipation[]),
+          ...(compteBancaire as unknown as CompteBancaire[]),
         ];
+
+        const monthlyData: { [key: string]: { [key: string]: number } } = {};
+
+        allAssets.forEach(asset => {
+          const date = new Date(asset.date_acquisition);
+          const month = date.toLocaleString('default', { month: 'short' });
+          const year = date.getFullYear();
+          const key = `${month} ${year}`;
+
+          if (!monthlyData[key]) {
+            monthlyData[key] = {
+              assuranceVie: 0,
+              per: 0,
+              immobilier: 0,
+              scpi: 0,
+              autre: 0,
+            };
+          }
+          if ('type_assurance' in asset) {
+            monthlyData[key].assuranceVie += asset.value;
+          } else if ('regime' in asset) {
+            monthlyData[key].per += asset.value;
+          } else if ('type_immobilier' in asset) {
+            monthlyData[key].immobilier += asset.value;
+          } else if ('type_entreprise' in asset) {
+            monthlyData[key].scpi += asset.value;
+          } else {
+            monthlyData[key].autre += asset.value;
+          }
+        });
+
+        const encours = Object.keys(monthlyData).map(key => ({
+          mois: key,
+          ...monthlyData[key],
+        })).sort((a, b) => {
+          const aDate = new Date(a.mois);
+          const bDate = new Date(b.mois);
+          return aDate.getTime() - bDate.getTime();
+        });
+
         setEncoursData(encours);
 
       } catch (err: any) {

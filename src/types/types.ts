@@ -97,14 +97,3 @@ export type CompteBancaire = {
   created_at: string;
 };
 
-export type User = {
-  id: string;
-  last_name: string;
-  first_name: string;
-  power: number;
-  email: string;
-  created_at: string;
-  civilite: 'M.' | 'Mme' | 'Mlle';
-  date_naissance: string;
-  part_fiscale: number;
-};
