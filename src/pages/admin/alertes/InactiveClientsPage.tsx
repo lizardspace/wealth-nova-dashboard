@@ -15,6 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getInactiveClients } from "@/lib/supabase";
+import { useEffect, useState } from "react";
 
 type InactiveClient = {
   id: string;
@@ -27,58 +29,6 @@ type InactiveClient = {
   status: "critical" | "warning" | "notice";
 };
 
-const clients: InactiveClient[] = [
-  {
-    id: "1",
-    name: "Dupont Jean",
-    email: "jean.dupont@email.com",
-    phone: "06 12 34 56 78",
-    lastContact: "15/11/2023",
-    inactiveDays: 180,
-    portfolio: 120000,
-    status: "critical",
-  },
-  {
-    id: "2",
-    name: "Martin Sophie",
-    email: "sophie.martin@email.com",
-    phone: "06 23 45 67 89",
-    lastContact: "10/01/2024",
-    inactiveDays: 120,
-    portfolio: 85000,
-    status: "warning",
-  },
-  {
-    id: "3",
-    name: "Bernard Pierre",
-    email: "pierre.bernard@email.com",
-    phone: "06 34 56 78 90",
-    lastContact: "05/02/2024",
-    inactiveDays: 90,
-    portfolio: 250000,
-    status: "notice",
-  },
-  {
-    id: "4",
-    name: "Petit Marie",
-    email: "marie.petit@email.com",
-    phone: "06 45 67 89 01",
-    lastContact: "20/12/2023",
-    inactiveDays: 140,
-    portfolio: 175000,
-    status: "warning",
-  },
-  {
-    id: "5",
-    name: "Dubois Thomas",
-    email: "thomas.dubois@email.com",
-    phone: "06 56 78 90 12",
-    lastContact: "01/10/2023",
-    inactiveDays: 200,
-    portfolio: 320000,
-    status: "critical",
-  },
-];
 
 const columns: ColumnDef<InactiveClient>[] = [
   {
@@ -170,6 +120,36 @@ const columns: ColumnDef<InactiveClient>[] = [
 ];
 
 export default function InactiveClientsPage() {
+  const [clients, setClients] = useState<InactiveClient[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        setLoading(true);
+        const inactiveClients = await getInactiveClients();
+        setClients(inactiveClients);
+        setError(null);
+      } catch (err) {
+        setError("Failed to fetch inactive clients.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClients();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
