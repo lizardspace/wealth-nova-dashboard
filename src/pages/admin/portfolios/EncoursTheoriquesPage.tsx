@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -30,143 +31,6 @@ import {
 } from 'recharts';
 import { Search, FileDown, ArrowUpDown, TrendingUp } from 'lucide-react';
 
-// Données fictives pour les encours théoriques
-const historicData = [
-  { mois: 'Jan', immobilier: 1200000, assuranceVie: 580000, per: 320000, epargne: 350000, autre: 150000 },
-  { mois: 'Fév', immobilier: 1220000, assuranceVie: 600000, per: 335000, epargne: 360000, autre: 155000 },
-  { mois: 'Mars', immobilier: 1250000, assuranceVie: 625000, per: 345000, epargne: 375000, autre: 165000 },
-  { mois: 'Avr', immobilier: 1250000, assuranceVie: 650000, per: 360000, epargne: 390000, autre: 170000 },
-  { mois: 'Mai', immobilier: 1250000, assuranceVie: 680000, per: 380000, epargne: 405000, autre: 185000 },
-  { mois: 'Juin', immobilier: 1270000, assuranceVie: 700000, per: 400000, epargne: 425000, autre: 205000 },
-];
-
-// Données pour la répartition par actif
-const repartitionData = [
-  { name: 'Immobilier', value: 1270000, color: '#8B5CF6' },
-  { name: 'Assurance Vie', value: 700000, color: '#D946EF' },
-  { name: 'PER', value: 400000, color: '#F97316' },
-  { name: 'Épargne', value: 425000, color: '#0EA5E9' },
-  { name: 'Autre', value: 205000, color: '#22D3EE' },
-];
-
-// Données pour les opportunités de conversion
-const opportunitesData = [
-  { 
-    id: 1, 
-    nom: "Dupont", 
-    prenom: "Jean", 
-    encoursTheorique: 750000, 
-    encoursReel: 350000,
-    potentiel: 400000,
-    tauxConversion: 47,
-    dernierContact: "15/04/2025",
-    produits: "Immobilier, Assurance vie"
-  },
-  { 
-    id: 2, 
-    nom: "Martin", 
-    prenom: "Sophie", 
-    encoursTheorique: 620000, 
-    encoursReel: 420000,
-    potentiel: 200000,
-    tauxConversion: 68,
-    dernierContact: "02/04/2025",
-    produits: "Assurance vie, PER"
-  },
-  { 
-    id: 3, 
-    nom: "Bernard", 
-    prenom: "Pierre", 
-    encoursTheorique: 900000, 
-    encoursReel: 180000,
-    potentiel: 720000,
-    tauxConversion: 20,
-    dernierContact: "22/03/2025",
-    produits: "Immobilier, Épargne"
-  },
-  { 
-    id: 4, 
-    nom: "Petit", 
-    prenom: "Marie", 
-    encoursTheorique: 750000, 
-    encoursReel: 550000,
-    potentiel: 200000,
-    tauxConversion: 73,
-    dernierContact: "12/04/2025",
-    produits: "Assurance vie, PER, SCPI"
-  },
-  { 
-    id: 5, 
-    nom: "Robert", 
-    prenom: "Antoine", 
-    encoursTheorique: 480000, 
-    encoursReel: 400000,
-    potentiel: 80000,
-    tauxConversion: 83,
-    dernierContact: "10/04/2025",
-    produits: "Assurance vie, PER"
-  }
-];
-
-// Données pour les clients
-const clientsData = [
-  { 
-    id: 1, 
-    nom: "Dupont", 
-    prenom: "Jean", 
-    immobilier: 380000, 
-    assuranceVie: 180000, 
-    per: 120000, 
-    epargne: 50000, 
-    autre: 20000, 
-    total: 750000 
-  },
-  { 
-    id: 2, 
-    nom: "Martin", 
-    prenom: "Sophie", 
-    immobilier: 220000, 
-    assuranceVie: 250000, 
-    per: 80000, 
-    epargne: 60000, 
-    autre: 10000, 
-    total: 620000 
-  },
-  { 
-    id: 3, 
-    nom: "Bernard", 
-    prenom: "Pierre", 
-    immobilier: 650000, 
-    assuranceVie: 110000, 
-    per: 40000, 
-    epargne: 80000, 
-    autre: 20000, 
-    total: 900000 
-  },
-  { 
-    id: 4, 
-    nom: "Petit", 
-    prenom: "Marie", 
-    immobilier: 280000, 
-    assuranceVie: 290000, 
-    per: 150000, 
-    epargne: 30000, 
-    autre: 0, 
-    total: 750000 
-  },
-  { 
-    id: 5, 
-    nom: "Robert", 
-    prenom: "Antoine", 
-    immobilier: 0, 
-    assuranceVie: 200000, 
-    per: 110000, 
-    epargne: 130000, 
-    autre: 40000, 
-    total: 480000 
-  },
-];
-
 const COLORS = ['#8B5CF6', '#D946EF', '#F97316', '#0EA5E9', '#22D3EE'];
 
 const EncoursTheoriquesPage = () => {
@@ -175,6 +39,136 @@ const EncoursTheoriquesPage = () => {
   const [sortColumn, setSortColumn] = useState("total");
   const [sortDirection, setSortDirection] = useState("desc");
   const [opportunitesTab, setOpportunitesTab] = useState("potentiel");
+
+  const [historicData, setHistoricData] = useState([]);
+  const [repartitionData, setRepartitionData] = useState([]);
+  const [opportunitesData, setOpportunitesData] = useState([]);
+  const [clientsData, setClientsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // 1. Fetch all users
+        const { data: users, error: usersError } = await supabase.from('users').select('id, first_name, last_name');
+        if (usersError) throw usersError;
+
+        // 2. Fetch all assets for all users
+        const [
+          { data: immobilierData, error: immobilierError },
+          { data: assuranceVieData, error: assuranceVieError },
+          { data: perData, error: perError },
+          { data: epargneData, error: epargneError },
+          { data: autreData, error: autreError },
+        ] = await Promise.all([
+          supabase.from('bienimmobilier').select('user_id, value, contrat_gere'),
+          supabase.from('assurancevie').select('user_id, value, contrat_gere'),
+          supabase.from('contratcapitalisation').select('user_id, value, contrat_gere'),
+          supabase.from('comptebancaire').select('user_id, value, contrat_gere'),
+          supabase.from('autrepatrimoine').select('user_id, value, contrat_gere'),
+        ]);
+
+        if (immobilierError || assuranceVieError || perError || epargneError || autreError) {
+          console.error('Error fetching asset data:', immobilierError || assuranceVieError || perError || epargneError || autreError);
+          return;
+        }
+
+        const assetData = {
+          immobilier: immobilierData,
+          assuranceVie: assuranceVieData,
+          per: perData,
+          epargne: epargneData,
+          autre: autreData,
+        };
+
+        const clientsMap = new Map();
+
+        users.forEach(user => {
+          clientsMap.set(user.id, {
+            id: user.id,
+            nom: user.last_name,
+            prenom: user.first_name,
+            immobilier: 0,
+            assuranceVie: 0,
+            per: 0,
+            epargne: 0,
+            autre: 0,
+            total: 0,
+            encoursReel: 0,
+            dernierContact: "N/A", // This needs a real source
+            produits: new Set(),
+          });
+        });
+
+        for (const [assetType, data] of Object.entries(assetData)) {
+          data.forEach(item => {
+            const client = clientsMap.get(item.user_id);
+            if (client) {
+              const value = item.value || 0;
+              if (item.contrat_gere) {
+                client.encoursReel += value;
+              } else {
+                client[assetType] += value;
+                client.produits.add(assetType);
+              }
+            }
+          });
+        }
+
+        const processedClients = Array.from(clientsMap.values()).map(client => ({
+          ...client,
+          total: client.immobilier + client.assuranceVie + client.per + client.epargne + client.autre,
+          produits: Array.from(client.produits).join(', '),
+        }));
+
+        const finalClientsData = processedClients.map(c => ({
+          ...c,
+          encoursTheorique: c.total,
+          potentiel: c.total - c.encoursReel,
+          tauxConversion: c.total > 0 ? Math.round((c.encoursReel / c.total) * 100) : 0,
+        }));
+
+        setClientsData(finalClientsData);
+        setOpportunitesData(finalClientsData);
+
+        // 3. Aggregate for repartition data
+        const repartition = finalClientsData.reduce((acc, client) => {
+          acc.Immobilier += client.immobilier;
+          acc['Assurance Vie'] += client.assuranceVie;
+          acc.PER += client.per;
+          acc.Épargne += client.epargne;
+          acc.Autre += client.autre;
+          return acc;
+        }, { 'Immobilier': 0, 'Assurance Vie': 0, 'PER': 0, 'Épargne': 0, 'Autre': 0 });
+
+        setRepartitionData([
+            { name: 'Immobilier', value: repartition.Immobilier, color: '#8B5CF6' },
+            { name: 'Assurance Vie', value: repartition['Assurance Vie'], color: '#D946EF' },
+            { name: 'PER', value: repartition.PER, color: '#F97316' },
+            { name: 'Épargne', value: repartition.Épargne, color: '#0EA5E9' },
+            { name: 'Autre', value: repartition.Autre, color: '#22D3EE' },
+        ]);
+
+        // 4. Set historic data (using dummy data for now as historical tracking is not in DB)
+        setHistoricData([
+          { mois: 'Jan', immobilier: 1200000, assuranceVie: 580000, per: 320000, epargne: 350000, autre: 150000 },
+          { mois: 'Fév', immobilier: 1220000, assuranceVie: 600000, per: 335000, epargne: 360000, autre: 155000 },
+          { mois: 'Mars', immobilier: 1250000, assuranceVie: 625000, per: 345000, epargne: 375000, autre: 165000 },
+          { mois: 'Avr', immobilier: 1250000, assuranceVie: 650000, per: 360000, epargne: 390000, autre: 170000 },
+          { mois: 'Mai', immobilier: 1250000, assuranceVie: 680000, per: 380000, epargne: 405000, autre: 185000 },
+          { mois: 'Juin', immobilier: 1270000, assuranceVie: 700000, per: 400000, epargne: 425000, autre: 205000 },
+        ]);
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Calcul du total des encours
   const totalEncours = repartitionData.reduce((sum, item) => sum + item.value, 0);
@@ -189,8 +183,8 @@ const EncoursTheoriquesPage = () => {
       return a[sortColumn as keyof typeof a] < b[sortColumn as keyof typeof b] ? 1 : -1;
     }
   }).filter(client => 
-    client.nom.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    client.prenom.toLowerCase().includes(searchTerm.toLowerCase())
+    (client.nom && client.nom.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (client.prenom && client.prenom.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   // Préparation des données pour l'affichage des opportunités
@@ -200,8 +194,8 @@ const EncoursTheoriquesPage = () => {
     } else if (opportunitesTab === "conversion") {
       return a.tauxConversion - b.tauxConversion;
     } else {
-      return new Date(b.dernierContact.split('/').reverse().join('-')).getTime() - 
-             new Date(a.dernierContact.split('/').reverse().join('-')).getTime();
+      // Sorting by 'dernierContact' is not implemented as data is not available
+      return 0;
     }
   });
 
@@ -213,6 +207,14 @@ const EncoursTheoriquesPage = () => {
       setSortDirection("desc");
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-2xl">Chargement des données...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

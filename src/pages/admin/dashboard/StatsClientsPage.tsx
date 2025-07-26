@@ -1,61 +1,187 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { supabase } from "@/lib/supabase";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Download, Users, Brain, TrendingUp } from "lucide-react";
 
-// Sample data for clients statistics
-const clientsTotalData = [
-  { month: "Jan", clients: 120 },
-  { month: "Fév", clients: 132 },
-  { month: "Mar", clients: 145 },
-  { month: "Avr", clients: 155 },
-  { month: "Mai", clients: 170 },
-  { month: "Juin", clients: 184 },
-  { month: "Juil", clients: 192 },
-  { month: "Août", clients: 200 },
-  { month: "Sept", clients: 215 },
-  { month: "Oct", clients: 230 },
-  { month: "Nov", clients: 245 },
-  { month: "Déc", clients: 260 },
-];
-
-const clientsAgeData = [
-  { name: "18-25 ans", value: 15 },
-  { name: "26-35 ans", value: 65 },
-  { name: "36-45 ans", value: 85 },
-  { name: "46-55 ans", value: 50 },
-  { name: "56-65 ans", value: 35 },
-  { name: "+65 ans", value: 10 },
-];
-
-const clientsScoreData = [
-  { score: "0-20", clients: 12 },
-  { score: "21-40", clients: 35 },
-  { score: "41-60", clients: 78 },
-  { score: "61-80", clients: 95 },
-  { score: "81-100", clients: 40 },
-];
-
-const clientsObjectifsData = [
-  { name: "Préparation retraite", value: 95 },
-  { name: "Achat immobilier", value: 70 },
-  { name: "Optimisation fiscale", value: 55 },
-  { name: "Transmission", value: 45 },
-  { name: "Placement", value: 85 },
-  { name: "Autre", value: 25 },
-];
-
 const COLORS = ['#8B5CF6', '#EC4899', '#10B981', '#3B82F6', '#F59E0B', '#6366F1'];
 
 const StatsClientsPage = () => {
-  const activeClients = 205;
-  const inactiveClients = 55;
-  const totalClients = activeClients + inactiveClients;
-  const completedProfiles = 187;
-  const incompleteProfiles = 73;
-  const averageScore = 64;
+  const [clientsTotalData, setClientsTotalData] = useState([]);
+  const [clientsAgeData, setClientsAgeData] = useState([]);
+  const [clientsScoreData, setClientsScoreData] = useState([]);
+  const [clientsObjectifsData, setClientsObjectifsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data: users, error: usersError } = await supabase.from('users').select('id, created_at, last_login');
+        if (usersError) throw usersError;
+
+        const { data: personalInfos, error: personalInfosError } = await supabase.from('personalinfo').select('user_id, age, objectifs_patrimoniaux');
+        if (personalInfosError) throw personalInfosError;
+
+        const { data: profiles, error: profilesError } = await supabase.from('profileinvestisseur').select('user_id, score');
+        if (profilesError) throw profilesError;
+
+        // Process data here
+        const totalClientsData = users.reduce((acc, user) => {
+          const month = new Date(user.created_at).toLocaleString('default', { month: 'short' });
+          const year = new Date(user.created_at).getFullYear();
+          const key = `${month} ${year}`;
+          if (!acc[key]) {
+            acc[key] = { month: key, clients: 0 };
+          }
+          acc[key].clients++;
+          return acc;
+        }, {} as Record<string, { month: string; clients: number }>);
+        setClientsTotalData(Object.values(totalClientsData));
+
+        const ageData = personalInfos.reduce((acc, info) => {
+          const age = info.age;
+          if (age >= 18 && age <= 25) acc['18-25 ans']++;
+          else if (age >= 26 && age <= 35) acc['26-35 ans']++;
+          else if (age >= 36 && age <= 45) acc['36-45 ans']++;
+          else if (age >= 46 && age <= 55) acc['46-55 ans']++;
+          else if (age >= 56 && age <= 65) acc['56-65 ans']++;
+          else if (age > 65) acc['+65 ans']++;
+          return acc;
+        }, { '18-25 ans': 0, '26-35 ans': 0, '36-45 ans': 0, '46-55 ans': 0, '56-65 ans': 0, '+65 ans': 0 } as Record<string, number>);
+        setClientsAgeData(Object.entries(ageData).map(([name, value]) => ({ name, value })));
+
+        const scoreData = profiles.reduce((acc, profile) => {
+            const score = profile.score;
+            if (score >= 0 && score <= 20) acc['0-20']++;
+            else if (score >= 21 && score <= 40) acc['21-40']++;
+            else if (score >= 41 && score <= 60) acc['41-60']++;
+            else if (score >= 61 && score <= 80) acc['61-80']++;
+            else if (score >= 81 && score <= 100) acc['81-100']++;
+            return acc;
+        }, { '0-20': 0, '21-40': 0, '41-60': 0, '61-80': 0, '81-100': 0 } as Record<string, number>);
+        setClientsScoreData(Object.entries(scoreData).map(([score, clients]) => ({ score, clients })));
+
+        const objectifsData = personalInfos.reduce((acc, info) => {
+            info.objectifs_patrimoniaux.forEach((objectif: string) => {
+                if (!acc[objectif]) {
+                    acc[objectif] = 0;
+                }
+                acc[objectif]++;
+            });
+            return acc;
+        }, {} as Record<string, number>);
+        setClientsObjectifsData(Object.entries(objectifsData).map(([name, value]) => ({ name, value })));
+
+        setLoading(false);
+      } catch (err) {
+        setError((err as Error).message);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const [totalClients, setTotalClients] = useState(0);
+  const [activeClients, setActiveClients] = useState(0);
+  const [completedProfiles, setCompletedProfiles] = useState(0);
+  const [averageScore, setAverageScore] = useState(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data: users, error: usersError } = await supabase.from('users').select('id, created_at, last_login');
+        if (usersError) throw usersError;
+
+        const { data: personalInfos, error: personalInfosError } = await supabase.from('personalinfo').select('user_id, age, objectifs_patrimoniaux');
+        if (personalInfosError) throw personalInfosError;
+
+        const { data: profiles, error: profilesError } = await supabase.from('profileinvestisseur').select('user_id, score');
+        if (profilesError) throw profilesError;
+
+        // Process data here
+        const totalClientsData = users.reduce((acc, user) => {
+          const month = new Date(user.created_at).toLocaleString('default', { month: 'short' });
+          const year = new Date(user.created_at).getFullYear();
+          const key = `${month} ${year}`;
+          if (!acc[key]) {
+            acc[key] = { month: key, clients: 0 };
+          }
+          acc[key].clients++;
+          return acc;
+        }, {} as Record<string, { month: string; clients: number }>);
+        setClientsTotalData(Object.values(totalClientsData));
+
+        const ageData = personalInfos.reduce((acc, info) => {
+          const age = info.age;
+          if (age >= 18 && age <= 25) acc['18-25 ans']++;
+          else if (age >= 26 && age <= 35) acc['26-35 ans']++;
+          else if (age >= 36 && age <= 45) acc['36-45 ans']++;
+          else if (age >= 46 && age <= 55) acc['46-55 ans']++;
+          else if (age >= 56 && age <= 65) acc['56-65 ans']++;
+          else if (age > 65) acc['+65 ans']++;
+          return acc;
+        }, { '18-25 ans': 0, '26-35 ans': 0, '36-45 ans': 0, '46-55 ans': 0, '56-65 ans': 0, '+65 ans': 0 } as Record<string, number>);
+        setClientsAgeData(Object.entries(ageData).map(([name, value]) => ({ name, value })));
+
+        const scoreData = profiles.reduce((acc, profile) => {
+            const score = profile.score;
+            if (score >= 0 && score <= 20) acc['0-20']++;
+            else if (score >= 21 && score <= 40) acc['21-40']++;
+            else if (score >= 41 && score <= 60) acc['41-60']++;
+            else if (score >= 61 && score <= 80) acc['61-80']++;
+            else if (score >= 81 && score <= 100) acc['81-100']++;
+            return acc;
+        }, { '0-20': 0, '21-40': 0, '41-60': 0, '61-80': 0, '81-100': 0 } as Record<string, number>);
+        setClientsScoreData(Object.entries(scoreData).map(([score, clients]) => ({ score, clients })));
+
+        const objectifsData = personalInfos.reduce((acc, info) => {
+            info.objectifs_patrimoniaux.forEach((objectif: string) => {
+                if (!acc[objectif]) {
+                    acc[objectif] = 0;
+                }
+                acc[objectif]++;
+            });
+            return acc;
+        }, {} as Record<string, number>);
+        setClientsObjectifsData(Object.entries(objectifsData).map(([name, value]) => ({ name, value })));
+
+        setTotalClients(users.length);
+        const oneMonthAgo = new Date();
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+        setActiveClients(users.filter(u => new Date(u.last_login) > oneMonthAgo).length);
+        setCompletedProfiles(profiles.length);
+        setAverageScore(profiles.reduce((acc, p) => acc + p.score, 0) / profiles.length);
+
+        console.log("Total Clients:", users.length);
+        console.log("Active Clients:", users.filter(u => new Date(u.last_login) > oneMonthAgo).length);
+        console.log("Completed Profiles:", profiles.length);
+        console.log("Average Score:", profiles.reduce((acc, p) => acc + p.score, 0) / profiles.length);
+        console.log("Clients Total Data:", Object.values(totalClientsData));
+        console.log("Clients Age Data:", Object.entries(ageData).map(([name, value]) => ({ name, value })));
+        console.log("Clients Score Data:", Object.entries(scoreData).map(([score, clients]) => ({ score, clients })));
+        console.log("Clients Objectifs Data:", Object.entries(objectifsData).map(([name, value]) => ({ name, value })));
+
+        setLoading(false);
+      } catch (err) {
+        setError((err as Error).message);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <div className="space-y-8 p-4">

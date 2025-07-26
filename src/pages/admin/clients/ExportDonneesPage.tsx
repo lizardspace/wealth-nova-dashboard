@@ -28,20 +28,21 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/types/supabase';
 import { toast } from 'sonner';
 import Papa from 'papaparse';
+import { getAllTables, getTableColumns } from '@/lib/supabase';
 
 // Types pour les données Supabase
 type FieldCategory = 'personal' | 'financial' | 'fiscal' | 'products' | 'simulations' | 'scores';
 
 interface ExportField {
-  id: string;
+  id:string;
   label: string;
-  category: FieldCategory;
+  category: string;
   selected: boolean;
-  table?: keyof Database['public']['Tables'];
+  table?: string;
   column?: string;
 }
 
@@ -131,17 +132,48 @@ const exportFields: ExportField[] = [
 ];
 
 export default function ExportDonneesPage() {
-  const supabase = createClientComponentClient<Database>();
+  const supabase = createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
   const [activeTab, setActiveTab] = useState<string>('fields');
-  const [fields, setFields] = useState<ExportField[]>(exportFields);
+  const [fields, setFields] = useState<ExportField[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [format, setFormat] = useState<string>('csv');
-  const [selectedCategory, setSelectedCategory] = useState<FieldCategory | 'all'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string | 'all'>('all');
   const [selectAllUsers, setSelectAllUsers] = useState(false);
   const [selectAllFields, setSelectAllFields] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [usersLoading, setUsersLoading] = useState(true);
   const [exportLoading, setExportLoading] = useState(false);
+  const [tables, setTables] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchSchema = async () => {
+      setLoading(true);
+      const tableNames = await getAllTables();
+      setTables(tableNames);
+
+      const allFields: ExportField[] = [];
+      for (const tableName of tableNames) {
+        const columns = await getTableColumns(tableName);
+        for (const column of columns) {
+          allFields.push({
+            id: `${tableName}-${column}`,
+            label: `${tableName}.${column}`,
+            category: tableName as FieldCategory,
+            selected: false,
+            table: tableName,
+            column: column,
+          });
+        }
+      }
+      setFields(allFields);
+      setLoading(false);
+    };
+
+    fetchSchema();
+  }, []);
 
   // Récupération des utilisateurs depuis Supabase
   useEffect(() => {
@@ -198,7 +230,7 @@ export default function ExportDonneesPage() {
     ));
   };
 
-  const handleCategoryChange = (category: FieldCategory | 'all') => {
+  const handleCategoryChange = (category: string | 'all') => {
     setSelectedCategory(category);
     setSelectAllFields(false);
   };
@@ -221,6 +253,23 @@ export default function ExportDonneesPage() {
       const fieldsToExport = fields.filter(f => f.selected);
       const usersToExport = users.filter(u => u.selected);
       const userIds = usersToExport.map(u => u.id);
+
+      const fieldsByTable = fieldsToExport.reduce((acc, field) => {
+        if (field.table) {
+          if (!acc[field.table]) {
+            acc[field.table] = [];
+          }
+          acc[field.table].push(field.column);
+        }
+        return acc;
+      }, {} as Record<string, string[]>);
+
+      const selectQueries = Object.entries(fieldsByTable).map(([table, columns]) => {
+        if (table === 'users') {
+          return columns.join(',');
+        }
+        return `${table}(${columns.join(',')})`;
+      });
 
       // Récupérer les données depuis Supabase
       const { data, error } = await supabase
@@ -255,7 +304,7 @@ export default function ExportDonneesPage() {
       }
 
       // Formater les données pour l'export
-      const formattedData = data.map(user => {
+      const formattedData = data.map((user: any) => {
         const result: Record<string, any> = {};
         fieldsToExport.forEach(field => {
           if (field.table === 'users') {
@@ -320,40 +369,10 @@ export default function ExportDonneesPage() {
     }
   };
 
-  const getCategoryLabel = (category: FieldCategory): string => {
-    switch(category) {
-      case 'personal': return 'Données personnelles';
-      case 'financial': return 'Données financières';
-      case 'fiscal': return 'Fiscalité';
-      case 'products': return 'Produits souscrits';
-      case 'simulations': return 'Simulations';
-      case 'scores': return 'Scores et profils';
-      default: return category;
-    }
+  const getCategoryLabel = (category: string): string => {
+    return category.charAt(0).toUpperCase() + category.slice(1);
   };
 
-  const getPresetFields = (preset: string) => {
-    switch(preset) {
-      case 'complet':
-        return fields.map(f => ({ ...f, selected: true }));
-      case 'financier':
-        return fields.map(f => ({
-          ...f,
-          selected: ['personal', 'financial', 'scores'].includes(f.category)
-        }));
-      case 'fiscal':
-        return fields.map(f => ({
-          ...f,
-          selected: ['personal', 'fiscal'].includes(f.category)
-        }));
-      default:
-        return fields;
-    }
-  };
-
-  const applyPreset = (preset: string) => {
-    setFields(getPresetFields(preset));
-  };
 
   return (
     <div className="space-y-6">
@@ -435,27 +454,6 @@ export default function ExportDonneesPage() {
               </Card>
             </div>
             
-            <div className="space-y-2">
-              <Label>Modèles d'export</Label>
-              <div className="space-y-2">
-                <Button variant="outline" className="w-full flex justify-start" onClick={() => applyPreset('complet')}>
-                  <FilePlus className="h-4 w-4 mr-2" />
-                  Export complet
-                </Button>
-                <Button variant="outline" className="w-full flex justify-start" onClick={() => applyPreset('financier')}>
-                  <FilePlus className="h-4 w-4 mr-2" />
-                  Export financier
-                </Button>
-                <Button variant="outline" className="w-full flex justify-start" onClick={() => applyPreset('fiscal')}>
-                  <FilePlus className="h-4 w-4 mr-2" />
-                  Export fiscal
-                </Button>
-                <Button variant="outline" className="w-full flex justify-start">
-                  <FilePlus className="h-4 w-4 mr-2" />
-                  Enregistrer ce modèle...
-                </Button>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
@@ -479,21 +477,18 @@ export default function ExportDonneesPage() {
             <CardContent>
               <TabsContent value="fields" className="mt-0 space-y-4">
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <Select 
-                    value={selectedCategory} 
-                    onValueChange={(value) => handleCategoryChange(value as FieldCategory | 'all')}
+                  <Select
+                    value={selectedCategory}
+                    onValueChange={(value) => handleCategoryChange(value as string | 'all')}
                   >
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Catégorie" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Toutes les catégories</SelectItem>
-                      <SelectItem value="personal">Données personnelles</SelectItem>
-                      <SelectItem value="financial">Données financières</SelectItem>
-                      <SelectItem value="fiscal">Fiscalité</SelectItem>
-                      <SelectItem value="products">Produits souscrits</SelectItem>
-                      <SelectItem value="simulations">Simulations</SelectItem>
-                      <SelectItem value="scores">Scores et profils</SelectItem>
+                      {tables.map(table => (
+                        <SelectItem key={table} value={table}>{getCategoryLabel(table)}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   

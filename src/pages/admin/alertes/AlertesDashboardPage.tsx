@@ -4,6 +4,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
+import { supabase } from "@/lib/supabase";
+import { useEffect, useState } from "react";
+
+type Alert = {
+  id: string;
+  user_id: string;
+  type: string;
+  message: string;
+  level: "critique" | "important" | "faible";
+  created_at: string;
+  users: {
+    first_name: string;
+    last_name: string;
+  } | null;
+};
 
 type AlertStats = {
   total: number;
@@ -13,91 +28,80 @@ type AlertStats = {
   potentialGains: number;
 };
 
-const alertsStats: AlertStats = {
-  total: 78,
-  inactiveClients: 24,
-  incompleteProfiles: 31,
-  pendingProjects: 15,
-  potentialGains: 8,
-};
-
-type RecentAlert = {
-  id: string;
-  type: "inactiveClient" | "incompleteProfile" | "pendingProject" | "potentialGain";
-  client: string;
-  description: string;
-  date: string;
-  priority: "high" | "medium" | "low";
-};
-
-const recentAlerts: RecentAlert[] = [
-  {
-    id: "1",
-    type: "inactiveClient",
-    client: "Dupont Jean",
-    description: "Client inactif depuis 6 mois",
-    date: "2024-04-15",
-    priority: "high",
-  },
-  {
-    id: "2",
-    type: "incompleteProfile",
-    client: "Martin Sophie",
-    description: "Objectifs patrimoniaux non définis",
-    date: "2024-04-20",
-    priority: "medium",
-  },
-  {
-    id: "3",
-    type: "pendingProject",
-    client: "Bernard Pierre",
-    description: "Projet immobilier en attente depuis 3 mois",
-    date: "2024-04-18",
-    priority: "medium",
-  },
-  {
-    id: "4",
-    type: "potentialGain",
-    client: "Petit Marie",
-    description: "Optimisation fiscale possible: -2300€ d'impôts",
-    date: "2024-04-22",
-    priority: "high",
-  },
-];
-
-const PriorityBadge = ({ priority }: { priority: RecentAlert["priority"] }) => {
+const PriorityBadge = ({ priority }: { priority: Alert["level"] }) => {
   return (
     <div className="flex items-center">
       <div
         className={`w-2 h-2 rounded-full mr-2 ${
-          priority === "high"
+          priority === "critique"
             ? "bg-red-500"
-            : priority === "medium"
+            : priority === "important"
             ? "bg-yellow-500"
             : "bg-green-500"
         }`}
       ></div>
       <span className="text-xs text-muted-foreground capitalize">
-        {priority === "high" ? "Élevée" : priority === "medium" ? "Moyenne" : "Basse"}
+        {priority === "critique" ? "Élevée" : priority === "important" ? "Moyenne" : "Basse"}
       </span>
     </div>
   );
 };
 
-const AlertIcon = ({ type }: { type: RecentAlert["type"] }) => {
+const AlertIcon = ({ type }: { type: Alert["type"] }) => {
   switch (type) {
-    case "inactiveClient":
+    case "Inactivité":
       return <Clock className="h-4 w-4 text-amber-500" />;
-    case "incompleteProfile":
+    case "Profil incomplet":
       return <FileText className="h-4 w-4 text-blue-500" />;
-    case "pendingProject":
+    case "Projet en attente":
       return <AlertTriangle className="h-4 w-4 text-purple-500" />;
-    case "potentialGain":
+    case "Gain potentiel":
       return <BarChart className="h-4 w-4 text-green-500" />;
+    default:
+      return <Bell className="h-4 w-4 text-gray-500" />;
   }
 };
 
 export default function AlertesDashboardPage() {
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [stats, setStats] = useState<AlertStats>({
+    total: 0,
+    inactiveClients: 0,
+    incompleteProfiles: 0,
+    pendingProjects: 0,
+    potentialGains: 0,
+  });
+
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      const { data, error } = await supabase
+        .from("alerts")
+        .select(`
+          *,
+          users (
+            first_name,
+            last_name
+          )
+        `);
+
+      if (error) {
+        console.error("Error fetching alerts:", error);
+      } else {
+        setAlerts(data as Alert[]);
+        const newStats: AlertStats = {
+          total: data.length,
+          inactiveClients: data.filter(a => a.type === 'Inactivité').length,
+          incompleteProfiles: data.filter(a => a.type === 'Profil incomplet').length,
+          pendingProjects: data.filter(a => a.type === 'Projet en attente').length,
+          potentialGains: data.filter(a => a.type === 'Gain potentiel').length,
+        };
+        setStats(newStats);
+      }
+    };
+
+    fetchAlerts();
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -117,9 +121,9 @@ export default function AlertesDashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pb-2">
-            <div className="text-3xl font-bold text-amber-500">{alertsStats.inactiveClients}</div>
+            <div className="text-3xl font-bold text-amber-500">{stats.inactiveClients}</div>
             <Progress
-              value={(alertsStats.inactiveClients / alertsStats.total) * 100}
+              value={(stats.inactiveClients / stats.total) * 100}
               className="h-2 mt-2 bg-amber-100"
             />
           </CardContent>
@@ -141,9 +145,9 @@ export default function AlertesDashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pb-2">
-            <div className="text-3xl font-bold text-blue-500">{alertsStats.incompleteProfiles}</div>
+            <div className="text-3xl font-bold text-blue-500">{stats.incompleteProfiles}</div>
             <Progress
-              value={(alertsStats.incompleteProfiles / alertsStats.total) * 100}
+              value={(stats.incompleteProfiles / stats.total) * 100}
               className="h-2 mt-2 bg-blue-100"
             />
           </CardContent>
@@ -165,9 +169,9 @@ export default function AlertesDashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pb-2">
-            <div className="text-3xl font-bold text-purple-500">{alertsStats.pendingProjects}</div>
+            <div className="text-3xl font-bold text-purple-500">{stats.pendingProjects}</div>
             <Progress
-              value={(alertsStats.pendingProjects / alertsStats.total) * 100}
+              value={(stats.pendingProjects / stats.total) * 100}
               className="h-2 mt-2 bg-purple-100"
             />
           </CardContent>
@@ -189,9 +193,9 @@ export default function AlertesDashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pb-2">
-            <div className="text-3xl font-bold text-green-500">{alertsStats.potentialGains}</div>
+            <div className="text-3xl font-bold text-green-500">{stats.potentialGains}</div>
             <Progress
-              value={(alertsStats.potentialGains / alertsStats.total) * 100}
+              value={(stats.potentialGains / stats.total) * 100}
               className="h-2 mt-2 bg-green-100"
             />
           </CardContent>
@@ -215,7 +219,7 @@ export default function AlertesDashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {recentAlerts.map((alert) => (
+            {alerts.map((alert) => (
               <div
                 key={alert.id}
                 className="flex items-start justify-between p-4 border rounded-lg hover:shadow-sm hover:border-blue-200 transition-all group"
@@ -227,18 +231,18 @@ export default function AlertesDashboardPage() {
                   <div>
                     <h3 className="font-medium">
                       <Link
-                        to={`/admin/clients/${alert.id}`}
+                        to={`/admin/clients/${alert.user_id}`}
                         className="hover:underline text-primary group-hover:text-blue-600 transition-colors"
                       >
-                        {alert.client}
+                        {alert.users?.first_name} {alert.users?.last_name}
                       </Link>
                     </h3>
-                    <p className="text-sm text-muted-foreground">{alert.description}</p>
+                    <p className="text-sm text-muted-foreground">{alert.message}</p>
                     <div className="mt-1 flex items-center gap-4">
                       <span className="text-xs text-muted-foreground">
-                        {new Date(alert.date).toLocaleDateString("fr-FR")}
+                        {new Date(alert.created_at).toLocaleDateString("fr-FR")}
                       </span>
-                      <PriorityBadge priority={alert.priority} />
+                      <PriorityBadge priority={alert.level} />
                     </div>
                   </div>
                 </div>

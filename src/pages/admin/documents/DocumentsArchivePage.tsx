@@ -15,59 +15,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEffect, useState } from "react";
+import { getArchivedDocuments } from "@/lib/supabase";
 
 type ArchivedDocument = {
   id: string;
-  title: string;
-  client: string;
-  type: string;
-  archiveDate: string;
-  originalDate: string;
+  document_name: string;
+  client_name: string;
+  document_type: string;
+  archiving_date: string;
+  creation_date: string;
   category: "contrats" | "mandats" | "avenants" | "resiliations";
 };
 
-const documents: ArchivedDocument[] = [
-  {
-    id: "1",
-    title: "Contrat Assurance Vie - XYZ",
-    client: "Dupont Jean",
-    type: "Contrat",
-    archiveDate: "15/12/2023",
-    originalDate: "15/03/2020",
-    category: "contrats",
-  },
-  {
-    id: "2",
-    title: "Mandat de gestion - Anciennes dispositions",
-    client: "Martin Sophie",
-    type: "Mandat",
-    archiveDate: "10/11/2023",
-    originalDate: "10/05/2019",
-    category: "mandats",
-  },
-  {
-    id: "3",
-    title: "Avenant contrat PER - Version initiale",
-    client: "Bernard Pierre",
-    type: "Avenant",
-    archiveDate: "20/10/2023",
-    originalDate: "20/07/2021",
-    category: "avenants",
-  },
-  {
-    id: "4",
-    title: "Résiliation assurance habitation",
-    client: "Petit Marie",
-    type: "Résiliation",
-    archiveDate: "05/01/2024",
-    originalDate: "05/01/2023",
-    category: "resiliations",
-  },
-];
-
 const columns: ColumnDef<ArchivedDocument>[] = [
   {
-    accessorKey: "title",
+    accessorKey: "document_name",
     header: "Document",
     cell: ({ row }) => (
       <div>
@@ -75,24 +38,24 @@ const columns: ColumnDef<ArchivedDocument>[] = [
           to={`/admin/documents/detail/${row.original.id}`}
           className="font-medium hover:underline text-primary"
         >
-          {row.getValue("title")}
+          {row.getValue("document_name")}
         </Link>
         <p className="text-xs text-muted-foreground">
-          {row.original.type}
+          {row.original.document_type}
         </p>
       </div>
     ),
   },
   {
-    accessorKey: "client",
+    accessorKey: "client_name",
     header: "Client",
   },
   {
-    accessorKey: "originalDate",
+    accessorKey: "creation_date",
     header: "Date de création",
   },
   {
-    accessorKey: "archiveDate",
+    accessorKey: "archiving_date",
     header: "Date d'archivage",
   },
   {
@@ -111,6 +74,17 @@ const columns: ColumnDef<ArchivedDocument>[] = [
 ];
 
 export default function DocumentsArchivePage() {
+  const [documents, setDocuments] = useState<ArchivedDocument[]>([]);
+
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      const data = await getArchivedDocuments();
+      setDocuments(data);
+    };
+
+    fetchDocuments();
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
