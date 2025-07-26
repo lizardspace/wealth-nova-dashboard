@@ -72,7 +72,7 @@ const formSchema = z.object({
     (a) => parseFloat(z.string().parse(a)),
     z.number().min(0, { message: "Le revenu annuel doit être un nombre positif" })
   ),
-  patrimoineEstime: z.preprocess(
+  estimation_patrimoine_foyer_precise: z.preprocess(
     (a) => parseFloat(z.string().parse(a)),
     z.number().min(0, { message: "Le patrimoine estimé doit être un nombre positif" })
   )
@@ -96,7 +96,7 @@ const NouveauClientPage = () => {
       nombreEnfants: 0,
       profession: "",
       revenuAnnuel: 0,
-      patrimoineEstime: 0
+      estimation_patrimoine_foyer_precise: 0
     }
   });
 
@@ -104,6 +104,7 @@ const NouveauClientPage = () => {
     console.log("Form values:", values);
     try {
       // Étape 1: Insérer dans la table 'users'
+      console.log("Étape 1: Insertion dans la table 'users'");
       const { data: userData, error: userError } = await supabase
         .from('users')
         .insert([
@@ -117,12 +118,84 @@ const NouveauClientPage = () => {
         ])
         .select();
 
-      if (userError) throw userError;
+      if (userError) {
+        console.error("Erreur lors de l'insertion dans 'users':", userError);
+        throw userError;
+      }
       if (!userData) throw new Error("La création de l'utilisateur a échoué.");
-
+      console.log("User data:", userData);
       const userId = userData[0].id;
 
-      // Étape 2: Insérer dans la table 'personalinfo'
+      // Étape 2: Insérer dans la table 'souscription_formulaire_souscripteur'
+      console.log("Étape 2: Insertion dans la table 'souscription_formulaire_souscripteur'");
+      const { data: souscripteurData, error: souscripteurError } = await supabase
+        .from('souscription_formulaire_souscripteur')
+        .insert([
+          {
+            user_id: userId,
+            nom: values.nom,
+            prenom: values.prenom,
+            email: values.email,
+            telephone: values.telephone,
+            adresse_postale: values.adresse,
+            code_postal: values.codePostal,
+            ville: values.ville,
+            date_naissance: values.dateNaissance,
+            situation_familiale: values.situationFamiliale,
+            profession: values.profession,
+          },
+        ])
+        .select();
+
+      if (souscripteurError) {
+        console.error("Erreur lors de l'insertion dans 'souscription_formulaire_souscripteur':", souscripteurError);
+        throw souscripteurError;
+      }
+      if (!souscripteurData) throw new Error("La création du souscripteur a échoué.");
+      console.log("Souscripteur data:", souscripteurData);
+      const souscripteurId = souscripteurData[0].id;
+
+      // Étape 3: Insérer dans la table 'souscription_formulaire_subscription'
+      console.log("Étape 3: Insertion dans la table 'souscription_formulaire_subscription'");
+      const { data: subscriptionData, error: subscriptionError } = await supabase
+        .from('souscription_formulaire_subscription')
+        .insert([
+          {
+            user_id: userId,
+            souscripteur_id: souscripteurId,
+          },
+        ])
+        .select();
+
+      if (subscriptionError) {
+        console.error("Erreur lors de l'insertion dans 'souscription_formulaire_subscription':", subscriptionError);
+        throw subscriptionError;
+      }
+      if (!subscriptionData) throw new Error("La création de la souscription a échoué.");
+      console.log("Subscription data:", subscriptionData);
+      const subscriptionId = subscriptionData[0].id;
+
+      // Étape 4: Insérer dans la table 'souscription_formulaire_financialdata'
+      console.log("Étape 4: Insertion dans la table 'souscription_formulaire_financialdata'");
+      const { error: financialDataError } = await supabase
+        .from('souscription_formulaire_financialdata')
+        .insert([
+          {
+            user_id: userId,
+            subscription_id: subscriptionId,
+            revenus_annuels_foyer_precise: values.revenuAnnuel,
+            estimation_patrimoine_foyer_precise: values.estimation_patrimoine_foyer_precise,
+          },
+        ]);
+
+      if (financialDataError) {
+        console.error("Erreur lors de l'insertion dans 'souscription_formulaire_financialdata':", financialDataError);
+        throw financialDataError;
+      }
+      console.log("Financial data inserted successfully.");
+
+      // Étape 5: Insérer dans la table 'personalinfo'
+      console.log("Étape 5: Insertion dans la table 'personalinfo'");
       const { error: personalInfoError } = await supabase
         .from('personalinfo')
         .insert([
@@ -138,11 +211,14 @@ const NouveauClientPage = () => {
             revenu_annuel: values.revenuAnnuel,
             capacite_epargne: 0, // Valeur par défaut
             epargne_precaution: 0, // Valeur par défaut
-            patrimoine_estime: values.patrimoineEstime,
           },
         ]);
 
-      if (personalInfoError) throw personalInfoError;
+      if (personalInfoError) {
+        console.error("Erreur lors de l'insertion dans 'personalinfo':", personalInfoError);
+        throw personalInfoError;
+      }
+      console.log("Personal info inserted successfully.");
 
       toast({
         title: "Client créé avec succès",
@@ -444,7 +520,7 @@ const NouveauClientPage = () => {
                     />
                     <FormField
                       control={form.control}
-                      name="patrimoineEstime"
+                      name="estimation_patrimoine_foyer_precise"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Patrimoine estimé (€)</FormLabel>
