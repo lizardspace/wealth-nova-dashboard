@@ -159,7 +159,7 @@ const EncoursReelsPage = () => {
                   <Tooltip formatter={(value) => `${(value as number / 1000).toFixed(0)} K€`} />
                   <Legend />
                   {repartitionData.map((item, index) => (
-                    <Line key={item.name} type="monotone" dataKey={item.name.toLowerCase().replace(' ', '')} name={item.name} stroke={COLORS[index % COLORS.length]} strokeWidth={2} />
+                    <Line key={item.name} type="monotone" dataKey={item.name.toLowerCase().replace(/ /g, '')} name={item.name} stroke={COLORS[index % COLORS.length]} strokeWidth={2} />
                   ))}
                 </LineChart>
               </ResponsiveContainer>

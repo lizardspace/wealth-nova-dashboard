@@ -27,7 +27,7 @@ CREATE TABLE public.assurancevie (
   rachat_part numeric,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT assurancevie_pkey PRIMARY KEY (id),
-  CONSTRAINT assurancevie_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT assurancevie_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.autrepatrimoine (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -40,7 +40,7 @@ CREATE TABLE public.autrepatrimoine (
   type_propriete text CHECK (type_propriete = ANY (ARRAY['PP'::text, 'US'::text, 'NP -1'::text, 'NP -2'::text])),
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT autrepatrimoine_pkey PRIMARY KEY (id),
-  CONSTRAINT autrepatrimoine_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT autrepatrimoine_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.bienimmobilier (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -58,7 +58,7 @@ CREATE TABLE public.bienimmobilier (
   taxes numeric,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT bienimmobilier_pkey PRIMARY KEY (id),
-  CONSTRAINT bienimmobilier_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT bienimmobilier_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.budget (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -92,7 +92,7 @@ CREATE TABLE public.comptebancaire (
   optimisation text CHECK (optimisation = ANY (ARRAY['PFU 12,8%'::text, 'PFL, 22,5% pea'::text, 'PFL 19% pea'::text, 'Exonération'::text])),
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT comptebancaire_pkey PRIMARY KEY (id),
-  CONSTRAINT comptebancaire_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT comptebancaire_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.contacts (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -122,7 +122,7 @@ CREATE TABLE public.contratcapitalisation (
   rente_annuelle numeric,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT contratcapitalisation_pkey PRIMARY KEY (id),
-  CONSTRAINT contratcapitalisation_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT contratcapitalisation_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.credit (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -141,7 +141,7 @@ CREATE TABLE public.credit (
   assurance_2 numeric,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT credit_pkey PRIMARY KEY (id),
-  CONSTRAINT credit_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT credit_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.entreprise (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -150,7 +150,7 @@ CREATE TABLE public.entreprise (
   formes_juridiques ARRAY,
   cession_transmission text,
   CONSTRAINT entreprise_pkey PRIMARY KEY (id),
-  CONSTRAINT entreprise_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT entreprise_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.entrepriseparticipation (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -167,7 +167,7 @@ CREATE TABLE public.entrepriseparticipation (
   optimisation text CHECK (optimisation = ANY (ARRAY['PFU 12,8%'::text, 'PFL, 22,5% pea'::text, 'PFL 19% pea'::text, 'Exonération'::text])),
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT entrepriseparticipation_pkey PRIMARY KEY (id),
-  CONSTRAINT entrepriseparticipation_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT entrepriseparticipation_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.equipements_energetiques (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -192,8 +192,8 @@ CREATE TABLE public.family (
   related_user_id uuid,
   linked boolean NOT NULL DEFAULT false,
   CONSTRAINT family_pkey PRIMARY KEY (id),
-  CONSTRAINT family_related_user_id_fkey FOREIGN KEY (related_user_id) REFERENCES public.users(id),
-  CONSTRAINT family_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT family_related_user_id_fkey FOREIGN KEY (related_user_id) REFERENCES auth.users(id),
+  CONSTRAINT family_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.family_invitations (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -205,9 +205,9 @@ CREATE TABLE public.family_invitations (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT family_invitations_pkey PRIMARY KEY (id),
-  CONSTRAINT family_invitations_recipient_id_fkey FOREIGN KEY (recipient_id) REFERENCES public.users(id),
+  CONSTRAINT family_invitations_recipient_id_fkey FOREIGN KEY (recipient_id) REFERENCES auth.users(id),
   CONSTRAINT family_invitations_family_id_fkey FOREIGN KEY (family_id) REFERENCES public.family(id),
-  CONSTRAINT family_invitations_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES public.users(id)
+  CONSTRAINT family_invitations_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.fiscalite (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -217,7 +217,7 @@ CREATE TABLE public.fiscalite (
   dispositifs_utilises ARRAY,
   reduction_fiscale text,
   CONSTRAINT fiscalite_pkey PRIMARY KEY (id),
-  CONSTRAINT fiscalite_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT fiscalite_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.health (
   id integer NOT NULL DEFAULT nextval('health_id_seq'::regclass),
@@ -235,7 +235,7 @@ CREATE TABLE public.ifi (
   annee integer,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT ifi_pkey PRIMARY KEY (id),
-  CONSTRAINT ifi_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT ifi_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.impotrevenu (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -253,7 +253,7 @@ CREATE TABLE public.impotrevenu (
   annee integer,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT impotrevenu_pkey PRIMARY KEY (id),
-  CONSTRAINT impotrevenu_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT impotrevenu_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.mission (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -261,7 +261,7 @@ CREATE TABLE public.mission (
   document jsonb,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT mission_pkey PRIMARY KEY (id),
-  CONSTRAINT mission_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT mission_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.patrimoinefinancier (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -271,7 +271,7 @@ CREATE TABLE public.patrimoinefinancier (
   objectifs_investissement ARRAY,
   horizon_investissement integer,
   CONSTRAINT patrimoinefinancier_pkey PRIMARY KEY (id),
-  CONSTRAINT patrimoinefinancier_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT patrimoinefinancier_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.patrimoineimmo (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -284,7 +284,7 @@ CREATE TABLE public.patrimoineimmo (
   type_projet_immobilier ARRAY,
   biens_etranger boolean,
   CONSTRAINT patrimoineimmo_pkey PRIMARY KEY (id),
-  CONSTRAINT patrimoineimmo_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT patrimoineimmo_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.personalinfo (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -311,7 +311,7 @@ CREATE TABLE public.personalinfo (
   objectifs_transmission ARRAY,
   valeurs ARRAY,
   CONSTRAINT personalinfo_pkey PRIMARY KEY (id),
-  CONSTRAINT personalinfo_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT personalinfo_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.pioneers (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -343,7 +343,7 @@ CREATE TABLE public.prevoyance (
   prime_annuelle numeric,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT prevoyance_pkey PRIMARY KEY (id),
-  CONSTRAINT prevoyance_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT prevoyance_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.profileinvestisseur (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -354,7 +354,7 @@ CREATE TABLE public.profileinvestisseur (
   score smallint CHECK (score > 0),
   profil text,
   CONSTRAINT profileinvestisseur_pkey PRIMARY KEY (id),
-  CONSTRAINT profileinvestisseur_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT profileinvestisseur_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.projetsvie (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -364,7 +364,7 @@ CREATE TABLE public.projetsvie (
   depenses_importantes ARRAY,
   liquidite_patrimoine numeric,
   CONSTRAINT projetsvie_pkey PRIMARY KEY (id),
-  CONSTRAINT projetvie_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT projetvie_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.releve_compteurs (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -390,7 +390,7 @@ CREATE TABLE public.retraite (
   complement_retraite text,
   contrats_prevoyance ARRAY,
   CONSTRAINT retraite_pkey PRIMARY KEY (id),
-  CONSTRAINT retraite_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT retraite_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.retraitecomplementaire (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -402,7 +402,7 @@ CREATE TABLE public.retraitecomplementaire (
   value numeric,
   souscripteur text,
   CONSTRAINT retraitecomplementaire_pkey PRIMARY KEY (id),
-  CONSTRAINT retraitecomplementaire_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT retraitecomplementaire_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.souscription_formulaire_cosouscripteur (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -568,7 +568,7 @@ CREATE TABLE public.statements (
   document jsonb,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT statements_pkey PRIMARY KEY (id),
-  CONSTRAINT statements_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT statements_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.traindevie (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -584,7 +584,7 @@ CREATE TABLE public.traindevie (
   divers numeric,
   total numeric,
   CONSTRAINT traindevie_pkey PRIMARY KEY (id),
-  CONSTRAINT traindevie_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT traindevie_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.users (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -623,5 +623,5 @@ CREATE TABLE public.alerts (
     level text,
     created_at timestamp with time zone DEFAULT now(),
     CONSTRAINT alerts_pkey PRIMARY KEY (id),
-    CONSTRAINT alerts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+    CONSTRAINT alerts_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
