@@ -1,430 +1,556 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Typography,
-  Button,
-  Paper,
-  TextField,
-  MenuItem,
-  Grid,
-  Tab,
-  Tabs,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Snackbar,
-  Alert,
-  FormControl,
-  InputLabel,
-  Select
-} from '@mui/material';
-import {
-  Edit2 as EditIcon,
-  Trash2 as DeleteIcon,
-  Save as SaveIcon,
-  Plus as AddIcon
-} from 'lucide-react';
-import { supabase } from './../../../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+import { Search, Users, UserPlus, Edit, Trash2, Eye, Filter, MoreVertical, Calendar, Mail, User } from 'lucide-react';
 
-interface User {
-  id: string;
-  last_name: string;
-  first_name: string;
-  power: number;
-  email: string;
-  created_at: string;
-  civilite: 'M.' | 'Mme' | 'Mlle';
-  date_naissance: string;
-  part_fiscale: number;
-}
+const supabaseUrl = 'https://kjyylccscmatfsaxohnw.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqeXlsY2NzY21hdGZzYXhvaG53Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4MDQ5MjUsImV4cCI6MjA2MjM4MDkyNX0.lvg4xofslDZHuSANjN4gHWW4BQPjqripZln8mHxom44';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-const UserManagement: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [openEditModal, setOpenEditModal] = useState(false);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: '',
-    severity: 'success' as 'success' | 'error'
-  });
+const UserManagement = () => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState('view'); // 'view', 'edit', 'create'
+  const [sortBy, setSortBy] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const usersPerPage = 10;
 
-  // Fetch users from Supabase
+  // Form state for user creation/editing
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    civilite: 'M.',
+    date_naissance: '',
+    part_fiscale: 1,
+    power: 0
+  });
+
   useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        setUsers(data || []);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        setSnackbar({
-          open: true,
-          message: 'Failed to fetch users',
-          severity: 'error'
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchUsers();
-  }, []);
+  }, [currentPage, sortBy, sortOrder, searchTerm]);
 
-  const handleEditClick = (user: User) => {
-    setCurrentUser(user);
-    setOpenEditModal(true);
-    setIsEditing(true);
-  };
-
-  const handleNewUserClick = () => {
-    setCurrentUser({
-      id: '',
-      last_name: '',
-      first_name: '',
-      power: 1,
-      email: '',
-      created_at: new Date().toISOString(),
-      civilite: 'M.',
-      date_naissance: '',
-      part_fiscale: 1
-    });
-    setOpenEditModal(true);
-    setIsEditing(true);
-  };
-
-  const handleSaveUser = async () => {
-    if (!currentUser) return;
-
+  const fetchUsers = async () => {
     setLoading(true);
     try {
-      if (!currentUser.id) {
-        // New user
-        const { data, error } = await supabase
-          .from('users')
-          .insert([currentUser])
-          .select()
-          .single();
-
-        if (error) throw error;
-        
-        setUsers([data, ...users]);
-        setSnackbar({
-          open: true,
-          message: 'User created successfully',
-          severity: 'success'
-        });
-      } else {
-        // Update existing user
-        const { error } = await supabase
-          .from('users')
-          .update(currentUser)
-          .eq('id', currentUser.id);
-
-        if (error) throw error;
-        
-        setUsers(users.map(u => u.id === currentUser.id ? currentUser : u));
-        setSnackbar({
-          open: true,
-          message: 'User updated successfully',
-          severity: 'success'
-        });
-      }
-      setOpenEditModal(false);
-    } catch (error) {
-      console.error('Error saving user:', error);
-      setSnackbar({
-        open: true,
-        message: 'Failed to save user',
-        severity: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteUser = async () => {
-    if (!currentUser) return;
-
-    setLoading(true);
-    try {
-      const { error } = await supabase
+      let query = supabase
         .from('users')
-        .delete()
-        .eq('id', currentUser.id);
+        .select('*', { count: 'exact' });
+
+      // Search filter
+      if (searchTerm) {
+        query = query.or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
+      }
+
+      // Sorting
+      query = query.order(sortBy, { ascending: sortOrder === 'asc' });
+
+      // Pagination
+      const from = (currentPage - 1) * usersPerPage;
+      const to = from + usersPerPage - 1;
+      query = query.range(from, to);
+
+      const { data, error, count } = await query;
 
       if (error) throw error;
-      
-      setUsers(users.filter(u => u.id !== currentUser.id));
-      setSnackbar({
-        open: true,
-        message: 'User deleted successfully',
-        severity: 'success'
-      });
+
+      setUsers(data || []);
+      setTotalUsers(count || 0);
     } catch (error) {
-      console.error('Error deleting user:', error);
-      setSnackbar({
-        open: true,
-        message: 'Failed to delete user',
-        severity: 'error'
-      });
+      console.error('Erreur lors du chargement des utilisateurs:', error);
     } finally {
       setLoading(false);
-      setOpenDeleteDialog(false);
-      setOpenEditModal(false);
     }
   };
 
-  const filteredUsers = users.filter(user =>
-    `${user.first_name} ${user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleSort = (column) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortOrder('asc');
+    }
+  };
+
+  const openModal = (mode, user = null) => {
+    setModalMode(mode);
+    if (user) {
+      setSelectedUser(user);
+      setFormData({
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        email: user.email || '',
+        civilite: user.civilite || 'M.',
+        date_naissance: user.date_naissance || '',
+        part_fiscale: user.part_fiscale || 1,
+        power: user.power || 0
+      });
+    } else {
+      setFormData({
+        first_name: '',
+        last_name: '',
+        email: '',
+        civilite: 'M.',
+        date_naissance: '',
+        part_fiscale: 1,
+        power: 0
+      });
+    }
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedUser(null);
+    setFormData({
+      first_name: '',
+      last_name: '',
+      email: '',
+      civilite: 'M.',
+      date_naissance: '',
+      part_fiscale: 1,
+      power: 0
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (modalMode === 'create') {
+        const { error } = await supabase
+          .from('users')
+          .insert([formData]);
+        if (error) throw error;
+      } else if (modalMode === 'edit') {
+        const { error } = await supabase
+          .from('users')
+          .update(formData)
+          .eq('id', selectedUser.id);
+        if (error) throw error;
+      }
+      
+      closeModal();
+      fetchUsers();
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      alert('Erreur lors de la sauvegarde: ' + error.message);
+    }
+  };
+
+  const handleDelete = async (userId) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
+      try {
+        const { error } = await supabase
+          .from('users')
+          .delete()
+          .eq('id', userId);
+        
+        if (error) throw error;
+        fetchUsers();
+      } catch (error) {
+        console.error('Erreur lors de la suppression:', error);
+        alert('Erreur lors de la suppression: ' + error.message);
+      }
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('fr-FR');
+  };
+
+  const totalPages = Math.ceil(totalUsers / usersPerPage);
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4">Users Management</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon size={16} />}
-          onClick={handleNewUserClick}
-        >
-          New User
-        </Button>
-      </Box>
-
-      <TextField
-        fullWidth
-        label="Search Users"
-        variant="outlined"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        sx={{ mb: 3 }}
-      />
-
-      {loading && !openEditModal ? (
-        <Typography>Loading users...</Typography>
-      ) : (
-        <Paper>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Title</TableCell>
-                  <TableCell>Power</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>{`${user.first_name} ${user.last_name}`}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.civilite}</TableCell>
-                    <TableCell>{user.power}</TableCell>
-                    <TableCell>
-                      <IconButton onClick={() => handleEditClick(user)}>
-                        <EditIcon size={16} />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
-      )}
-
-      {/* Edit/Create User Modal */}
-      <Dialog 
-        open={openEditModal} 
-        onClose={() => setOpenEditModal(false)}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle>
-          {currentUser?.id ? 'Edit User' : 'Create New User'}
-        </DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth margin="normal">
-                <InputLabel>Title</InputLabel>
-                <Select
-                  label="Title"
-                  value={currentUser?.civilite || 'M.'}
-                  onChange={(e) => currentUser && setCurrentUser({
-                    ...currentUser,
-                    civilite: e.target.value as 'M.' | 'Mme' | 'Mlle'
-                  })}
-                >
-                  <MenuItem value="M.">Mr.</MenuItem>
-                  <MenuItem value="Mme">Mrs.</MenuItem>
-                  <MenuItem value="Mlle">Miss</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Power Level"
-                type="number"
-                value={currentUser?.power || ''}
-                onChange={(e) => currentUser && setCurrentUser({
-                  ...currentUser,
-                  power: Number(e.target.value)
-                })}
-                margin="normal"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="First Name"
-                value={currentUser?.first_name || ''}
-                onChange={(e) => currentUser && setCurrentUser({
-                  ...currentUser,
-                  first_name: e.target.value
-                })}
-                margin="normal"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Last Name"
-                value={currentUser?.last_name || ''}
-                onChange={(e) => currentUser && setCurrentUser({
-                  ...currentUser,
-                  last_name: e.target.value
-                })}
-                margin="normal"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Email"
-                type="email"
-                value={currentUser?.email || ''}
-                onChange={(e) => currentUser && setCurrentUser({
-                  ...currentUser,
-                  email: e.target.value
-                })}
-                margin="normal"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Birth Date"
-                type="date"
-                value={currentUser?.date_naissance?.split('T')[0] || ''}
-                onChange={(e) => currentUser && setCurrentUser({
-                  ...currentUser,
-                  date_naissance: e.target.value
-                })}
-                margin="normal"
-                InputLabelProps={{ shrink: true }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Fiscal Part"
-                type="number"
-                value={currentUser?.part_fiscale || ''}
-                onChange={(e) => currentUser && setCurrentUser({
-                  ...currentUser,
-                  part_fiscale: Number(e.target.value)
-                })}
-                margin="normal"
-              />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button 
-            onClick={() => setOpenEditModal(false)}
-            disabled={loading}
-          >
-            Cancel
-          </Button>
-          {currentUser?.id && (
-            <Button 
-              onClick={() => setOpenDeleteDialog(true)}
-              color="error"
-              disabled={loading}
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Users className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Gestion des Utilisateurs</h1>
+                <p className="text-gray-600">Administrez les comptes utilisateurs de votre plateforme</p>
+              </div>
+            </div>
+            <button
+              onClick={() => openModal('create')}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
             >
-              Delete
-            </Button>
+              <UserPlus className="h-4 w-4" />
+              <span>Nouvel Utilisateur</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Search and Stats */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <input
+                type="text"
+                placeholder="Rechercher par nom, prénom ou email..."
+                className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
+            <div className="flex items-center space-x-4 text-sm text-gray-600">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>Total: {totalUsers} utilisateurs</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Users Table */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('civilite')}
+                  >
+                    Civilité
+                  </th>
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('first_name')}
+                  >
+                    Prénom {sortBy === 'first_name' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('last_name')}
+                  >
+                    Nom {sortBy === 'last_name' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('email')}
+                  >
+                    Email {sortBy === 'email' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('date_naissance')}
+                  >
+                    Date de naissance
+                  </th>
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('created_at')}
+                  >
+                    Inscription {sortBy === 'created_at' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('last_login')}
+                  >
+                    Dernière connexion
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {loading ? (
+                  <tr>
+                    <td colSpan="8" className="px-6 py-4 text-center">
+                      <div className="flex justify-center items-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                        <span className="ml-2">Chargement...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : users.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" className="px-6 py-4 text-center text-gray-500">
+                      Aucun utilisateur trouvé
+                    </td>
+                  </tr>
+                ) : (
+                  users.map((user) => (
+                    <tr key={user.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {user.civilite || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {user.first_name || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {user.last_name || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div className="flex items-center">
+                          <Mail className="h-4 w-4 text-gray-400 mr-2" />
+                          {user.email || 'N/A'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 text-gray-400 mr-2" />
+                          {formatDate(user.date_naissance)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {formatDate(user.created_at)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {user.last_login ? formatDate(user.last_login) : 'Jamais'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => openModal('view', user)}
+                            className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                            title="Voir"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => openModal('edit', user)}
+                            className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50"
+                            title="Modifier"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(user.id)}
+                            className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
+                            title="Supprimer"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <p className="text-sm text-gray-700">
+                    Affichage de <span className="font-medium">{(currentPage - 1) * usersPerPage + 1}</span> à{' '}
+                    <span className="font-medium">
+                      {Math.min(currentPage * usersPerPage, totalUsers)}
+                    </span> sur{' '}
+                    <span className="font-medium">{totalUsers}</span> résultats
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Précédent
+                  </button>
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    const page = i + Math.max(1, currentPage - 2);
+                    return page <= totalPages ? (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-1 border rounded-md text-sm font-medium ${
+                          currentPage === page
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'text-gray-700 bg-white border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ) : null;
+                  })}
+                  <button
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Suivant
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
-          <Button 
-            onClick={handleSaveUser}
-            variant="contained"
-            startIcon={<SaveIcon size={16} />}
-            disabled={loading}
-          >
-            {loading ? 'Saving...' : 'Save'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        </div>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
-        <DialogTitle>Confirm Deletion</DialogTitle>
-        <DialogContent>
-          Are you sure you want to delete this user? This action cannot be undone.
-        </DialogContent>
-        <DialogActions>
-          <Button 
-            onClick={() => setOpenDeleteDialog(false)}
-            disabled={loading}
-          >
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleDeleteUser} 
-            color="error"
-            disabled={loading}
-          >
-            {loading ? 'Deleting...' : 'Delete'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        {/* Modal */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-screen overflow-y-auto">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900">
+                  {modalMode === 'view' && 'Détails de l\'utilisateur'}
+                  {modalMode === 'edit' && 'Modifier l\'utilisateur'}
+                  {modalMode === 'create' && 'Nouvel utilisateur'}
+                </h3>
+              </div>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+              <div className="px-6 py-4">
+                {modalMode === 'view' ? (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">ID</label>
+                      <p className="mt-1 text-sm text-gray-900 font-mono">{selectedUser?.id}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Civilité</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedUser?.civilite || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Prénom</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedUser?.first_name || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Nom</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedUser?.last_name || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Email</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedUser?.email || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Date de naissance</label>
+                      <p className="mt-1 text-sm text-gray-900">{formatDate(selectedUser?.date_naissance)}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Part fiscale</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedUser?.part_fiscale || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Niveau d'accès</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedUser?.power || 0}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Date d'inscription</label>
+                      <p className="mt-1 text-sm text-gray-900">{formatDate(selectedUser?.created_at)}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Dernière connexion</label>
+                      <p className="mt-1 text-sm text-gray-900">
+                        {selectedUser?.last_login ? formatDate(selectedUser.last_login) : 'Jamais'}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Civilité</label>
+                      <select
+                        value={formData.civilite}
+                        onChange={(e) => setFormData({ ...formData, civilite: e.target.value })}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="M.">M.</option>
+                        <option value="Mme">Mme</option>
+                        <option value="Mlle">Mlle</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Prénom</label>
+                      <input
+                        type="text"
+                        value={formData.first_name}
+                        onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Nom</label>
+                      <input
+                        type="text"
+                        value={formData.last_name}
+                        onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Email</label>
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Date de naissance</label>
+                      <input
+                        type="date"
+                        value={formData.date_naissance}
+                        onChange={(e) => setFormData({ ...formData, date_naissance: e.target.value })}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Part fiscale</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        value={formData.part_fiscale}
+                        onChange={(e) => setFormData({ ...formData, part_fiscale: parseFloat(e.target.value) || 0 })}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Niveau d'accès</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={formData.power}
+                        onChange={(e) => setFormData({ ...formData, power: parseInt(e.target.value) || 0 })}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    {modalMode === 'view' ? 'Fermer' : 'Annuler'}
+                  </button>
+                  {modalMode !== 'view' && (
+                    <button
+                      onClick={handleSubmit}
+                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      {modalMode === 'create' ? 'Créer' : 'Sauvegarder'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
