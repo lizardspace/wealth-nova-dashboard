@@ -45,6 +45,38 @@ export async function getDocumentsToSign() {
   return data;
 }
 
+export async function getUserPortfolio(userId: string): Promise<number> {
+  const assetTables = [
+    'assurancevie',
+    'autrepatrimoine',
+    'bienimmobilier',
+    'comptebancaire',
+    'contratcapitalisation',
+    'entrepriseparticipation',
+  ];
+
+  let totalPortfolio = 0;
+
+  for (const table of assetTables) {
+    const { data, error } = await supabase
+      .from(table)
+      .select('value')
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error(`Error fetching portfolio from ${table}:`, error);
+      continue;
+    }
+
+    if (data) {
+      const sum = data.reduce((acc, item) => acc + (item.value || 0), 0);
+      totalPortfolio += sum;
+    }
+  }
+
+  return totalPortfolio;
+}
+
 export async function getArchivedDocuments() {
   const { data, error } = await supabase
     .from('documents_archive')

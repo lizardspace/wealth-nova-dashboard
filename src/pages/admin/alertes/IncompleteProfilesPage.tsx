@@ -1,5 +1,6 @@
 
 // src/pages/admin/alertes/IncompleteProfilesPage.tsx
+import { useEffect, useState } from "react";
 import { FileText, Search, CheckSquare, X, Filter, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,70 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-type IncompleteProfile = {
-  id: string;
-  name: string;
-  email: string;
-  completionRate: number;
-  missingFields: string[];
-  portfolio: number;
-  priority: "high" | "medium" | "low";
-  lastUpdate: string;
-};
-
-const clients: IncompleteProfile[] = [
-  {
-    id: "1",
-    name: "Dupont Jean",
-    email: "jean.dupont@email.com",
-    completionRate: 65,
-    missingFields: ["Objectifs", "Horizon d'investissement", "Expérience"],
-    portfolio: 120000,
-    priority: "high",
-    lastUpdate: "15/03/2024",
-  },
-  {
-    id: "2",
-    name: "Martin Sophie",
-    email: "sophie.martin@email.com",
-    completionRate: 80,
-    missingFields: ["Capacité d'épargne", "Situation familiale"],
-    portfolio: 85000,
-    priority: "medium",
-    lastUpdate: "10/02/2024",
-  },
-  {
-    id: "3",
-    name: "Bernard Pierre",
-    email: "pierre.bernard@email.com",
-    completionRate: 50,
-    missingFields: ["Objectifs", "Revenus", "Capacité d'épargne", "Risque"],
-    portfolio: 250000,
-    priority: "high",
-    lastUpdate: "05/04/2024",
-  },
-  {
-    id: "4",
-    name: "Petit Marie",
-    email: "marie.petit@email.com",
-    completionRate: 90,
-    missingFields: ["Expérience"],
-    portfolio: 175000,
-    priority: "low",
-    lastUpdate: "20/03/2024",
-  },
-  {
-    id: "5",
-    name: "Dubois Thomas",
-    email: "thomas.dubois@email.com",
-    completionRate: 70,
-    missingFields: ["Objectifs", "Risque", "Horizon d'investissement"],
-    portfolio: 320000,
-    priority: "medium",
-    lastUpdate: "01/04/2024",
-  },
-];
+import { supabase, getUserPortfolio } from "@/lib/supabase";
+import { User, PersonalInfo, IncompleteProfile } from "@/lib/database.types";
+import { calculateCompletion, determinePriority } from "@/lib/profileUtils";
 
 const columns: ColumnDef<IncompleteProfile>[] = [
   {
@@ -184,6 +124,53 @@ const columns: ColumnDef<IncompleteProfile>[] = [
 ];
 
 export default function IncompleteProfilesPage() {
+  const [clients, setClients] = useState<IncompleteProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchIncompleteProfiles = async () => {
+      try {
+        setLoading(true);
+        const { data: users, error: usersError } = await supabase
+          .from("users")
+          .select(`
+            *,
+            personalinfo:personalinfo(*)
+          `);
+
+        if (usersError) throw usersError;
+
+        const processedProfiles = await Promise.all(users.map(async (user) => {
+          const personalInfo = Array.isArray(user.personalinfo) ? user.personalinfo[0] : user.personalinfo;
+          const { completionRate, missingFields } = calculateCompletion(user, personalInfo);
+          const portfolio = await getUserPortfolio(user.id);
+          const priority = determinePriority(completionRate, portfolio);
+
+          return {
+            id: user.id,
+            name: `${user.first_name || ''} ${user.last_name || ''}`,
+            email: user.email || '',
+            completionRate,
+            missingFields,
+            portfolio,
+            priority,
+            lastUpdate: new Date(user.created_at).toLocaleDateString(),
+          };
+        }));
+
+        setClients(processedProfiles);
+
+      } catch (error: any) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchIncompleteProfiles();
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -287,7 +274,13 @@ export default function IncompleteProfilesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <DataTable columns={columns} data={clients} />
+          {loading ? (
+            <p>Chargement...</p>
+          ) : error ? (
+            <p>Erreur: {error}</p>
+          ) : (
+            <DataTable columns={columns} data={clients} />
+          )}
         </CardContent>
         <CardFooter className="flex justify-between">
           <p className="text-sm text-muted-foreground">

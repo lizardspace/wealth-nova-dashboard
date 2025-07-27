@@ -37,7 +37,7 @@ import {
   AccountBalance as PensionIcon,
   Work as WorkIcon
 } from '@mui/icons-material';
-import { supabase } from '../../../lib/supabase';
+import { supabase, getTableColumns } from '../../../lib/supabase';
 
 interface Retraite {
   id: string;
@@ -86,6 +86,7 @@ const RetraiteListPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [tabValue, setTabValue] = useState(0);
+  const [retraiteColumns, setRetraiteColumns] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -113,6 +114,10 @@ const RetraiteListPage: React.FC = () => {
         setRetraites(retraiteData || []);
         setComplementaires(complementaireData || []);
         setUsers(usersData || []);
+
+        const columns = await getTableColumns('retraite');
+        setRetraiteColumns(columns);
+
       } catch (error) {
         console.error('Error fetching data:', error);
         setSnackbar({
@@ -372,32 +377,28 @@ const RetraiteListPage: React.FC = () => {
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell>Utilisateur</TableCell>
-                      <TableCell>Épargne retraite</TableCell>
-                      <TableCell>Montant épargne</TableCell>
-                      <TableCell>Complément retraite</TableCell>
-                      <TableCell>Contrats prévoyance</TableCell>
+                      {retraiteColumns.map((column) => (
+                        <TableCell key={column}>{column}</TableCell>
+                      ))}
                       <TableCell>Actions</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {filteredRetraites.map((retraite) => (
                       <TableRow key={retraite.id}>
-                        <TableCell>{getUserName(retraite.user_id)}</TableCell>
-                        <TableCell>
-                          <Chip
-                            label={retraite.epargne_retraite ? 'Oui' : 'Non'}
-                            color={retraite.epargne_retraite ? 'success' : 'error'}
-                            size="small"
-                          />
-                        </TableCell>
-                        <TableCell>{formatCurrency(retraite.montant_epargne)}</TableCell>
-                        <TableCell>{retraite.complement_retraite}</TableCell>
-                        <TableCell>
-                          {retraite.contrats_prevoyance?.map((contrat, index) => (
-                            <Chip key={index} label={contrat} size="small" sx={{ m: 0.5 }} />
-                          ))}
-                        </TableCell>
+                        {retraiteColumns.map((column) => (
+                          <TableCell key={column}>
+                            {column === 'user_id'
+                              ? getUserName(retraite[column as keyof Retraite] as string)
+                              : typeof retraite[column as keyof Retraite] === 'boolean'
+                              ? <Chip label={retraite[column as keyof Retraite] ? 'Oui' : 'Non'} color={retraite[column as keyof Retraite] ? 'success' : 'error'} size="small" />
+                              : Array.isArray(retraite[column as keyof Retraite])
+                              ? (retraite[column as keyof Retraite] as string[]).map((item, index) => (
+                                  <Chip key={index} label={item} size="small" sx={{ m: 0.5 }} />
+                                ))
+                              : retraite[column as keyof Retraite]}
+                          </TableCell>
+                        ))}
                         <TableCell>
                           <IconButton onClick={() => handleEditRetraiteClick(retraite)}>
                             <EditIcon />
