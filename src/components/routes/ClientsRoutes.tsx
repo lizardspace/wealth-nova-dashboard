@@ -5,6 +5,7 @@ import ListeClientsPage from '../../pages/admin/clients/ListeClientsPage';
 import ExportDonneesPage from '../../pages/admin/clients/ExportDonneesPage';
 import NouveauClientPage from '../../pages/admin/clients/NouveauClientPage';
 import ClientDetailPage from '../../pages/admin/clients/ClientDetailPage';
+import DatabaseExplorerPage from '../../pages/admin/clients/DatabaseExplorerPage';
 import { AdminPlaceholder } from './RouteGroups';
 
 const ClientsRoutes = () => {
@@ -19,6 +20,7 @@ const ClientsRoutes = () => {
       <Route path="/:clientId/documents" element={<AdminPlaceholder title="Documents client" />} />
       <Route path="/:clientId/rendez-vous" element={<AdminPlaceholder title="Rendez-vous client" />} />
       <Route path="/:clientId/chat-history" element={<AdminPlaceholder title="Historique chat" />} />
+      <Route path="/database" element={<DatabaseExplorerPage />} />
     </Routes>
   );
 };
