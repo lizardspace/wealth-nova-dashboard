@@ -10,16 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getDocumentsToSign } from "@/lib/supabase";
+import { Database } from "@/lib/database.types";
+import { Skeleton } from "@/components/ui/skeleton";
 
-type Document = {
-  id: string;
-  document_name: string;
-  client_name: string;
-  sending_date: string;
-  document_type: string;
-  expiration_date: string;
-  status: "En attente" | "Expiré" | "Rappel envoyé";
-};
+type Document = Database['public']['Views']['documents_to_sign']['Row'];
 
 const columns: ColumnDef<Document>[] = [
   {
@@ -46,10 +40,12 @@ const columns: ColumnDef<Document>[] = [
   {
     accessorKey: "sending_date",
     header: "Date d'envoi",
+    cell: ({ row }) => new Date(row.getValue("sending_date")).toLocaleDateString(),
   },
   {
     accessorKey: "expiration_date",
     header: "Expire le",
+    cell: ({ row }) => new Date(row.getValue("expiration_date")).toLocaleDateString(),
   },
   {
     accessorKey: "status",
@@ -88,11 +84,21 @@ const columns: ColumnDef<Document>[] = [
 
 export default function DocumentsToSignPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDocuments = async () => {
-      const data = await getDocumentsToSign();
-      setDocuments(data);
+      try {
+        setLoading(true);
+        const data = await getDocumentsToSign();
+        setDocuments(data);
+      } catch (err) {
+        setError("Impossible de charger les documents.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchDocuments();
@@ -129,7 +135,17 @@ export default function DocumentsToSignPage() {
           <CardTitle>Documents en attente de signature</CardTitle>
         </CardHeader>
         <CardContent>
-          <DataTable columns={columns} data={documents} />
+          {loading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          ) : error ? (
+            <div className="text-red-500 text-center py-8">{error}</div>
+          ) : (
+            <DataTable columns={columns} data={documents} />
+          )}
         </CardContent>
       </Card>
 

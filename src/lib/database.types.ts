@@ -9,39 +9,42 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
-      ia_recommendations: {
-        Row: {
-          id: number
-          client: string
-          date: string
-          description: string
-          status: "En attente" | "Acceptée" | "Rejetée"
-          product?: string
-          productAdopted?: boolean
-        }
-        Insert: {
-          id?: number
-          client: string
-          date: string
-          description: string
-          status: "En attente" | "Acceptée" | "Rejetée"
-          product?: string
-          productAdopted?: boolean
-        }
-        Update: {
-          id?: number
-          client?: string
-          date?: string
-          description?: string
-          status?: "En attente" | "Acceptée" | "Rejetée"
-          product?: string
-          productAdopted?: boolean
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
-      [_ in never]: never
+      documents_to_sign: {
+        Row: {
+          id: string
+          document_name: string
+          client_name: string
+          sending_date: string
+          document_type: string
+          expiration_date: string
+          status: "En attente"
+        }
+      }
+      documents_archive: {
+        Row: {
+          id: string
+          document_name: string
+          client_name: string
+          sending_date: string
+          document_type: string
+          expiration_date: string
+          status: "Archivé"
+        }
+      }
+      documents_signed: {
+        Row: {
+          id: string
+          document_name: string
+          client_name: string
+          sending_date: string
+          document_type: string
+          expiration_date: string
+          status: "Signé"
+        }
+      }
     }
     Functions: {
       [_ in never]: never
