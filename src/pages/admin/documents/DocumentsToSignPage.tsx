@@ -9,19 +9,12 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { getDocumentsToSign } from "@/lib/supabase";
+import { Database } from "@/lib/database.types";
+import { Skeleton } from "@/components/ui/skeleton";
 
-type User = {
-  id: string;
-  last_name: string;
-  first_name: string;
-  power: number;
-  email: string;
-  created_at: string;
-  civilite: "M." | "Mme" | "Mlle";
-  date_naissance: string;
-  part_fiscale: number;
-};
+type Document = Database['public']['Views']['documents_to_sign']['Row'];
+
 
 const columns: ColumnDef<User>[] = [
   {
@@ -45,12 +38,15 @@ const columns: ColumnDef<User>[] = [
     header: "Civilité",
   },
   {
-    accessorKey: "date_naissance",
-    header: "Date de naissance",
+    accessorKey: "sending_date",
+    header: "Date d'envoi",
+    cell: ({ row }) => new Date(row.getValue("sending_date")).toLocaleDateString(),
   },
   {
-    accessorKey: "part_fiscale",
-    header: "Part fiscale",
+    accessorKey: "expiration_date",
+    header: "Expire le",
+    cell: ({ row }) => new Date(row.getValue("expiration_date")).toLocaleDateString(),
+
   },
   {
     accessorKey: "created_at",
@@ -72,15 +68,21 @@ const columns: ColumnDef<User>[] = [
 ];
 
 export default function DocumentsToSignPage() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      const { data, error } = await supabase.from("users").select("*");
-      if (error) {
-        console.error("Error fetching users:", error);
-      } else {
-        setUsers(data);
+    const fetchDocuments = async () => {
+      try {
+        setLoading(true);
+        const data = await getDocumentsToSign();
+        setDocuments(data);
+      } catch (err) {
+        setError("Impossible de charger les documents.");
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -118,7 +120,17 @@ export default function DocumentsToSignPage() {
           <CardTitle>Liste des utilisateurs</CardTitle>
         </CardHeader>
         <CardContent>
-          <DataTable columns={columns} data={users} />
+          {loading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          ) : error ? (
+            <div className="text-red-500 text-center py-8">{error}</div>
+          ) : (
+            <DataTable columns={columns} data={documents} />
+          )}
         </CardContent>
       </Card>
     </div>
