@@ -18,7 +18,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
 import { getTableData, getTableColumns } from "@/lib/supabase";
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 

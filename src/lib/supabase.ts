@@ -32,6 +32,19 @@ export async function getTableColumns(tableName: string) {
   return data.map(column => column.column_name);
 }
 
+export async function getTableData(tableName: string) {
+  const { data, error } = await supabase
+    .from(tableName)
+    .select('*');
+
+  if (error) {
+    console.error(`Error fetching data from table ${tableName}:`, error);
+    return null;
+  }
+
+  return data;
+}
+
 export async function getDocumentsToSign() {
   const { data, error } = await supabase
     .from('documents_to_sign')
