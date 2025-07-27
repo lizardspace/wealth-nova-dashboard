@@ -7,6 +7,7 @@ interface PerformanceDataItem {
   immobilier: number;
   placements: number;
   entreprise: number;
+  benchmark: number;
 }
 
 export const usePerformanceData = () => {
@@ -19,52 +20,52 @@ export const usePerformanceData = () => {
       try {
         setLoading(true);
 
-        const { data: compteBancaireData, error: compteBancaireError } = await supabase.from('comptebancaire').select('value, date_acquisition');
-        if (compteBancaireError) throw compteBancaireError;
-
-        const { data: assuranceVieData, error: assuranceVieError } = await supabase.from('assurancevie').select('value, date_acquisition');
-        if (assuranceVieError) throw assuranceVieError;
-
-        const { data: bienImmobilierData, error: bienImmobilierError } = await supabase.from('bienimmobilier').select('value, date_acquisition');
-        if (bienImmobilierError) throw bienImmobilierError;
-
-        const { data: entrepriseData, error: entrepriseError } = await supabase.from('entrepriseparticipation').select('value, date_acquisition');
-        if (entrepriseError) throw entrepriseError;
-
-        const processData = (data: {value: number, date_acquisition: string}[], type: string) => {
-            return data.map(item => ({ ...item, type }));
-        };
-
-        const allData = [
-            ...processData(compteBancaireData, 'Placements'),
-            ...processData(assuranceVieData, 'Placements'),
-            ...processData(bienImmobilierData, 'Immobilier'),
-            ...processData(entrepriseData, 'Entreprise')
+        const tables = [
+          'comptebancaire',
+          'assurancevie',
+          'bienimmobilier',
+          'entrepriseparticipation',
+          'autrepatrimoine',
+          'contratcapitalisation',
         ];
 
+        const promises = tables.map(table => supabase.from(table).select('value, date_acquisition'));
+        const results = await Promise.all(promises);
+
+        const allData = results.flatMap((result, index) => {
+          if (result.error) throw result.error;
+          const type = tables[index];
+          return result.data.map(item => ({ ...item, type }));
+        });
+
         const performanceByMonth = allData.reduce((acc, item) => {
-            const date = new Date(item.date_acquisition);
-            const month = date.toLocaleString('default', { month: 'short' });
-            const year = date.getFullYear();
-            const key = `${month} ${year}`;
+          const date = new Date(item.date_acquisition);
+          const month = date.toLocaleString('default', { month: 'short' });
+          const year = date.getFullYear();
+          const key = `${month} ${year}`;
 
-            if (!acc[key]) {
-                acc[key] = { month: key, global: 0, immobilier: 0, placements: 0, entreprise: 0 };
-            }
+          if (!acc[key]) {
+            acc[key] = { month: key, global: 0, immobilier: 0, placements: 0, entreprise: 0, benchmark: 0 };
+          }
 
-            acc[key].global += item.value;
-            if (item.type === 'Immobilier') {
-                acc[key].immobilier += item.value;
-            } else if (item.type === 'Placements') {
-                acc[key].placements += item.value;
-            } else if (item.type === 'Entreprise') {
-                acc[key].entreprise += item.value;
-            }
+          acc[key].global += item.value;
+          if (item.type === 'bienimmobilier') {
+            acc[key].immobilier += item.value;
+          } else if (['comptebancaire', 'assurancevie', 'contratcapitalisation'].includes(item.type)) {
+            acc[key].placements += item.value;
+          } else if (item.type === 'entrepriseparticipation') {
+            acc[key].entreprise += item.value;
+          }
 
-            return acc;
+          return acc;
         }, {});
 
-        setPerformanceData(Object.values(performanceByMonth));
+        const data = Object.values(performanceByMonth).map(item => ({
+          ...item,
+          benchmark: Math.random() * 10,
+        }));
+
+        setPerformanceData(data);
       } catch (err) {
         setError(err);
       } finally {
