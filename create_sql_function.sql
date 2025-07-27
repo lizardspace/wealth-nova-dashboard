@@ -1,0 +1,6 @@
+CREATE OR REPLACE FUNCTION public.sql(sql TEXT)
+RETURNS VOID AS $$
+BEGIN
+  EXECUTE sql;
+END;
+$$ LANGUAGE plpgsql;

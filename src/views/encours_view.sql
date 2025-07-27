@@ -1,48 +1,48 @@
-CREATE OR REPLACE VIEW encours_view AS
+CREATE OR REPLACE VIEW public.encours_view AS
 SELECT
-    'assurancevie' AS asset_type,
-    libelle AS asset_name,
-    value AS asset_value,
-    user_id
+  'assurancevie' AS asset_type,
+  libelle AS asset_name,
+  value AS asset_value,
+  user_id
 FROM
-    assurancevie
+  public.assurancevie
 UNION ALL
 SELECT
-    'autrepatrimoine' AS asset_type,
-    libelle AS asset_name,
-    value AS asset_value,
-    user_id
+  'autrepatrimoine' AS asset_type,
+  libelle AS asset_name,
+  value AS asset_value,
+  user_id
 FROM
-    autrepatrimoine
+  public.autrepatrimoine
 UNION ALL
 SELECT
-    'bienimmobilier' AS asset_type,
-    libelle AS asset_name,
-    value AS asset_value,
-    user_id
+  'bienimmobilier' AS asset_type,
+  libelle AS asset_name,
+  value AS asset_value,
+  user_id
 FROM
-    bienimmobilier
+  public.bienimmobilier
 UNION ALL
 SELECT
-    'comptebancaire' AS asset_type,
-    libelle AS asset_name,
-    value AS asset_value,
-    user_id
+  'comptebancaire' AS asset_type,
+  libelle AS asset_name,
+  value AS asset_value,
+  user_id
 FROM
-    comptebancaire
+  public.comptebancaire
 UNION ALL
 SELECT
-    'contratcapitalisation' AS asset_type,
-    libelle AS asset_name,
-    value AS asset_value,
-    user_id
+  'contratcapitalisation' AS asset_type,
+  libelle AS asset_name,
+  value AS asset_value,
+  user_id
 FROM
-    contratcapitalisation
+  public.contratcapitalisation
 UNION ALL
 SELECT
-    'entrepriseparticipation' AS asset_type,
-    libelle AS asset_name,
-    value AS asset_value,
-    user_id
+  'entrepriseparticipation' AS asset_type,
+  libelle AS asset_name,
+  value AS asset_value,
+  user_id
 FROM
-    entrepriseparticipation;
+  public.entrepriseparticipation;

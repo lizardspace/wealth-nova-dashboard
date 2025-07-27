@@ -9,21 +9,30 @@ import {
   TableCell,
 } from '@/components/ui/table';
 
-interface EncoursData {
-  asset_type: string;
-  asset_name: string;
-  asset_value: number;
-  user_id: string;
-}
-
 const EncoursPage: React.FC = () => {
-  const [data, setData] = useState<EncoursData[]>([]);
+  const [data, setData] = useState<any[]>([]);
+  const [columns, setColumns] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Fetch columns
+        const { data: columnsData, error: columnsError } = await supabase
+          .from('information_schema.columns')
+          .select('column_name')
+          .eq('table_name', 'encours_view')
+          .eq('table_schema', 'public');
+
+        if (columnsError) {
+          throw columnsError;
+        }
+
+        const fetchedColumns = columnsData.map((col: any) => col.column_name);
+        setColumns(fetchedColumns);
+
+        // Fetch data
         const { data: encoursData, error: encoursError } = await supabase
           .from('encours_view')
           .select('*');
@@ -57,19 +66,17 @@ const EncoursPage: React.FC = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Asset Type</TableHead>
-            <TableHead>Asset Name</TableHead>
-            <TableHead>Asset Value</TableHead>
-            <TableHead>User ID</TableHead>
+            {columns.map((column) => (
+              <TableHead key={column}>{column}</TableHead>
+            ))}
           </TableRow>
         </TableHeader>
         <TableBody>
           {data.map((row, index) => (
             <TableRow key={index}>
-              <TableCell>{row.asset_type}</TableCell>
-              <TableCell>{row.asset_name}</TableCell>
-              <TableCell>{row.asset_value}</TableCell>
-              <TableCell>{row.user_id}</TableCell>
+              {columns.map((column) => (
+                <TableCell key={column}>{row[column]}</TableCell>
+              ))}
             </TableRow>
           ))}
         </TableBody>
