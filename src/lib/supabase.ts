@@ -45,6 +45,17 @@ export async function getDocumentsToSign() {
   return data;
 }
 
+export async function getTableData(tableName: string) {
+  const { data, error } = await supabase.from(tableName).select('*');
+
+  if (error) {
+    console.error(`Error fetching data from table ${tableName}:`, error);
+    return null;
+  }
+
+  return data;
+}
+
 export async function getArchivedDocuments() {
   const { data, error } = await supabase
     .from('documents_archive')
