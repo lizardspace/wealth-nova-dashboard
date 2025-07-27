@@ -7,17 +7,14 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function getAllTables() {
-  const { data, error } = await supabase
-    .from('pg_catalog.pg_tables')
-    .select('tablename')
-    .eq('schemaname', 'public');
+  const { data, error } = await supabase.rpc('get_all_tables');
 
   if (error) {
     console.error('Error fetching tables:', error);
     return [];
   }
 
-  return data.map(table => table.tablename);
+  return data.map(table => table.table_name);
 }
 
 export async function getTableColumns(tableName: string) {
