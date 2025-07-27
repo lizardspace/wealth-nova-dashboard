@@ -45,6 +45,27 @@ export async function getTableData(tableName: string) {
   return data;
 }
 
+export async function createAllContactsView() {
+  const { error } = await supabase.rpc('execute_sql', {
+    sql: `
+      CREATE OR REPLACE VIEW all_contacts AS
+      SELECT
+        id,
+        name,
+        email,
+        message,
+        created_at,
+        is_processed
+      FROM
+        public.contacts;
+    `,
+  });
+
+  if (error) {
+    console.error('Error creating view:', error);
+  }
+}
+
 export async function getDocumentsToSign() {
   const { data, error } = await supabase
     .from('documents_to_sign')

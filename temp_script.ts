@@ -1,3 +1,7 @@
-import { getAllTables } from './src/lib/supabase';
+import { createAllContactsView } from './src/lib/supabase';
 
-getAllTables().then(console.log);
+async function main() {
+  await createAllContactsView();
+}
+
+main();
