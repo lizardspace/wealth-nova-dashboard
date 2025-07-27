@@ -134,13 +134,49 @@ const UserGoalsComponent: React.FC = () => {
   const fetchUserGoals = async () => {
     setRefreshing(true);
     try {
-      const { data, error } = await supabase
-        .from('user_goals')
-        .select('*')
-        .order('last_name', { ascending: true });
+      const { data: users, error: usersError } = await supabase
+        .from('users')
+        .select('id, last_name, first_name');
 
-      if (error) throw error;
-      setUserGoals(data || []);
+      if (usersError) throw usersError;
+
+      const goals = await Promise.all(users.map(async (user) => {
+        const { data: personalinfo, error: piError } = await supabase
+          .from('personalinfo')
+          .select('objectifs_patrimoniaux, priorite_gestion, projets_5_ans, nb_enfants_charge')
+          .eq('user_id', user.id)
+          .single();
+
+        const { data: projetsvie, error: pvError } = await supabase
+          .from('projetsvie')
+          .select('changements_previsibles, financement_etudes, liquidite_patrimoine')
+          .eq('user_id', user.id)
+          .single();
+
+        const { data: retraite, error: rError } = await supabase
+          .from('retraite')
+          .select('epargne_retraite, montant_epargne')
+          .eq('user_id', user.id)
+          .single();
+
+        return {
+          user_id: user.id,
+          last_name: user.last_name,
+          first_name: user.first_name,
+          expected_changes: projetsvie?.changements_previsibles,
+          education_funding: projetsvie?.financement_etudes,
+          patrimony_liquidity: projetsvie?.liquidite_patrimoine,
+          patrimony_goals: personalinfo?.objectifs_patrimoniaux,
+          management_priority: personalinfo?.priorite_gestion,
+          five_year_projects: personalinfo?.projets_5_ans,
+          retirement_savings: retraite?.epargne_retraite,
+          retirement_amount: retraite?.montant_epargne,
+          has_dependent_children: personalinfo?.nb_enfants_charge > 0,
+          dependent_children_count: personalinfo?.nb_enfants_charge,
+        };
+      }));
+
+      setUserGoals(goals);
     } catch (error) {
       console.error('Error fetching user goals:', error);
       setSnackbar({
