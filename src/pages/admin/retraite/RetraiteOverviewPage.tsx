@@ -61,7 +61,6 @@ interface Retraite {
   montant_epargne: number;
   complement_retraite: string;
   contrats_prevoyance: string[];
-  created_at: string;
 }
 
 interface RetraiteComplementaire {
@@ -183,7 +182,7 @@ const RetraiteOverviewPage: React.FC = () => {
     // Group by year (simplified - would need actual date handling in a real app)
     const years = [2020, 2021, 2022, 2023];
     return years.map(year => {
-      const yearRetraites = retraites.filter(r => new Date(r.created_at).getFullYear() <= year);
+      const yearRetraites = retraites;
       const yearComplementaires = complementaires.filter(c => new Date(c.created_at).getFullYear() <= year);
       
       return {
@@ -194,9 +193,7 @@ const RetraiteOverviewPage: React.FC = () => {
     });
   };
 
-  const recentRetraites = [...retraites]
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 3);
+  const recentRetraites = [...retraites].slice(0, 3);
 
   const recentComplementaires = [...complementaires]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
