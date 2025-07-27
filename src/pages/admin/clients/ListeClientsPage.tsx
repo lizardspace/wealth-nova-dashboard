@@ -6,20 +6,19 @@ const supabaseUrl = 'https://kjyylccscmatfsaxohnw.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqeXlsY2NzY21hdGZzYXhvaG53Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4MDQ5MjUsImV4cCI6MjA2MjM4MDkyNX0.lvg4xofslDZHuSANjN4gHWW4BQPjqripZln8mHxom44';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const UserManagement = () => {
+const AdminUserManagement = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState('view'); // 'view', 'edit', 'create'
+  const [modalMode, setModalMode] = useState('view');
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
   const usersPerPage = 10;
 
-  // Form state for user creation/editing
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -31,43 +30,55 @@ const UserManagement = () => {
   });
 
   useEffect(() => {
+    console.log('useEffect triggered', { currentPage, sortBy, sortOrder, searchTerm });
     fetchUsers();
   }, [currentPage, sortBy, sortOrder, searchTerm]);
 
   const fetchUsers = async () => {
+    console.log('fetchUsers called');
     setLoading(true);
     try {
+      console.log('Creating query...');
       let query = supabase
         .from('users')
         .select('*', { count: 'exact' });
 
-      // Search filter
       if (searchTerm) {
+        console.log('Adding search filter for term:', searchTerm);
         query = query.or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
       }
 
-      // Sorting
+      console.log('Adding sort:', sortBy, sortOrder);
       query = query.order(sortBy, { ascending: sortOrder === 'asc' });
 
-      // Pagination
       const from = (currentPage - 1) * usersPerPage;
       const to = from + usersPerPage - 1;
+      console.log('Adding pagination range:', from, to);
       query = query.range(from, to);
 
+      console.log('Executing query...');
       const { data, error, count } = await query;
+      console.log('Query results:', { data, error, count });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
+      console.log('Setting users data:', data);
       setUsers(data || []);
       setTotalUsers(count || 0);
     } catch (error) {
       console.error('Erreur lors du chargement des utilisateurs:', error);
+      alert('Erreur lors du chargement des utilisateurs: ' + error.message);
     } finally {
+      console.log('Loading complete');
       setLoading(false);
     }
   };
 
   const handleSort = (column) => {
+    console.log('Sorting by:', column);
     if (sortBy === column) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
@@ -77,6 +88,7 @@ const UserManagement = () => {
   };
 
   const openModal = (mode, user = null) => {
+    console.log('Opening modal in mode:', mode, 'with user:', user);
     setModalMode(mode);
     if (user) {
       setSelectedUser(user);
@@ -104,6 +116,7 @@ const UserManagement = () => {
   };
 
   const closeModal = () => {
+    console.log('Closing modal');
     setShowModal(false);
     setSelectedUser(null);
     setFormData({
@@ -119,6 +132,7 @@ const UserManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Submitting form in mode:', modalMode, 'with data:', formData);
     try {
       if (modalMode === 'create') {
         const { error } = await supabase
@@ -142,6 +156,7 @@ const UserManagement = () => {
   };
 
   const handleDelete = async (userId) => {
+    console.log('Deleting user with ID:', userId);
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
       try {
         const { error } = await supabase
@@ -554,4 +569,4 @@ const UserManagement = () => {
   );
 };
 
-export default UserManagement;
+export default AdminUserManagement;
