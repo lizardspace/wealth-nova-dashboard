@@ -45,15 +45,36 @@ export async function getDocumentsToSign() {
   return data;
 }
 
-export async function getTableData(tableName: string) {
-  const { data, error } = await supabase.from(tableName).select('*');
+export async function getUserPortfolio(userId: string): Promise<number> {
+  const assetTables = [
+    'assurancevie',
+    'autrepatrimoine',
+    'bienimmobilier',
+    'comptebancaire',
+    'contratcapitalisation',
+    'entrepriseparticipation',
+  ];
 
-  if (error) {
-    console.error(`Error fetching data from table ${tableName}:`, error);
-    return null;
+  let totalPortfolio = 0;
+
+  for (const table of assetTables) {
+    const { data, error } = await supabase
+      .from(table)
+      .select('value')
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error(`Error fetching portfolio from ${table}:`, error);
+      continue;
+    }
+
+    if (data) {
+      const sum = data.reduce((acc, item) => acc + (item.value || 0), 0);
+      totalPortfolio += sum;
+    }
   }
 
-  return data;
+  return totalPortfolio;
 }
 
 export async function getArchivedDocuments() {
