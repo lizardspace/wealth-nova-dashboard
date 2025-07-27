@@ -4,11 +4,16 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { supabase } from "@/lib/supabase";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts";
 import { Button } from "@/components/ui/button";
-import { Download, Users, Brain, TrendingUp } from "lucide-react";
+import { Download, TrendingUp } from "lucide-react";
 
 const COLORS = ['#8B5CF6', '#EC4899', '#10B981', '#3B82F6', '#F59E0B', '#6366F1'];
 
 const StatsClientsPage = () => {
+  const [totalClients, setTotalClients] = useState(0);
+  const [activeClients, setActiveClients] = useState(0);
+  const [inactiveClients, setInactiveClients] = useState(0);
+  const [completedProfiles, setCompletedProfiles] = useState(0);
+  const [averageScore, setAverageScore] = useState(0);
   const [clientsTotalData, setClientsTotalData] = useState([]);
   const [clientsAgeData, setClientsAgeData] = useState([]);
   const [clientsScoreData, setClientsScoreData] = useState([]);
@@ -19,17 +24,11 @@ const StatsClientsPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data: users, error: usersError } = await supabase.from('users').select('id, created_at, last_login');
-        if (usersError) throw usersError;
+        const { data, error } = await supabase.from('client_stats').select('*');
+        if (error) throw error;
 
-        const { data: personalInfos, error: personalInfosError } = await supabase.from('personalinfo').select('user_id, age, objectifs_patrimoniaux');
-        if (personalInfosError) throw personalInfosError;
-
-        const { data: profiles, error: profilesError } = await supabase.from('profileinvestisseur').select('user_id, score');
-        if (profilesError) throw profilesError;
-
-        // Process data here
-        const totalClientsData = users.reduce((acc, user) => {
+        // Process data
+        const totalClientsData = data.reduce((acc, user) => {
           const month = new Date(user.created_at).toLocaleString('default', { month: 'short' });
           const year = new Date(user.created_at).getFullYear();
           const key = `${month} ${year}`;
@@ -41,7 +40,7 @@ const StatsClientsPage = () => {
         }, {} as Record<string, { month: string; clients: number }>);
         setClientsTotalData(Object.values(totalClientsData));
 
-        const ageData = personalInfos.reduce((acc, info) => {
+        const ageData = data.reduce((acc, info) => {
           const age = info.age;
           if (age >= 18 && age <= 25) acc['18-25 ans']++;
           else if (age >= 26 && age <= 35) acc['26-35 ans']++;
@@ -53,7 +52,7 @@ const StatsClientsPage = () => {
         }, { '18-25 ans': 0, '26-35 ans': 0, '36-45 ans': 0, '46-55 ans': 0, '56-65 ans': 0, '+65 ans': 0 } as Record<string, number>);
         setClientsAgeData(Object.entries(ageData).map(([name, value]) => ({ name, value })));
 
-        const scoreData = profiles.reduce((acc, profile) => {
+        const scoreData = data.reduce((acc, profile) => {
             const score = profile.score;
             if (score >= 0 && score <= 20) acc['0-20']++;
             else if (score >= 21 && score <= 40) acc['21-40']++;
@@ -64,109 +63,27 @@ const StatsClientsPage = () => {
         }, { '0-20': 0, '21-40': 0, '41-60': 0, '61-80': 0, '81-100': 0 } as Record<string, number>);
         setClientsScoreData(Object.entries(scoreData).map(([score, clients]) => ({ score, clients })));
 
-        const objectifsData = personalInfos.reduce((acc, info) => {
-            info.objectifs_patrimoniaux.forEach((objectif: string) => {
-                if (!acc[objectif]) {
-                    acc[objectif] = 0;
-                }
-                acc[objectif]++;
-            });
+        const objectifsData = data.reduce((acc, info) => {
+            if (info.objectifs_patrimoniaux) {
+              info.objectifs_patrimoniaux.forEach((objectif: string) => {
+                  if (!acc[objectif]) {
+                      acc[objectif] = 0;
+                  }
+                  acc[objectif]++;
+              });
+            }
             return acc;
         }, {} as Record<string, number>);
         setClientsObjectifsData(Object.entries(objectifsData).map(([name, value]) => ({ name, value })));
 
-        setLoading(false);
-      } catch (err) {
-        setError((err as Error).message);
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  const [totalClients, setTotalClients] = useState(0);
-  const [activeClients, setActiveClients] = useState(0);
-  const [inactiveClients, setInactiveClients] = useState(0);
-  const [completedProfiles, setCompletedProfiles] = useState(0);
-  const [averageScore, setAverageScore] = useState(0);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data: users, error: usersError } = await supabase.from('users').select('id, created_at, last_login');
-        if (usersError) throw usersError;
-
-        const { data: personalInfos, error: personalInfosError } = await supabase.from('personalinfo').select('user_id, age, objectifs_patrimoniaux');
-        if (personalInfosError) throw personalInfosError;
-
-        const { data: profiles, error: profilesError } = await supabase.from('profileinvestisseur').select('user_id, score');
-        if (profilesError) throw profilesError;
-
-        // Process data here
-        const totalClientsData = users.reduce((acc, user) => {
-          const month = new Date(user.created_at).toLocaleString('default', { month: 'short' });
-          const year = new Date(user.created_at).getFullYear();
-          const key = `${month} ${year}`;
-          if (!acc[key]) {
-            acc[key] = { month: key, clients: 0 };
-          }
-          acc[key].clients++;
-          return acc;
-        }, {} as Record<string, { month: string; clients: number }>);
-        setClientsTotalData(Object.values(totalClientsData));
-
-        const ageData = personalInfos.reduce((acc, info) => {
-          const age = info.age;
-          if (age >= 18 && age <= 25) acc['18-25 ans']++;
-          else if (age >= 26 && age <= 35) acc['26-35 ans']++;
-          else if (age >= 36 && age <= 45) acc['36-45 ans']++;
-          else if (age >= 46 && age <= 55) acc['46-55 ans']++;
-          else if (age >= 56 && age <= 65) acc['56-65 ans']++;
-          else if (age > 65) acc['+65 ans']++;
-          return acc;
-        }, { '18-25 ans': 0, '26-35 ans': 0, '36-45 ans': 0, '46-55 ans': 0, '56-65 ans': 0, '+65 ans': 0 } as Record<string, number>);
-        setClientsAgeData(Object.entries(ageData).map(([name, value]) => ({ name, value })));
-
-        const scoreData = profiles.reduce((acc, profile) => {
-            const score = profile.score;
-            if (score >= 0 && score <= 20) acc['0-20']++;
-            else if (score >= 21 && score <= 40) acc['21-40']++;
-            else if (score >= 41 && score <= 60) acc['41-60']++;
-            else if (score >= 61 && score <= 80) acc['61-80']++;
-            else if (score >= 81 && score <= 100) acc['81-100']++;
-            return acc;
-        }, { '0-20': 0, '21-40': 0, '41-60': 0, '61-80': 0, '81-100': 0 } as Record<string, number>);
-        setClientsScoreData(Object.entries(scoreData).map(([score, clients]) => ({ score, clients })));
-
-        const objectifsData = personalInfos.reduce((acc, info) => {
-            info.objectifs_patrimoniaux.forEach((objectif: string) => {
-                if (!acc[objectif]) {
-                    acc[objectif] = 0;
-                }
-                acc[objectif]++;
-            });
-            return acc;
-        }, {} as Record<string, number>);
-        setClientsObjectifsData(Object.entries(objectifsData).map(([name, value]) => ({ name, value })));
-
-        setTotalClients(users.length);
+        setTotalClients(data.length);
         const oneMonthAgo = new Date();
         oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-        const activeClients = users.filter(u => new Date(u.last_login) > oneMonthAgo).length;
+        const activeClients = data.filter(u => u.last_login && new Date(u.last_login) > oneMonthAgo).length;
         setActiveClients(activeClients);
-        setInactiveClients(users.length - activeClients);
-        setCompletedProfiles(profiles.length);
-        setAverageScore(profiles.reduce((acc, p) => acc + p.score, 0) / profiles.length);
-
-        console.log("Total Clients:", users.length);
-        console.log("Active Clients:", users.filter(u => new Date(u.last_login) > oneMonthAgo).length);
-        console.log("Completed Profiles:", profiles.length);
-        console.log("Average Score:", profiles.reduce((acc, p) => acc + p.score, 0) / profiles.length);
-        console.log("Clients Total Data:", Object.values(totalClientsData));
-        console.log("Clients Age Data:", Object.entries(ageData).map(([name, value]) => ({ name, value })));
-        console.log("Clients Score Data:", Object.entries(scoreData).map(([score, clients]) => ({ score, clients })));
-        console.log("Clients Objectifs Data:", Object.entries(objectifsData).map(([name, value]) => ({ name, value })));
+        setInactiveClients(data.length - activeClients);
+        setCompletedProfiles(data.filter(d => d.score !== null).length);
+        setAverageScore(data.reduce((acc, p) => acc + (p.score || 0), 0) / data.filter(d => d.score !== null).length);
 
         setLoading(false);
       } catch (err) {

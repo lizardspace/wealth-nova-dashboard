@@ -607,6 +607,7 @@ CREATE TABLE public.users (
   power integer,
   email text,
   created_at timestamp with time zone DEFAULT now(),
+  last_login timestamp with time zone,
   civilite text CHECK (civilite = ANY (ARRAY['M.'::text, 'Mme'::text, 'Mlle'::text])),
   date_naissance date,
   part_fiscale numeric,
