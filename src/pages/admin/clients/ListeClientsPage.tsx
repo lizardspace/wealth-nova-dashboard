@@ -1,7 +1,7 @@
 // src/components/AdminUserManagement.tsx
 import React, { useState, useEffect } from 'react';
 import { Search, Users, UserPlus, Edit, Trash2, Eye, Calendar, Mail } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase } from './../../../lib/supabase';
 
 interface User {
   id: string;
