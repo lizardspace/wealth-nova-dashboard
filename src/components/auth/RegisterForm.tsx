@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useAuth } from '@/contexts/AuthContext';
 
 const RegisterForm = () => {
   const [firstName, setFirstName] = useState('');
@@ -18,10 +19,12 @@ const RegisterForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    console.log('Register form submitted');
+
     if (password !== confirmPassword) {
       toast({
         title: "Erreur",
@@ -42,15 +45,23 @@ const RegisterForm = () => {
 
     setIsLoading(true);
     
-    // Simulate registration - would connect to backend in real app
-    setTimeout(() => {
+    try {
+      await signUp(email, password);
       toast({
         title: "Compte créé avec succès",
-        description: "Bienvenue sur EPARNOVA",
+        description: "Veuillez vérifier vos emails pour confirmer votre compte.",
       });
       navigate('/login');
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast({
+        title: "Erreur lors de la création du compte",
+        description: "Une erreur est survenue. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
