@@ -12,13 +12,15 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Header = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
-  const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
+  const handleLogout = async () => {
+    await logout();
     toast({
       title: "Déconnexion réussie",
       description: "À bientôt sur EPARNOVA !",

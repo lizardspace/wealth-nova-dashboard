@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -13,22 +14,28 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate authentication - would connect to backend in real app
-    setTimeout(() => {
-      // Mock successful login for demo
-      localStorage.setItem('isAuthenticated', 'true');
+    try {
+      await login(email, password);
       toast({
         title: "Connexion réussie",
         description: "Bienvenue sur votre espace EPARNOVA",
       });
       navigate('/');
+    } catch (error) {
+      toast({
+        title: "Erreur de connexion",
+        description: "Email ou mot de passe incorrect.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (

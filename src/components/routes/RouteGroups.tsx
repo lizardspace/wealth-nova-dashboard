@@ -2,6 +2,7 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import MainLayout from '../layout/MainLayout';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Simple placeholder for admin routes not yet implemented
 export const AdminPlaceholder = ({ title }: { title: string }) => (
@@ -13,15 +14,30 @@ export const AdminPlaceholder = ({ title }: { title: string }) => (
 
 // Auth wrapper components
 export const PublicOnlyRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-  if (isAuthenticated) return <Navigate to="/" replace />;
+  const { session, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>; // Or a spinner component
+  }
+
+  if (session) {
+    return <Navigate to="/" replace />;
+  }
+
   return <>{children}</>;
 };
 
 export const PrivateRoute = () => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  
+  const { session, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>; // Or a spinner component
+  }
+
+  if (!session) {
+    return <Navigate to="/login" replace />;
+  }
+
   return (
     <MainLayout>
       <Outlet />
