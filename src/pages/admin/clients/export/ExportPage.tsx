@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Download, Database, FileText, Loader2 } from 'lucide-react';
-import { supabase } from './../../../lib/supabase';
+import { supabase } from './../../../../lib/supabase';
 
 const CSVExporter = () => {
   const [selectedTables, setSelectedTables] = useState(new Set());
