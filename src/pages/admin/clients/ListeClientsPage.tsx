@@ -40,17 +40,24 @@ const AdminUserManagement = () => {
   });
 
   const fetchUsers = async () => {
+    console.log('[fetchUsers] Début de la fonction');
     setLoading(true);
     try {
+      console.log('[fetchUsers] Initialisation de la requête Supabase');
       let query = supabase
         .from('users')
         .select('*', { count: 'exact' });
 
+      console.log('[fetchUsers] Requête initiale:', query);
+
       if (searchTerm) {
+        console.log('[fetchUsers] Ajout de la condition de recherche pour:', searchTerm);
         query = query.or(
           `first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`
         );
       }
+
+      console.log('[fetchUsers] Requête après recherche:', query);
 
       query = query.order(sortBy, { ascending: sortOrder === 'asc' });
 
@@ -58,25 +65,68 @@ const AdminUserManagement = () => {
       const to = from + usersPerPage - 1;
       query = query.range(from, to);
 
+      console.log('[fetchUsers] Requête finale avant exécution:', query);
+
       const { data, error, count } = await query;
 
-      if (error) throw error;
+      console.log('[fetchUsers] Résultats de la requête:', { 
+        data, 
+        error, 
+        count,
+        searchTerm,
+        currentPage,
+        sortBy,
+        sortOrder
+      });
+
+      if (error) {
+        console.error('[fetchUsers] Erreur Supabase:', error);
+        throw error;
+      }
+
+      console.log('[fetchUsers] Données reçues:', data);
+      console.log('[fetchUsers] Nombre total d\'utilisateurs:', count);
 
       setUsers(data || []);
       setTotalUsers(count || 0);
+      
+      console.log('[fetchUsers] State après mise à jour:', {
+        users: data,
+        totalUsers: count
+      });
     } catch (error) {
-      console.error('Erreur lors du chargement des utilisateurs:', error);
+      console.error('[fetchUsers] Erreur complète:', error);
+      console.error('[fetchUsers] Message d\'erreur:', error.message);
+      console.error('[fetchUsers] Stack trace:', error.stack);
       alert('Erreur lors du chargement des utilisateurs: ' + error.message);
     } finally {
       setLoading(false);
+      console.log('[fetchUsers] Chargement terminé');
     }
   };
 
   useEffect(() => {
+    console.log('[useEffect] Déclenché', { 
+      currentPage, 
+      sortBy, 
+      sortOrder, 
+      searchTerm 
+    });
     fetchUsers();
   }, [currentPage, sortBy, sortOrder, searchTerm]);
 
+  console.log('[Rendu] Composant rendu', { 
+    users, 
+    loading, 
+    searchTerm, 
+    sortBy, 
+    sortOrder, 
+    currentPage,
+    totalUsers
+  });
+
   const handleSort = (column: string) => {
+    console.log('[handleSort] Tri demandé pour la colonne:', column);
     if (sortBy === column) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
@@ -87,6 +137,7 @@ const AdminUserManagement = () => {
   };
 
   const openModal = (mode: 'view' | 'edit' | 'create', user: User | null = null) => {
+    console.log('[openModal] Ouverture modale', { mode, user });
     setModalMode(mode);
     if (user) {
       setSelectedUser(user);
@@ -114,19 +165,23 @@ const AdminUserManagement = () => {
   };
 
   const closeModal = () => {
+    console.log('[closeModal] Fermeture modale');
     setShowModal(false);
     setSelectedUser(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('[handleSubmit] Soumission du formulaire', formData);
     try {
       if (modalMode === 'create') {
+        console.log('[handleSubmit] Création nouvel utilisateur');
         const { error } = await supabase
           .from('users')
           .insert([formData]);
         if (error) throw error;
       } else if (modalMode === 'edit' && selectedUser) {
+        console.log('[handleSubmit] Mise à jour utilisateur existant', selectedUser.id);
         const { error } = await supabase
           .from('users')
           .update(formData)
@@ -137,12 +192,13 @@ const AdminUserManagement = () => {
       closeModal();
       fetchUsers();
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
+      console.error('[handleSubmit] Erreur lors de la sauvegarde:', error);
       alert('Erreur lors de la sauvegarde: ' + error.message);
     }
   };
 
   const handleDelete = async (userId: string) => {
+    console.log('[handleDelete] Suppression demandée pour:', userId);
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
       try {
         const { error } = await supabase
@@ -153,7 +209,7 @@ const AdminUserManagement = () => {
         if (error) throw error;
         fetchUsers();
       } catch (error) {
-        console.error('Erreur lors de la suppression:', error);
+        console.error('[handleDelete] Erreur lors de la suppression:', error);
         alert('Erreur lors de la suppression: ' + error.message);
       }
     }
