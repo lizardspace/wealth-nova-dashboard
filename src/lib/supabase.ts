@@ -1,10 +1,21 @@
 // src/lib/supabase.ts
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = 'https://kjyylccscmatfsaxohnw.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqeXlsY2NzY21hdGZzYXhvaG53Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4MDQ5MjUsImV4cCI6MjA2MjM4MDkyNX0.lvg4xofslDZHuSANjN4gHWW4BQPjqripZln8mHxom44';
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+let supabase: SupabaseClient;
+
+if (process.env.NODE_ENV === 'development') {
+  if (!(global as any).supabase) {
+    (global as any).supabase = createClient(supabaseUrl, supabaseKey);
+  }
+  supabase = (global as any).supabase;
+} else {
+  supabase = createClient(supabaseUrl, supabaseKey);
+}
+
+export { supabase };
 
 export async function getAllTables() {
   const { data, error } = await supabase.rpc('get_all_tables');
