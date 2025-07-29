@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAuthErrorMessage } from '@/lib/authErrors';
+import { AuthError } from '@supabase/supabase-js';
 
 const RegisterForm = () => {
   const [firstName, setFirstName] = useState('');
@@ -56,7 +58,7 @@ const RegisterForm = () => {
       console.error('Registration error:', error);
       toast({
         title: "Erreur lors de la création du compte",
-        description: "Une erreur est survenue. Veuillez réessayer.",
+        description: getAuthErrorMessage(error as AuthError),
         variant: "destructive",
       });
     } finally {
