@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAuthErrorMessage } from '@/lib/authErrors';
+import { AuthError } from '@supabase/supabase-js';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -30,7 +32,7 @@ const LoginForm = () => {
     } catch (error) {
       toast({
         title: "Erreur de connexion",
-        description: "Email ou mot de passe incorrect.",
+        description: getAuthErrorMessage(error as AuthError),
         variant: "destructive",
       });
     } finally {
