@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { CalendarIcon, Filter, Plus, List, LayoutGrid, Clock } from 'lucide-react';
+import { CalendarIcon, Filter, Plus, List, LayoutGrid, Clock, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from '@/lib/supabase';
 import { 
   AppointmentType,
@@ -30,12 +31,89 @@ export default function PlanningPage(): React.ReactNode {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string>("");
+
+  // Données de fallback si la base de données n'est pas accessible
+  const fallbackEvents: Event[] = [
+    {
+      id: 'fallback-1',
+      title: 'Consultation initiale',
+      client: 'Jean Dupont',
+      advisor: 'Marie Martin',
+      type: 'consultation',
+      date: '2025-07-30',
+      time: '09:00:00',
+      duration: 60,
+      status: 'upcoming',
+      notes: 'Premier rendez-vous client',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'fallback-2',
+      title: 'Suivi mensuel',
+      client: 'Sophie Leblanc',
+      advisor: 'Pierre Durand',
+      type: 'suivi',
+      date: '2025-07-30',
+      time: '10:30:00',
+      duration: 45,
+      status: 'confirmed',
+      notes: 'Révision du portefeuille',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 'fallback-3',
+      title: 'Signature contrat',
+      client: 'Michel Bernard',
+      advisor: 'Marie Martin',
+      type: 'signature',
+      date: '2025-07-30',
+      time: '14:00:00',
+      duration: 30,
+      status: 'upcoming',
+      notes: 'Signature assurance vie',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+  ];
+
+  // Test de connexion Supabase
+  const testSupabaseConnection = async () => {
+    try {
+      setDebugInfo("Test de connexion Supabase...");
+      
+      // Test simple de connexion
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('count', { count: 'exact', head: true });
+      
+      if (error) {
+        setDebugInfo(`Erreur Supabase: ${error.message} (Code: ${error.code})`);
+        return false;
+      }
+      
+      setDebugInfo(`Connexion réussie. ${data?.length || 0} enregistrements trouvés.`);
+      return true;
+    } catch (err) {
+      setDebugInfo(`Erreur de connexion: ${err instanceof Error ? err.message : 'Erreur inconnue'}`);
+      return false;
+    }
+  };
 
   // Fonction pour récupérer les rendez-vous depuis Supabase
   const fetchAppointments = async () => {
     try {
       setLoading(true);
       setError(null);
+      setDebugInfo("Début de récupération des données...");
+      
+      // Test de connexion d'abord
+      const connectionOk = await testSupabaseConnection();
+      if (!connectionOk) {
+        throw new Error("Impossible de se connecter à la base de données");
+      }
       
       const { data, error } = await supabase
         .from('appointments')
@@ -47,15 +125,21 @@ export default function PlanningPage(): React.ReactNode {
         throw error;
       }
       
+      if (!data || data.length === 0) {
+        setDebugInfo("Aucune donnée trouvée, utilisation des données de fallback");
+        setEvents(fallbackEvents);
+        return;
+      }
+      
       // Transformer les données pour correspondre au format Event
-      const transformedEvents: Event[] = (data || []).map(appointment => ({
+      const transformedEvents: Event[] = data.map(appointment => ({
         id: appointment.id,
         title: appointment.title,
         client: appointment.client,
         advisor: appointment.advisor,
         type: appointment.type as AppointmentType,
-        date: appointment.date, // Format: YYYY-MM-DD
-        time: appointment.time, // Format: HH:MM:SS
+        date: appointment.date,
+        time: appointment.time,
         duration: appointment.duration,
         status: appointment.status as Event['status'],
         notes: appointment.notes || '',
@@ -64,11 +148,39 @@ export default function PlanningPage(): React.ReactNode {
       }));
       
       setEvents(transformedEvents);
+      setDebugInfo(`${transformedEvents.length} rendez-vous chargés avec succès`);
     } catch (err) {
       console.error('Erreur lors de la récupération des rendez-vous:', err);
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+      const errorMessage = err instanceof Error ? err.message : 'Une erreur est survenue';
+      setError(errorMessage);
+      setDebugInfo(`Erreur: ${errorMessage}. Utilisation des données de fallback.`);
+      
+      // Utiliser les données de fallback en cas d'erreur
+      setEvents(fallbackEvents);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Créer la table si elle n'existe pas
+  const createTableIfNotExists = async () => {
+    try {
+      setDebugInfo("Tentative de création de la table...");
+      
+      // Note: Cette approche ne fonctionne généralement pas avec l'API Supabase
+      // Il faut utiliser l'interface SQL de Supabase pour créer les tables
+      const { error } = await supabase.rpc('create_appointments_table');
+      
+      if (error) {
+        setDebugInfo(`Impossible de créer la table: ${error.message}`);
+        return false;
+      }
+      
+      setDebugInfo("Table créée avec succès");
+      return true;
+    } catch (err) {
+      setDebugInfo(`Erreur lors de la création de table: ${err instanceof Error ? err.message : 'Erreur inconnue'}`);
+      return false;
     }
   };
 
@@ -77,92 +189,7 @@ export default function PlanningPage(): React.ReactNode {
     fetchAppointments();
   }, []);
 
-  // Fonction pour ajouter un nouveau rendez-vous
-  const addAppointment = async (newAppointment: Omit<Event, 'id' | 'created_at' | 'updated_at'>) => {
-    try {
-      const { data, error } = await supabase
-        .from('appointments')
-        .insert([{
-          title: newAppointment.title,
-          client: newAppointment.client,
-          advisor: newAppointment.advisor,
-          type: newAppointment.type,
-          date: newAppointment.date,
-          time: newAppointment.time,
-          duration: newAppointment.duration,
-          status: newAppointment.status,
-          notes: newAppointment.notes
-        }])
-        .select()
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      // Recharger les rendez-vous
-      await fetchAppointments();
-      
-      return data;
-    } catch (err) {
-      console.error('Erreur lors de l\'ajout du rendez-vous:', err);
-      setError(err instanceof Error ? err.message : 'Erreur lors de l\'ajout');
-      throw err;
-    }
-  };
-
-  // Fonction pour mettre à jour un rendez-vous
-  const updateAppointment = async (id: string, updates: Partial<Event>) => {
-    try {
-      const { data, error } = await supabase
-        .from('appointments')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      // Recharger les rendez-vous
-      await fetchAppointments();
-      
-      return data;
-    } catch (err) {
-      console.error('Erreur lors de la mise à jour du rendez-vous:', err);
-      setError(err instanceof Error ? err.message : 'Erreur lors de la mise à jour');
-      throw err;
-    }
-  };
-
-  // Fonction pour supprimer un rendez-vous
-  const deleteAppointment = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('appointments')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        throw error;
-      }
-
-      // Recharger les rendez-vous
-      await fetchAppointments();
-    } catch (err) {
-      console.error('Erreur lors de la suppression du rendez-vous:', err);
-      setError(err instanceof Error ? err.message : 'Erreur lors de la suppression');
-      throw err;
-    }
-  };
-  
-  const weekDays = eachDayOfInterval({
-    start: startOfWeek(date, { weekStartsOn: 1 }),
-    end: endOfWeek(date, { weekStartsOn: 1 })
-  });
-
-  // Logique de filtrage améliorée
+  // Logique de filtrage
   useEffect(() => {
     let filtered = [...events];
     
@@ -218,16 +245,6 @@ export default function PlanningPage(): React.ReactNode {
     setFilteredEvents(filtered);
   }, [date, selectedAdvisor, selectedTypes, activeTab, searchQuery, events]);
 
-  // Fonction utilitaire pour parser les dates au format "15/04/2025"
-  const parseDate = (dateString: string): Date => {
-    if (dateString.includes('/')) {
-      const [day, month, year] = dateString.split('/').map(Number);
-      return new Date(year, month - 1, day);
-    }
-    // Si c'est déjà au format ISO (YYYY-MM-DD)
-    return new Date(dateString);
-  };
-
   // Basculer le filtre de type
   const toggleTypeFilter = (type: AppointmentType) => {
     setSelectedTypes(prev => {
@@ -257,79 +274,25 @@ export default function PlanningPage(): React.ReactNode {
 
   // Filtrer les rendez-vous pour l'historique
   const filterHistoricalAppointments = (): HistoricalAppointment[] => {
-    let filtered = [...events];
-    
-    // Appliquer les filtres d'onglet
-    if (activeTab === "today") {
-      filtered = filtered.filter(app => {
-        const appDate = new Date(app.date);
-        return isToday(appDate);
-      });
-    } else if (activeTab === "week") {
-      filtered = filtered.filter(app => {
-        const appDate = new Date(app.date);
-        return isThisWeek(appDate, { weekStartsOn: 1 });
-      });
-    } else if (activeTab === "month") {
-      filtered = filtered.filter(app => {
-        const appDate = new Date(app.date);
-        return isThisMonth(appDate);
-      });
-    } else if (activeTab === "upcoming") {
-      const now = new Date();
-      filtered = filtered.filter(app => {
-        const appDate = new Date(app.date);
-        return (appDate >= now || isToday(appDate)) && 
-               (app.status === "upcoming" || app.status === "confirmed");
-      });
-    }
-    
-    // Appliquer le filtre conseiller
-    if (selectedAdvisor !== "tous") {
-      filtered = filtered.filter(app => 
-        app.advisor.toLowerCase().includes(selectedAdvisor.toLowerCase())
-      );
-    }
-    
-    // Appliquer le filtre type
-    if (selectedTypes.length > 0) {
-      filtered = filtered.filter(app => 
-        selectedTypes.includes(app.type)
-      );
-    }
-    
-    // Appliquer le filtre recherche
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(app => 
-        app.client.toLowerCase().includes(query) ||
-        app.title.toLowerCase().includes(query) ||
-        app.advisor.toLowerCase().includes(query)
-      );
-    }
-    
-    return filtered as HistoricalAppointment[];
+    return filteredEvents as HistoricalAppointment[];
   };
 
   // Filtrer les événements pour le calendrier
   const filterCalendarEvents = () => {
     let filtered = [...events];
     
-    // Appliquer le filtre conseiller
     if (selectedAdvisor !== "tous") {
       filtered = filtered.filter(event => 
         event.advisor.toLowerCase().includes(selectedAdvisor.toLowerCase())
       );
     }
     
-    // Appliquer le filtre type
     if (selectedTypes.length > 0) {
       filtered = filtered.filter(event => 
         selectedTypes.includes(event.type)
       );
     }
     
-    // Appliquer le filtre recherche
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
       filtered = filtered.filter(event => 
@@ -350,23 +313,10 @@ export default function PlanningPage(): React.ReactNode {
           <h1 className="text-3xl font-bold">Planning des rendez-vous</h1>
         </div>
         <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Chargement des rendez-vous...</div>
-        </div>
-      </div>
-    );
-  }
-
-  // Affichage des erreurs
-  if (error) {
-    return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Planning des rendez-vous</h1>
-        </div>
-        <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="text-lg text-red-600 mb-4">Erreur: {error}</div>
-            <Button onClick={fetchAppointments}>Réessayer</Button>
+            <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <div className="text-lg">Chargement des rendez-vous...</div>
+            {debugInfo && <div className="text-sm text-gray-500 mt-2">{debugInfo}</div>}
           </div>
         </div>
       </div>
@@ -378,6 +328,10 @@ export default function PlanningPage(): React.ReactNode {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Planning des rendez-vous</h1>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={fetchAppointments}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Actualiser
+          </Button>
           <Button variant="outline">
             <Filter className="mr-2 h-4 w-4" />
             Filtrer
@@ -388,6 +342,22 @@ export default function PlanningPage(): React.ReactNode {
           </Button>
         </div>
       </div>
+
+      {/* Affichage des alertes de debug/erreur */}
+      {(error || debugInfo) && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {error && <div className="text-red-600 font-medium">Erreur: {error}</div>}
+            {debugInfo && <div className="text-blue-600">{debugInfo}</div>}
+            {error && (
+              <div className="mt-2 text-sm text-gray-600">
+                Mode de démonstration activé avec des données d'exemple.
+              </div>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6">
         {/* Sidebar gauche */}
