@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib2/supabase';
 import { 
   AppointmentType,
   Event,
