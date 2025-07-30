@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { CalendarIcon, Filter, Plus, List, LayoutGrid, Clock } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -29,30 +28,145 @@ export default function PlanningPage(): React.ReactNode {
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [activeTab, setActiveTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchAppointments = async () => {
-      const { data, error } = await supabase.from('appointments').select('*');
+  // Fonction pour récupérer les rendez-vous depuis Supabase
+  const fetchAppointments = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('*')
+        .order('date', { ascending: true })
+        .order('time', { ascending: true });
+      
       if (error) {
-        console.error('Error fetching appointments:', error);
-      } else {
-        setEvents(data as Event[]);
+        throw error;
       }
-    };
+      
+      // Transformer les données pour correspondre au format Event
+      const transformedEvents: Event[] = (data || []).map(appointment => ({
+        id: appointment.id,
+        title: appointment.title,
+        client: appointment.client,
+        advisor: appointment.advisor,
+        type: appointment.type as AppointmentType,
+        date: appointment.date, // Format: YYYY-MM-DD
+        time: appointment.time, // Format: HH:MM:SS
+        duration: appointment.duration,
+        status: appointment.status as Event['status'],
+        notes: appointment.notes || '',
+        created_at: appointment.created_at,
+        updated_at: appointment.updated_at
+      }));
+      
+      setEvents(transformedEvents);
+    } catch (err) {
+      console.error('Erreur lors de la récupération des rendez-vous:', err);
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Charger les rendez-vous au montage du composant
+  useEffect(() => {
     fetchAppointments();
   }, []);
+
+  // Fonction pour ajouter un nouveau rendez-vous
+  const addAppointment = async (newAppointment: Omit<Event, 'id' | 'created_at' | 'updated_at'>) => {
+    try {
+      const { data, error } = await supabase
+        .from('appointments')
+        .insert([{
+          title: newAppointment.title,
+          client: newAppointment.client,
+          advisor: newAppointment.advisor,
+          type: newAppointment.type,
+          date: newAppointment.date,
+          time: newAppointment.time,
+          duration: newAppointment.duration,
+          status: newAppointment.status,
+          notes: newAppointment.notes
+        }])
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      // Recharger les rendez-vous
+      await fetchAppointments();
+      
+      return data;
+    } catch (err) {
+      console.error('Erreur lors de l\'ajout du rendez-vous:', err);
+      setError(err instanceof Error ? err.message : 'Erreur lors de l\'ajout');
+      throw err;
+    }
+  };
+
+  // Fonction pour mettre à jour un rendez-vous
+  const updateAppointment = async (id: string, updates: Partial<Event>) => {
+    try {
+      const { data, error } = await supabase
+        .from('appointments')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      // Recharger les rendez-vous
+      await fetchAppointments();
+      
+      return data;
+    } catch (err) {
+      console.error('Erreur lors de la mise à jour du rendez-vous:', err);
+      setError(err instanceof Error ? err.message : 'Erreur lors de la mise à jour');
+      throw err;
+    }
+  };
+
+  // Fonction pour supprimer un rendez-vous
+  const deleteAppointment = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw error;
+      }
+
+      // Recharger les rendez-vous
+      await fetchAppointments();
+    } catch (err) {
+      console.error('Erreur lors de la suppression du rendez-vous:', err);
+      setError(err instanceof Error ? err.message : 'Erreur lors de la suppression');
+      throw err;
+    }
+  };
   
   const weekDays = eachDayOfInterval({
     start: startOfWeek(date, { weekStartsOn: 1 }),
     end: endOfWeek(date, { weekStartsOn: 1 })
   });
 
-  // Filtering logic
+  // Logique de filtrage améliorée
   useEffect(() => {
     let filtered = [...events];
     
-    // Filter by date based on active tab
+    // Filtrer par date selon l'onglet actif
     if (activeTab === "today") {
       filtered = filtered.filter(event => {
         const eventDate = new Date(event.date);
@@ -69,42 +183,52 @@ export default function PlanningPage(): React.ReactNode {
         return isThisMonth(eventDate);
       });
     } else if (activeTab === "upcoming") {
-      filtered = filtered.filter(event => event.status === "upcoming" || event.status === "confirmed");
+      const now = new Date();
+      filtered = filtered.filter(event => {
+        const eventDate = new Date(event.date);
+        return (eventDate >= now || isToday(eventDate)) && 
+               (event.status === "upcoming" || event.status === "confirmed");
+      });
     }
     
-    // Filter by advisor
+    // Filtrer par conseiller
     if (selectedAdvisor !== "tous") {
       filtered = filtered.filter(event => 
         event.advisor.toLowerCase().includes(selectedAdvisor.toLowerCase())
       );
     }
     
-    // Filter by type
+    // Filtrer par type
     if (selectedTypes.length > 0) {
       filtered = filtered.filter(event => 
         selectedTypes.includes(event.type)
       );
     }
 
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    // Filtrer par recherche
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
       filtered = filtered.filter(event => 
         event.client.toLowerCase().includes(query) || 
-        event.title.toLowerCase().includes(query)
+        event.title.toLowerCase().includes(query) ||
+        event.advisor.toLowerCase().includes(query)
       );
     }
     
     setFilteredEvents(filtered);
   }, [date, selectedAdvisor, selectedTypes, activeTab, searchQuery, events]);
 
-  // Helper function to parse date strings like "15/04/2025" to Date objects
+  // Fonction utilitaire pour parser les dates au format "15/04/2025"
   const parseDate = (dateString: string): Date => {
-    const [day, month, year] = dateString.split('/').map(Number);
-    return new Date(year, month - 1, day);
+    if (dateString.includes('/')) {
+      const [day, month, year] = dateString.split('/').map(Number);
+      return new Date(year, month - 1, day);
+    }
+    // Si c'est déjà au format ISO (YYYY-MM-DD)
+    return new Date(dateString);
   };
 
-  // Toggle type filter
+  // Basculer le filtre de type
   const toggleTypeFilter = (type: AppointmentType) => {
     setSelectedTypes(prev => {
       if (prev.includes(type)) {
@@ -131,11 +255,11 @@ export default function PlanningPage(): React.ReactNode {
     }
   };
 
-  // Filter appointments for HistoryView
+  // Filtrer les rendez-vous pour l'historique
   const filterHistoricalAppointments = (): HistoricalAppointment[] => {
     let filtered = [...events];
     
-    // Apply active tab filters
+    // Appliquer les filtres d'onglet
     if (activeTab === "today") {
       filtered = filtered.filter(app => {
         const appDate = new Date(app.date);
@@ -152,65 +276,102 @@ export default function PlanningPage(): React.ReactNode {
         return isThisMonth(appDate);
       });
     } else if (activeTab === "upcoming") {
-      filtered = filtered.filter(app => 
-        app.status === "upcoming" || app.status === "confirmed"
-      );
+      const now = new Date();
+      filtered = filtered.filter(app => {
+        const appDate = new Date(app.date);
+        return (appDate >= now || isToday(appDate)) && 
+               (app.status === "upcoming" || app.status === "confirmed");
+      });
     }
     
-    // Apply advisor filter
+    // Appliquer le filtre conseiller
     if (selectedAdvisor !== "tous") {
       filtered = filtered.filter(app => 
         app.advisor.toLowerCase().includes(selectedAdvisor.toLowerCase())
       );
     }
     
-    // Apply type filter
+    // Appliquer le filtre type
     if (selectedTypes.length > 0) {
       filtered = filtered.filter(app => 
         selectedTypes.includes(app.type)
       );
     }
     
-    // Apply search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    // Appliquer le filtre recherche
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
       filtered = filtered.filter(app => 
-        app.client.toLowerCase().includes(query)
+        app.client.toLowerCase().includes(query) ||
+        app.title.toLowerCase().includes(query) ||
+        app.advisor.toLowerCase().includes(query)
       );
     }
     
     return filtered as HistoricalAppointment[];
   };
 
-  // Filter calendarEvents for CalendarView
+  // Filtrer les événements pour le calendrier
   const filterCalendarEvents = () => {
     let filtered = [...events];
     
-    // Apply advisor filter
+    // Appliquer le filtre conseiller
     if (selectedAdvisor !== "tous") {
       filtered = filtered.filter(event => 
         event.advisor.toLowerCase().includes(selectedAdvisor.toLowerCase())
       );
     }
     
-    // Apply type filter
+    // Appliquer le filtre type
     if (selectedTypes.length > 0) {
       filtered = filtered.filter(event => 
         selectedTypes.includes(event.type)
       );
     }
     
-    // Apply search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    // Appliquer le filtre recherche
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
       filtered = filtered.filter(event => 
         event.client.toLowerCase().includes(query) || 
-        event.title.toLowerCase().includes(query)
+        event.title.toLowerCase().includes(query) ||
+        event.advisor.toLowerCase().includes(query)
       );
     }
     
     return filtered;
   };
+
+  // Affichage du chargement
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Planning des rendez-vous</h1>
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Chargement des rendez-vous...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Affichage des erreurs
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Planning des rendez-vous</h1>
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="text-lg text-red-600 mb-4">Erreur: {error}</div>
+            <Button onClick={fetchAppointments}>Réessayer</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -229,7 +390,7 @@ export default function PlanningPage(): React.ReactNode {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6">
-        {/* Left Sidebar */}
+        {/* Sidebar gauche */}
         <AppointmentSidebar 
           date={date} 
           setDate={setDate} 
@@ -239,7 +400,7 @@ export default function PlanningPage(): React.ReactNode {
           toggleTypeFilter={toggleTypeFilter} 
         />
 
-        {/* Main Content */}
+        {/* Contenu principal */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="relative w-full max-w-sm">
@@ -300,19 +461,19 @@ export default function PlanningPage(): React.ReactNode {
               <div className="border-b px-4">
                 <TabsList className="h-14 gap-4">
                   <TabsTrigger value="all" className="data-[state=active]:text-primary">
-                    Tous les RDV
+                    Tous les RDV ({events.length})
                   </TabsTrigger>
                   <TabsTrigger value="upcoming" className="data-[state=active]:text-primary">
-                    À venir
+                    À venir ({events.filter(e => e.status === 'upcoming' || e.status === 'confirmed').length})
                   </TabsTrigger>
                   <TabsTrigger value="today" className="data-[state=active]:text-primary">
-                    Aujourd'hui
+                    Aujourd'hui ({events.filter(e => isToday(new Date(e.date))).length})
                   </TabsTrigger>
                   <TabsTrigger value="week" className="data-[state=active]:text-primary">
-                    Cette semaine
+                    Cette semaine ({events.filter(e => isThisWeek(new Date(e.date), { weekStartsOn: 1 })).length})
                   </TabsTrigger>
                   <TabsTrigger value="month" className="data-[state=active]:text-primary">
-                    Ce mois
+                    Ce mois ({events.filter(e => isThisMonth(new Date(e.date))).length})
                   </TabsTrigger>
                 </TabsList>
               </div>
