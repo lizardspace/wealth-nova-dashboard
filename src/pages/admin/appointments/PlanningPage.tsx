@@ -82,21 +82,37 @@ export default function PlanningPage(): React.ReactNode {
   // Test de connexion Supabase
   const testSupabaseConnection = async () => {
     try {
+      console.log('🔍 [DEBUG] Début du test de connexion Supabase');
+      console.log('🔍 [DEBUG] URL Supabase:', supabase.supabaseUrl);
+      console.log('🔍 [DEBUG] Clé Supabase (premiers chars):', supabase.supabaseKey?.substring(0, 20) + '...');
+      
       setDebugInfo("Test de connexion Supabase...");
       
       // Test simple de connexion
+      console.log('🔍 [DEBUG] Tentative de requête count sur appointments...');
       const { data, error } = await supabase
         .from('appointments')
         .select('count', { count: 'exact', head: true });
       
+      console.log('🔍 [DEBUG] Réponse Supabase - data:', data);
+      console.log('🔍 [DEBUG] Réponse Supabase - error:', error);
+      
       if (error) {
+        console.error('❌ [ERROR] Erreur Supabase détaillée:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        });
         setDebugInfo(`Erreur Supabase: ${error.message} (Code: ${error.code})`);
         return false;
       }
       
+      console.log('✅ [SUCCESS] Connexion Supabase réussie');
       setDebugInfo(`Connexion réussie. ${data?.length || 0} enregistrements trouvés.`);
       return true;
     } catch (err) {
+      console.error('❌ [ERROR] Exception lors du test de connexion:', err);
       setDebugInfo(`Erreur de connexion: ${err instanceof Error ? err.message : 'Erreur inconnue'}`);
       return false;
     }
@@ -104,60 +120,105 @@ export default function PlanningPage(): React.ReactNode {
 
   // Fonction pour récupérer les rendez-vous depuis Supabase
   const fetchAppointments = async () => {
+    console.log('🚀 [DEBUG] Début de fetchAppointments');
+    
     try {
       setLoading(true);
       setError(null);
       setDebugInfo("Début de récupération des données...");
       
+      console.log('🔍 [DEBUG] État de Supabase:', {
+        isSupabaseInitialized: !!supabase,
+        hasUrl: !!supabase?.supabaseUrl,
+        hasKey: !!supabase?.supabaseKey
+      });
+      
       // Test de connexion d'abord
+      console.log('🔍 [DEBUG] Test de connexion...');
       const connectionOk = await testSupabaseConnection();
+      console.log('🔍 [DEBUG] Résultat du test de connexion:', connectionOk);
+      
       if (!connectionOk) {
         throw new Error("Impossible de se connecter à la base de données");
       }
       
+      console.log('🔍 [DEBUG] Lancement de la requête SELECT...');
       const { data, error } = await supabase
         .from('appointments')
         .select('*')
         .order('date', { ascending: true })
         .order('time', { ascending: true });
       
+      console.log('🔍 [DEBUG] Réponse de la requête SELECT:');
+      console.log('  - data:', data);
+      console.log('  - error:', error);
+      console.log('  - data type:', typeof data);
+      console.log('  - data length:', data?.length);
+      
       if (error) {
+        console.error('❌ [ERROR] Erreur lors du SELECT:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint,
+          stack: error.stack
+        });
         throw error;
       }
       
       if (!data || data.length === 0) {
+        console.warn('⚠️ [WARNING] Aucune donnée trouvée dans la table appointments');
+        console.log('🔄 [INFO] Utilisation des données de fallback');
         setDebugInfo("Aucune donnée trouvée, utilisation des données de fallback");
         setEvents(fallbackEvents);
         return;
       }
       
-      // Transformer les données pour correspondre au format Event
-      const transformedEvents: Event[] = data.map(appointment => ({
-        id: appointment.id,
-        title: appointment.title,
-        client: appointment.client,
-        advisor: appointment.advisor,
-        type: appointment.type as AppointmentType,
-        date: appointment.date,
-        time: appointment.time,
-        duration: appointment.duration,
-        status: appointment.status as Event['status'],
-        notes: appointment.notes || '',
-        created_at: appointment.created_at,
-        updated_at: appointment.updated_at
-      }));
+      console.log('🔍 [DEBUG] Transformation des données...');
+      console.log('🔍 [DEBUG] Premier enregistrement brut:', data[0]);
       
+      // Transformer les données pour correspondre au format Event
+      const transformedEvents: Event[] = data.map((appointment, index) => {
+        console.log(`🔍 [DEBUG] Transformation enregistrement ${index}:`, appointment);
+        
+        const transformed = {
+          id: appointment.id,
+          title: appointment.title,
+          client: appointment.client,
+          advisor: appointment.advisor,
+          type: appointment.type as AppointmentType,
+          date: appointment.date,
+          time: appointment.time,
+          duration: appointment.duration,
+          status: appointment.status as Event['status'],
+          notes: appointment.notes || '',
+          created_at: appointment.created_at,
+          updated_at: appointment.updated_at
+        };
+        
+        console.log(`🔍 [DEBUG] Résultat transformation ${index}:`, transformed);
+        return transformed;
+      });
+      
+      console.log('✅ [SUCCESS] Données transformées avec succès:', transformedEvents);
       setEvents(transformedEvents);
       setDebugInfo(`${transformedEvents.length} rendez-vous chargés avec succès`);
+      
     } catch (err) {
-      console.error('Erreur lors de la récupération des rendez-vous:', err);
+      console.error('❌ [ERROR] Exception dans fetchAppointments:', err);
+      console.error('❌ [ERROR] Stack trace:', err instanceof Error ? err.stack : 'Pas de stack');
+      
       const errorMessage = err instanceof Error ? err.message : 'Une erreur est survenue';
       setError(errorMessage);
       setDebugInfo(`Erreur: ${errorMessage}. Utilisation des données de fallback.`);
       
+      console.log('🔄 [INFO] Basculement vers les données de fallback');
+      console.log('🔄 [INFO] Données de fallback:', fallbackEvents);
+      
       // Utiliser les données de fallback en cas d'erreur
       setEvents(fallbackEvents);
     } finally {
+      console.log('🏁 [DEBUG] Fin de fetchAppointments');
       setLoading(false);
     }
   };
@@ -186,61 +247,106 @@ export default function PlanningPage(): React.ReactNode {
 
   // Charger les rendez-vous au montage du composant
   useEffect(() => {
+    console.log('🔄 [DEBUG] useEffect - Montage du composant PlanningPage');
+    console.log('🔄 [DEBUG] Lancement de fetchAppointments...');
     fetchAppointments();
   }, []);
 
   // Logique de filtrage
   useEffect(() => {
+    console.log('🔍 [DEBUG] useEffect - Filtrage des événements');
+    console.log('🔍 [DEBUG] Paramètres de filtrage:', {
+      activeTab,
+      selectedAdvisor,
+      selectedTypes,
+      searchQuery: searchQuery.trim(),
+      totalEvents: events.length
+    });
+    
     let filtered = [...events];
+    console.log('🔍 [DEBUG] Events initiaux:', filtered.length);
     
     // Filtrer par date selon l'onglet actif
     if (activeTab === "today") {
+      console.log('🔍 [DEBUG] Filtrage par "today"');
       filtered = filtered.filter(event => {
         const eventDate = new Date(event.date);
-        return isToday(eventDate);
+        const isEventToday = isToday(eventDate);
+        console.log(`🔍 [DEBUG] Event ${event.title} - date: ${event.date}, isToday: ${isEventToday}`);
+        return isEventToday;
       });
     } else if (activeTab === "week") {
+      console.log('🔍 [DEBUG] Filtrage par "week"');
       filtered = filtered.filter(event => {
         const eventDate = new Date(event.date);
-        return isThisWeek(eventDate, { weekStartsOn: 1 });
+        const isEventThisWeek = isThisWeek(eventDate, { weekStartsOn: 1 });
+        console.log(`🔍 [DEBUG] Event ${event.title} - date: ${event.date}, isThisWeek: ${isEventThisWeek}`);
+        return isEventThisWeek;
       });
     } else if (activeTab === "month") {
+      console.log('🔍 [DEBUG] Filtrage par "month"');
       filtered = filtered.filter(event => {
         const eventDate = new Date(event.date);
-        return isThisMonth(eventDate);
+        const isEventThisMonth = isThisMonth(eventDate);
+        console.log(`🔍 [DEBUG] Event ${event.title} - date: ${event.date}, isThisMonth: ${isEventThisMonth}`);
+        return isEventThisMonth;
       });
     } else if (activeTab === "upcoming") {
+      console.log('🔍 [DEBUG] Filtrage par "upcoming"');
       const now = new Date();
       filtered = filtered.filter(event => {
         const eventDate = new Date(event.date);
-        return (eventDate >= now || isToday(eventDate)) && 
+        const isUpcoming = (eventDate >= now || isToday(eventDate)) && 
                (event.status === "upcoming" || event.status === "confirmed");
+        console.log(`🔍 [DEBUG] Event ${event.title} - date: ${event.date}, status: ${event.status}, isUpcoming: ${isUpcoming}`);
+        return isUpcoming;
       });
     }
     
+    console.log('🔍 [DEBUG] Après filtrage par date:', filtered.length);
+    
     // Filtrer par conseiller
     if (selectedAdvisor !== "tous") {
-      filtered = filtered.filter(event => 
-        event.advisor.toLowerCase().includes(selectedAdvisor.toLowerCase())
-      );
+      console.log('🔍 [DEBUG] Filtrage par conseiller:', selectedAdvisor);
+      const beforeAdvisorFilter = filtered.length;
+      filtered = filtered.filter(event => {
+        const matches = event.advisor.toLowerCase().includes(selectedAdvisor.toLowerCase());
+        console.log(`🔍 [DEBUG] Event ${event.title} - advisor: ${event.advisor}, matches: ${matches}`);
+        return matches;
+      });
+      console.log(`🔍 [DEBUG] Après filtrage par conseiller: ${filtered.length} (était ${beforeAdvisorFilter})`);
     }
     
     // Filtrer par type
     if (selectedTypes.length > 0) {
-      filtered = filtered.filter(event => 
-        selectedTypes.includes(event.type)
-      );
+      console.log('🔍 [DEBUG] Filtrage par types:', selectedTypes);
+      const beforeTypeFilter = filtered.length;
+      filtered = filtered.filter(event => {
+        const matches = selectedTypes.includes(event.type);
+        console.log(`🔍 [DEBUG] Event ${event.title} - type: ${event.type}, matches: ${matches}`);
+        return matches;
+      });
+      console.log(`🔍 [DEBUG] Après filtrage par type: ${filtered.length} (était ${beforeTypeFilter})`);
     }
 
     // Filtrer par recherche
     if (searchQuery.trim()) {
+      console.log('🔍 [DEBUG] Filtrage par recherche:', searchQuery.trim());
       const query = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(event => 
-        event.client.toLowerCase().includes(query) || 
-        event.title.toLowerCase().includes(query) ||
-        event.advisor.toLowerCase().includes(query)
-      );
+      const beforeSearchFilter = filtered.length;
+      filtered = filtered.filter(event => {
+        const clientMatch = event.client.toLowerCase().includes(query);
+        const titleMatch = event.title.toLowerCase().includes(query);
+        const advisorMatch = event.advisor.toLowerCase().includes(query);
+        const matches = clientMatch || titleMatch || advisorMatch;
+        console.log(`🔍 [DEBUG] Event ${event.title} - client: ${clientMatch}, title: ${titleMatch}, advisor: ${advisorMatch}, matches: ${matches}`);
+        return matches;
+      });
+      console.log(`🔍 [DEBUG] Après filtrage par recherche: ${filtered.length} (était ${beforeSearchFilter})`);
     }
+    
+    console.log('🔍 [DEBUG] Résultat final du filtrage:', filtered.length, 'événements');
+    console.log('🔍 [DEBUG] Events filtrés:', filtered.map(e => ({ title: e.title, date: e.date, advisor: e.advisor })));
     
     setFilteredEvents(filtered);
   }, [date, selectedAdvisor, selectedTypes, activeTab, searchQuery, events]);
@@ -328,7 +434,10 @@ export default function PlanningPage(): React.ReactNode {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Planning des rendez-vous</h1>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={fetchAppointments}>
+          <Button variant="outline" onClick={() => {
+            console.log('🔄 [DEBUG] Bouton Actualiser cliqué');
+            fetchAppointments();
+          }}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Actualiser
           </Button>
@@ -355,6 +464,9 @@ export default function PlanningPage(): React.ReactNode {
                 Mode de démonstration activé avec des données d'exemple.
               </div>
             )}
+            <div className="mt-2 text-xs text-gray-500">
+              Consultez la console du navigateur (F12) pour plus de détails de debug.
+            </div>
           </AlertDescription>
         </Alert>
       )}
