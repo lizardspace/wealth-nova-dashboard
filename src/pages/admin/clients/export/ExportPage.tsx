@@ -1,46 +1,10 @@
 import React, { useState } from 'react';
-import { Download, Database, FileText, Loader2, File, FileSpreadsheet, FileCode, FileImage } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import { Download, Database, FileText, Loader2, File, FileSpreadsheet, FileCode } from 'lucide-react';
 
 const MultiFormatExporter = () => {
   const [selectedTables, setSelectedTables] = useState(new Set());
-  const [selectedFormat, setSelectedFormat] = useState('excel');
   const [isExporting, setIsExporting] = useState(false);
   const [exportStatus, setExportStatus] = useState({});
-
-  // Configuration des formats d'export
-  const exportFormats = {
-    excel: {
-      name: 'Excel (.xlsx)',
-      icon: FileSpreadsheet,
-      color: 'green',
-      description: 'Fichier Excel avec formatage et colonnes ajustées'
-    },
-    csv: {
-      name: 'CSV (.csv)',
-      icon: File,
-      color: 'blue',
-      description: 'Fichier texte séparé par virgules'
-    },
-    sql: {
-      name: 'SQL (.sql)',
-      icon: FileCode,
-      color: 'purple',
-      description: 'Script SQL avec instructions INSERT'
-    },
-    word: {
-      name: 'Word (.docx)',
-      icon: FileText,
-      color: 'indigo',
-      description: 'Document Word avec mise en page professionnelle'
-    },
-    json: {
-      name: 'JSON (.json)',
-      icon: FileCode,
-      color: 'yellow',
-      description: 'Format JSON structuré'
-    }
-  };
 
   // Liste des tables
   const tables = [
@@ -91,193 +55,41 @@ const MultiFormatExporter = () => {
   // Mock data
   const mockSupabaseData = (tableName) => {
     const sampleData = [
-      { id: 1, nom: 'Exemple 1', email: 'exemple1@test.com', date_creation: '2024-01-15', montant: 1500.50, statut: 'Actif' },
-      { id: 2, nom: 'Exemple 2', email: 'exemple2@test.com', date_creation: '2024-02-20', montant: 2300.75, statut: 'En attente' },
-      { id: 3, nom: 'Exemple 3', email: 'exemple3@test.com', date_creation: '2024-03-10', montant: 980.25, statut: 'Inactif' }
+      { 
+        id: 1, 
+        nom: 'Dupont Jean', 
+        email: 'jean.dupont@example.com', 
+        date_creation: '2024-01-15', 
+        montant: 1500.50, 
+        statut: 'Actif',
+        telephone: '+33 1 23 45 67 89',
+        adresse: '123 Rue de la Paix, 75001 Paris'
+      },
+      { 
+        id: 2, 
+        nom: 'Martin Sophie', 
+        email: 'sophie.martin@example.com', 
+        date_creation: '2024-02-20', 
+        montant: 2300.75, 
+        statut: 'En attente',
+        telephone: '+33 1 98 76 54 32',
+        adresse: '456 Avenue des Champs, 69000 Lyon'
+      },
+      { 
+        id: 3, 
+        nom: 'Bernard Michel', 
+        email: 'michel.bernard@example.com', 
+        date_creation: '2024-03-10', 
+        montant: 980.25, 
+        statut: 'Inactif',
+        telephone: '+33 4 56 78 90 12',
+        adresse: '789 Boulevard Central, 13000 Marseille'
+      }
     ];
     return Promise.resolve({ data: sampleData, error: null });
   };
 
-  // Fonctions d'export par format
-  const exportToExcel = (data, tableName) => {
-    const workbook = XLSX.utils.book_new();
-    
-    if (!data || data.length === 0) {
-      const emptySheet = XLSX.utils.json_to_sheet([
-        { Message: `Aucune donnée disponible pour la table ${tableName}` }
-      ]);
-      XLSX.utils.book_append_sheet(workbook, emptySheet, 'Données');
-    } else {
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      
-      // Ajuster la largeur des colonnes
-      const columnWidths = [];
-      const headers = Object.keys(data[0]);
-      headers.forEach((header, index) => {
-        const maxLength = Math.max(
-          header.length,
-          ...data.map(row => String(row[header] || '').length)
-        );
-        columnWidths[index] = { wch: Math.min(maxLength + 2, 50) };
-      });
-      worksheet['!cols'] = columnWidths;
-      
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Données');
-    }
-    
-    const filename = `${tableName}_export_${new Date().toISOString().split('T')[0]}.xlsx`;
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    downloadFile(excelBuffer, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  };
-
-  const exportToCSV = (data, tableName) => {
-    if (!data || data.length === 0) {
-      const csvContent = 'Message\n"Aucune donnée disponible"';
-      downloadFile(csvContent, `${tableName}_export_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
-      return;
-    }
-    
-    const headers = Object.keys(data[0]);
-    const csvContent = [
-      headers.join(','),
-      ...data.map(row => 
-        headers.map(header => {
-          const value = row[header] || '';
-          return typeof value === 'string' && value.includes(',') ? `"${value}"` : value;
-        }).join(',')
-      )
-    ].join('\n');
-    
-    const filename = `${tableName}_export_${new Date().toISOString().split('T')[0]}.csv`;
-    downloadFile(csvContent, filename, 'text/csv');
-  };
-
-  const exportToSQL = (data, tableName) => {
-    if (!data || data.length === 0) {
-      const sqlContent = `-- Aucune donnée disponible pour la table ${tableName}\n-- ${new Date().toISOString()}`;
-      downloadFile(sqlContent, `${tableName}_export_${new Date().toISOString().split('T')[0]}.sql`, 'text/plain');
-      return;
-    }
-    
-    const headers = Object.keys(data[0]);
-    const sqlContent = [
-      `-- Export SQL pour la table ${tableName}`,
-      `-- Généré le ${new Date().toLocaleString()}`,
-      '',
-      `-- Structure de la table (exemple)`,
-      `CREATE TABLE IF NOT EXISTS ${tableName} (`,
-      headers.map(header => `  ${header} VARCHAR(255)`).join(',\n'),
-      ');',
-      '',
-      `-- Données`,
-      ...data.map(row => {
-        const values = headers.map(header => {
-          const value = row[header];
-          if (value === null || value === undefined) return 'NULL';
-          if (typeof value === 'string') return `'${value.replace(/'/g, "''")}'`;
-          return value;
-        }).join(', ');
-        return `INSERT INTO ${tableName} (${headers.join(', ')}) VALUES (${values});`;
-      })
-    ].join('\n');
-    
-    const filename = `${tableName}_export_${new Date().toISOString().split('T')[0]}.sql`;
-    downloadFile(sqlContent, filename, 'text/plain');
-  };
-
-  const exportToWord = (data, tableName) => {
-    if (!data || data.length === 0) {
-      const htmlContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <title>Export ${tableName}</title>
-          <style>
-            body { font-family: 'Calibri', sans-serif; margin: 40px; }
-            h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
-            .info { background-color: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
-          </style>
-        </head>
-        <body>
-          <h1>Export de la table : ${tableName}</h1>
-          <div class="info">
-            <p><strong>Date d'export :</strong> ${new Date().toLocaleString()}</p>
-            <p><strong>Statut :</strong> Aucune donnée disponible</p>
-          </div>
-        </body>
-        </html>
-      `;
-      downloadFile(htmlContent, `${tableName}_export_${new Date().toISOString().split('T')[0]}.html`, 'text/html');
-      return;
-    }
-    
-    const headers = Object.keys(data[0]);
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <title>Export ${tableName}</title>
-        <style>
-          body { font-family: 'Calibri', sans-serif; margin: 40px; line-height: 1.6; }
-          h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
-          .info { background-color: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0; }
-          table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-          th, td { border: 1px solid #bdc3c7; padding: 12px; text-align: left; }
-          th { background-color: #3498db; color: white; font-weight: bold; }
-          tr:nth-child(even) { background-color: #f8f9fa; }
-          tr:hover { background-color: #e8f4f8; }
-          .summary { margin: 20px 0; font-style: italic; color: #7f8c8d; }
-        </style>
-      </head>
-      <body>
-        <h1>Export de la table : ${tableName}</h1>
-        <div class="info">
-          <p><strong>Date d'export :</strong> ${new Date().toLocaleString()}</p>
-          <p><strong>Nombre d'enregistrements :</strong> ${data.length}</p>
-        </div>
-        
-        <table>
-          <thead>
-            <tr>
-              ${headers.map(header => `<th>${header}</th>`).join('')}
-            </tr>
-          </thead>
-          <tbody>
-            ${data.map(row => `
-              <tr>
-                ${headers.map(header => `<td>${row[header] || ''}</td>`).join('')}
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-        
-        <div class="summary">
-          Document généré automatiquement depuis l'application d'export de données.
-        </div>
-      </body>
-      </html>
-    `;
-    
-    const filename = `${tableName}_export_${new Date().toISOString().split('T')[0]}.html`;
-    downloadFile(htmlContent, filename, 'text/html');
-  };
-
-  const exportToJSON = (data, tableName) => {
-    const jsonContent = {
-      metadata: {
-        table: tableName,
-        exportDate: new Date().toISOString(),
-        recordCount: data ? data.length : 0
-      },
-      data: data || []
-    };
-    
-    const filename = `${tableName}_export_${new Date().toISOString().split('T')[0]}.json`;
-    downloadFile(JSON.stringify(jsonContent, null, 2), filename, 'application/json');
-  };
-
+  // Fonction utilitaire pour télécharger un fichier
   const downloadFile = (content, filename, mimeType) => {
     const blob = new Blob([content], { type: mimeType });
     const link = document.createElement('a');
@@ -291,43 +103,371 @@ const MultiFormatExporter = () => {
     URL.revokeObjectURL(url);
   };
 
-  const exportTable = async (tableName) => {
+  // Fonctions d'export par format
+  const exportToCSV = (data, tableName) => {
+    if (!data || data.length === 0) {
+      const csvContent = 'Message\n"Aucune donnée disponible"';
+      downloadFile(csvContent, `${tableName}_export_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
+      return;
+    }
+    
+    const headers = Object.keys(data[0]);
+    const csvContent = [
+      headers.join(','),
+      ...data.map(row => 
+        headers.map(header => {
+          const value = row[header] || '';
+          // Échapper les guillemets et encapsuler les valeurs contenant des virgules
+          const stringValue = String(value);
+          if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+            return `"${stringValue.replace(/"/g, '""')}"`;
+          }
+          return stringValue;
+        }).join(',')
+      )
+    ].join('\n');
+    
+    const filename = `${tableName}_export_${new Date().toISOString().split('T')[0]}.csv`;
+    downloadFile('\ufeff' + csvContent, filename, 'text/csv'); // BOM pour Excel
+  };
+
+  const exportToExcelCSV = (data, tableName) => {
+    // Version CSV optimisée pour Excel avec séparateur point-virgule (format français)
+    if (!data || data.length === 0) {
+      const csvContent = 'Message\n"Aucune donnée disponible"';
+      downloadFile(csvContent, `${tableName}_export_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
+      return;
+    }
+    
+    const headers = Object.keys(data[0]);
+    const csvContent = [
+      headers.join(';'), // Séparateur point-virgule pour Excel français
+      ...data.map(row => 
+        headers.map(header => {
+          const value = row[header] || '';
+          const stringValue = String(value);
+          if (stringValue.includes(';') || stringValue.includes('"') || stringValue.includes('\n')) {
+            return `"${stringValue.replace(/"/g, '""')}"`;
+          }
+          return stringValue;
+        }).join(';')
+      )
+    ].join('\n');
+    
+    const filename = `${tableName}_export_excel_${new Date().toISOString().split('T')[0]}.csv`;
+    downloadFile('\ufeff' + csvContent, filename, 'text/csv');
+  };
+
+  const exportToSQL = (data, tableName) => {
+    if (!data || data.length === 0) {
+      const sqlContent = `-- Aucune donnée disponible pour la table ${tableName}\n-- ${new Date().toISOString()}`;
+      downloadFile(sqlContent, `${tableName}_export_${new Date().toISOString().split('T')[0]}.sql`, 'text/plain');
+      return;
+    }
+    
+    const headers = Object.keys(data[0]);
+    const sqlContent = [
+      `-- Export SQL pour la table ${tableName}`,
+      `-- Généré le ${new Date().toLocaleString('fr-FR')}`,
+      `-- Nombre d'enregistrements: ${data.length}`,
+      '',
+      `-- Structure de la table`,
+      `DROP TABLE IF EXISTS ${tableName};`,
+      `CREATE TABLE ${tableName} (`,
+      headers.map((header, index) => {
+        const isLast = index === headers.length - 1;
+        return `    ${header} VARCHAR(255)${isLast ? '' : ','}`;
+      }).join('\n'),
+      ');',
+      '',
+      `-- Insertion des données`,
+      ...data.map(row => {
+        const values = headers.map(header => {
+          const value = row[header];
+          if (value === null || value === undefined) return 'NULL';
+          if (typeof value === 'string') return `'${value.replace(/'/g, "''")}'`;
+          return value;
+        }).join(', ');
+        return `INSERT INTO ${tableName} (${headers.join(', ')}) VALUES (${values});`;
+      }),
+      '',
+      `-- Fin de l'export`
+    ].join('\n');
+    
+    const filename = `${tableName}_export_${new Date().toISOString().split('T')[0]}.sql`;
+    downloadFile(sqlContent, filename, 'text/plain');
+  };
+
+  const exportToHTML = (data, tableName) => {
+    const tableInfo = [...tables, ...souscriptionTables].find(t => t.name === tableName);
+    
+    if (!data || data.length === 0) {
+      const htmlContent = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export ${tableName}</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 40px; 
+            line-height: 1.6; 
+            color: #333;
+        }
+        .header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            margin-bottom: 30px;
+        }
+        .header h1 { margin: 0; font-size: 2.5em; }
+        .header p { margin: 10px 0 0 0; opacity: 0.9; }
+        .info { 
+            background-color: #f8f9fa; 
+            padding: 20px; 
+            border-radius: 8px; 
+            border-left: 4px solid #007bff;
+            margin: 20px 0; 
+        }
+        .footer { 
+            margin-top: 40px; 
+            padding: 20px; 
+            text-align: center; 
+            color: #6c757d; 
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Export de ${tableInfo?.label || tableName}</h1>
+        <p>${tableInfo?.description || 'Export de données'}</p>
+    </div>
+    <div class="info">
+        <p><strong>📅 Date d'export :</strong> ${new Date().toLocaleString('fr-FR')}</p>
+        <p><strong>📊 Statut :</strong> Aucune donnée disponible</p>
+        <p><strong>🗂️ Table :</strong> ${tableName}</p>
+    </div>
+    <div class="footer">
+        <p>Document généré automatiquement par l'outil d'export de données</p>
+    </div>
+</body>
+</html>`;
+      downloadFile(htmlContent, `${tableName}_export_${new Date().toISOString().split('T')[0]}.html`, 'text/html');
+      return;
+    }
+    
+    const headers = Object.keys(data[0]);
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export ${tableName}</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 40px; 
+            line-height: 1.6; 
+            color: #333;
+        }
+        .header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            margin-bottom: 30px;
+        }
+        .header h1 { margin: 0; font-size: 2.5em; }
+        .header p { margin: 10px 0 0 0; opacity: 0.9; }
+        .info { 
+            background-color: #f8f9fa; 
+            padding: 20px; 
+            border-radius: 8px; 
+            border-left: 4px solid #007bff;
+            margin: 20px 0; 
+        }
+        .table-container { 
+            overflow-x: auto; 
+            margin: 30px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            background: white;
+        }
+        th, td { 
+            border: 1px solid #dee2e6; 
+            padding: 12px 15px; 
+            text-align: left; 
+        }
+        th { 
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white; 
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        tr:hover { background-color: #e3f2fd; transition: background-color 0.3s; }
+        .stats { 
+            display: flex; 
+            gap: 20px; 
+            margin: 20px 0; 
+        }
+        .stat-card { 
+            background: white; 
+            padding: 15px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex: 1;
+        }
+        .stat-number { 
+            font-size: 2em; 
+            font-weight: bold; 
+            color: #007bff; 
+        }
+        .footer { 
+            margin-top: 40px; 
+            padding: 20px; 
+            text-align: center; 
+            color: #6c757d; 
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Export de ${tableInfo?.label || tableName}</h1>
+        <p>${tableInfo?.description || 'Export de données'}</p>
+    </div>
+    
+    <div class="info">
+        <p><strong>📅 Date d'export :</strong> ${new Date().toLocaleString('fr-FR')}</p>
+        <p><strong>🗂️ Table :</strong> ${tableName}</p>
+    </div>
+    
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-number">${data.length}</div>
+            <div>Enregistrements</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">${headers.length}</div>
+            <div>Colonnes</div>
+        </div>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    ${headers.map(header => `<th>${header}</th>`).join('')}
+                </tr>
+            </thead>
+            <tbody>
+                ${data.map(row => `
+                    <tr>
+                        ${headers.map(header => `<td>${row[header] || ''}</td>`).join('')}
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="footer">
+        <p>Document généré automatiquement le ${new Date().toLocaleString('fr-FR')}</p>
+        <p>Outil d'export de données - ${data.length} enregistrement${data.length > 1 ? 's' : ''} exporté${data.length > 1 ? 's' : ''}</p>
+    </div>
+</body>
+</html>`;
+    
+    const filename = `${tableName}_export_${new Date().toISOString().split('T')[0]}.html`;
+    downloadFile(htmlContent, filename, 'text/html');
+  };
+
+  const exportToJSON = (data, tableName) => {
+    const tableInfo = [...tables, ...souscriptionTables].find(t => t.name === tableName);
+    
+    const jsonContent = {
+      metadata: {
+        table: tableName,
+        label: tableInfo?.label || tableName,
+        description: tableInfo?.description || '',
+        exportDate: new Date().toISOString(),
+        exportDateFormatted: new Date().toLocaleString('fr-FR'),
+        recordCount: data ? data.length : 0,
+        columns: data && data.length > 0 ? Object.keys(data[0]) : []
+      },
+      data: data || []
+    };
+    
+    const filename = `${tableName}_export_${new Date().toISOString().split('T')[0]}.json`;
+    downloadFile(JSON.stringify(jsonContent, null, 2), filename, 'application/json');
+  };
+
+  const exportTables = async (format) => {
+    if (selectedTables.size === 0) {
+      alert('Veuillez sélectionner au moins une table à exporter.');
+      return;
+    }
+
+    setIsExporting(true);
+    setExportStatus({});
+
+    const tablePromises = Array.from(selectedTables).map(tableName => {
+      return new Promise(async (resolve) => {
+        try {
+          setExportStatus(prev => ({ ...prev, [tableName]: 'loading' }));
+          
+          const { data, error } = await mockSupabaseData(tableName);
+          
+          if (error) {
+            throw new Error(`Erreur Supabase: ${error.message}`);
+          }
+          
+          // Export selon le format sélectionné
+          switch (format) {
+            case 'csv':
+              exportToCSV(data, tableName);
+              break;
+            case 'excel':
+              exportToExcelCSV(data, tableName);
+              break;
+            case 'sql':
+              exportToSQL(data, tableName);
+              break;
+            case 'html':
+              exportToHTML(data, tableName);
+              break;
+            case 'json':
+              exportToJSON(data, tableName);
+              break;
+            default:
+              throw new Error('Format d\'export non supporté');
+          }
+          
+          setExportStatus(prev => ({ ...prev, [tableName]: 'success' }));
+          resolve();
+        } catch (error) {
+          console.error(`Erreur lors de l'export de ${tableName}:`, error);
+          setExportStatus(prev => ({ ...prev, [tableName]: 'error' }));
+          alert(`Erreur lors de l'export de ${tableName}: ${error.message}`);
+          resolve();
+        }
+      });
+    });
+    
     try {
-      setExportStatus(prev => ({ ...prev, [tableName]: 'loading' }));
-      
-      const { data, error } = await mockSupabaseData(tableName);
-      
-      if (error) {
-        throw new Error(`Erreur Supabase: ${error.message}`);
-      }
-      
-      // Export selon le format sélectionné
-      switch (selectedFormat) {
-        case 'excel':
-          exportToExcel(data, tableName);
-          break;
-        case 'csv':
-          exportToCSV(data, tableName);
-          break;
-        case 'sql':
-          exportToSQL(data, tableName);
-          break;
-        case 'word':
-          exportToWord(data, tableName);
-          break;
-        case 'json':
-          exportToJSON(data, tableName);
-          break;
-        default:
-          throw new Error('Format d\'export non supporté');
-      }
-      
-      setExportStatus(prev => ({ ...prev, [tableName]: 'success' }));
-      
-    } catch (error) {
-      console.error(`Erreur lors de l'export de ${tableName}:`, error);
-      setExportStatus(prev => ({ ...prev, [tableName]: 'error' }));
-      alert(`Erreur lors de l'export de ${tableName}: ${error.message}`);
+      await Promise.all(tablePromises);
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -348,24 +488,6 @@ const MultiFormatExporter = () => {
 
   const deselectAllTables = () => {
     setSelectedTables(new Set());
-  };
-
-  const exportSelectedTables = async () => {
-    if (selectedTables.size === 0) {
-      alert('Veuillez sélectionner au moins une table à exporter.');
-      return;
-    }
-
-    setIsExporting(true);
-    setExportStatus({});
-
-    const tablePromises = Array.from(selectedTables).map(tableName => exportTable(tableName));
-    
-    try {
-      await Promise.all(tablePromises);
-    } finally {
-      setIsExporting(false);
-    }
   };
 
   const getStatusIcon = (tableName) => {
@@ -430,37 +552,8 @@ const MultiFormatExporter = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Export Multi-Format des Tables</h1>
         <p className="text-gray-600">
-          Sélectionnez les tables et le format d'export souhaité
+          Sélectionnez les tables et choisissez le format d'export
         </p>
-      </div>
-
-      {/* Sélection du format */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Format d'export</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {Object.entries(exportFormats).map(([key, format]) => {
-            const IconComponent = format.icon;
-            return (
-              <div
-                key={key}
-                className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                  selectedFormat === key
-                    ? `border-${format.color}-500 bg-${format.color}-50`
-                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                }`}
-                onClick={() => setSelectedFormat(key)}
-              >
-                <div className="flex flex-col items-center text-center">
-                  <IconComponent className={`w-8 h-8 mb-2 ${
-                    selectedFormat === key ? `text-${format.color}-600` : 'text-gray-500'
-                  }`} />
-                  <span className="font-medium text-sm text-gray-800">{format.name}</span>
-                  <p className="text-xs text-gray-500 mt-1">{format.description}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
       </div>
 
       {/* Actions */}
@@ -485,23 +578,98 @@ const MultiFormatExporter = () => {
             <span className="text-sm text-gray-600">
               {selectedTables.size} table{selectedTables.size > 1 ? 's' : ''} sélectionnée{selectedTables.size > 1 ? 's' : ''}
             </span>
-            <button
-              onClick={exportSelectedTables}
-              disabled={selectedTables.size === 0 || isExporting}
-              className={`flex items-center gap-2 px-6 py-2 text-white rounded-lg transition-colors text-sm ${
-                selectedTables.size === 0 || isExporting
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : `bg-${exportFormats[selectedFormat].color}-600 hover:bg-${exportFormats[selectedFormat].color}-700`
-              }`}
-            >
-              {isExporting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-              Exporter en {exportFormats[selectedFormat].name}
-            </button>
           </div>
+        </div>
+      </div>
+
+      {/* Boutons d'export */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Formats d'export disponibles</h3>
+        <div className="flex flex-wrap gap-4">
+          <button
+            onClick={() => exportTables('csv')}
+            disabled={selectedTables.size === 0 || isExporting}
+            className={`flex items-center gap-2 px-6 py-2 text-white rounded-lg transition-colors text-sm ${
+              selectedTables.size === 0 || isExporting
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+          >
+            {isExporting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <File className="w-4 h-4" />
+            )}
+            Exporter en CSV (.csv)
+          </button>
+
+          <button
+            onClick={() => exportTables('excel')}
+            disabled={selectedTables.size === 0 || isExporting}
+            className={`flex items-center gap-2 px-6 py-2 text-white rounded-lg transition-colors text-sm ${
+              selectedTables.size === 0 || isExporting
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-green-600 hover:bg-green-700'
+            }`}
+          >
+            {isExporting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="w-4 h-4" />
+            )}
+            Exporter en Excel (.csv)
+          </button>
+
+          <button
+            onClick={() => exportTables('sql')}
+            disabled={selectedTables.size === 0 || isExporting}
+            className={`flex items-center gap-2 px-6 py-2 text-white rounded-lg transition-colors text-sm ${
+              selectedTables.size === 0 || isExporting
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-purple-600 hover:bg-purple-700'
+            }`}
+          >
+            {isExporting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <FileCode className="w-4 h-4" />
+            )}
+            Exporter en SQL (.sql)
+          </button>
+
+          <button
+            onClick={() => exportTables('html')}
+            disabled={selectedTables.size === 0 || isExporting}
+            className={`flex items-center gap-2 px-6 py-2 text-white rounded-lg transition-colors text-sm ${
+              selectedTables.size === 0 || isExporting
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-indigo-600 hover:bg-indigo-700'
+            }`}
+          >
+            {isExporting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <FileText className="w-4 h-4" />
+            )}
+            Exporter en HTML (.html)
+          </button>
+
+          <button
+            onClick={() => exportTables('json')}
+            disabled={selectedTables.size === 0 || isExporting}
+            className={`flex items-center gap-2 px-6 py-2 text-white rounded-lg transition-colors text-sm ${
+              selectedTables.size === 0 || isExporting
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-yellow-600 hover:bg-yellow-700'
+            }`}
+          >
+            {isExporting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <FileCode className="w-4 h-4" />
+            )}
+            Exporter en JSON (.json)
+          </button>
         </div>
       </div>
 
