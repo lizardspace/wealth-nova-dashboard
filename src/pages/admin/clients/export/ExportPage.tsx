@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Download, Database, FileText, Loader2 } from 'lucide-react';
-import { supabase } from './../../../../lib/supabase';
+import * as XLSX from 'xlsx';
 
-const CSVExporter = () => {
+const ExcelExporter = () => {
   const [selectedTables, setSelectedTables] = useState(new Set());
   const [isExporting, setIsExporting] = useState(false);
   const [exportStatus, setExportStatus] = useState({});
@@ -73,34 +73,10 @@ const CSVExporter = () => {
     setSelectedTables(new Set());
   };
 
-  // Fonction pour convertir les données en CSV
-  const convertToCSV = (data, tableName) => {
-    if (!data || data.length === 0) {
-      return `Aucune donnée disponible pour la table ${tableName}\n`;
-    }
-
-    const headers = Object.keys(data[0]);
-    const csvHeader = headers.join(',');
-    
-    const csvRows = data.map(row => {
-      return headers.map(header => {
-        const value = row[header];
-        // Échapper les guillemets et encapsuler les valeurs contenant des virgules
-        if (value === null || value === undefined) return '';
-        const stringValue = String(value);
-        if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
-          return `"${stringValue.replace(/"/g, '""')}"`;
-        }
-        return stringValue;
-      }).join(',');
-    });
-
-    return [csvHeader, ...csvRows].join('\n');
-  };
-
-  // Fonction pour télécharger un fichier CSV
-  const downloadCSV = (csvContent, filename) => {
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  // Fonction pour télécharger un fichier Excel
+  const downloadExcel = (workbook, filename) => {
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
@@ -111,32 +87,65 @@ const CSVExporter = () => {
     document.body.removeChild(link);
   };
 
-  // Export avec Supabase
+  // Mock function to simulate Supabase data fetch
+  const mockSupabaseData = (tableName) => {
+    // Retourne des données de test pour la démonstration
+    const sampleData = [
+      { id: 1, nom: 'Exemple 1', date_creation: '2024-01-15', montant: 1500.50 },
+      { id: 2, nom: 'Exemple 2', date_creation: '2024-02-20', montant: 2300.75 },
+      { id: 3, nom: 'Exemple 3', date_creation: '2024-03-10', montant: 980.25 }
+    ];
+    return Promise.resolve({ data: sampleData, error: null });
+  };
+
+  // Export avec création d'un fichier Excel séparé pour chaque table
   const exportTable = async (tableName) => {
     try {
       setExportStatus(prev => ({ ...prev, [tableName]: 'loading' }));
       
       // Récupérer toutes les données de la table depuis Supabase
-      const { data, error } = await supabase
-        .from(tableName)
-        .select('*');
+      // Remplacez cette ligne par votre appel Supabase réel :
+      // const { data, error } = await supabase.from(tableName).select('*');
+      const { data, error } = await mockSupabaseData(tableName);
       
       if (error) {
         throw new Error(`Erreur Supabase: ${error.message}`);
       }
       
-      // Vérifier si des données existent
+      // Créer un nouveau workbook Excel
+      const workbook = XLSX.utils.book_new();
+      
       if (!data || data.length === 0) {
         console.warn(`Aucune donnée trouvée pour la table ${tableName}`);
-        // Créer un CSV vide avec un message
-        const csvContent = `Aucune donnée disponible pour la table ${tableName}\n`;
-        const filename = `${tableName}_export_${new Date().toISOString().split('T')[0]}.csv`;
-        downloadCSV(csvContent, filename);
+        // Créer une feuille avec un message
+        const emptySheet = XLSX.utils.json_to_sheet([
+          { Message: `Aucune donnée disponible pour la table ${tableName}` }
+        ]);
+        XLSX.utils.book_append_sheet(workbook, emptySheet, 'Données');
       } else {
-        const csvContent = convertToCSV(data, tableName);
-        const filename = `${tableName}_export_${new Date().toISOString().split('T')[0]}.csv`;
-        downloadCSV(csvContent, filename);
+        // Convertir les données JSON en feuille Excel
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        
+        // Ajuster la largeur des colonnes automatiquement
+        const columnWidths = [];
+        const headers = Object.keys(data[0]);
+        headers.forEach((header, index) => {
+          const maxLength = Math.max(
+            header.length,
+            ...data.map(row => String(row[header] || '').length)
+          );
+          columnWidths[index] = { wch: Math.min(maxLength + 2, 50) };
+        });
+        worksheet['!cols'] = columnWidths;
+        
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Données');
       }
+      
+      // Créer le nom de fichier
+      const filename = `${tableName}_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+      
+      // Télécharger le fichier
+      downloadExcel(workbook, filename);
       
       setExportStatus(prev => ({ ...prev, [tableName]: 'success' }));
       
@@ -146,6 +155,76 @@ const CSVExporter = () => {
       
       // Optionnel: afficher un message d'erreur à l'utilisateur
       alert(`Erreur lors de l'export de ${tableName}: ${error.message}`);
+    }
+  };
+
+  // Export de toutes les tables sélectionnées dans un seul fichier Excel
+  const exportAllTablesInOneFile = async () => {
+    if (selectedTables.size === 0) {
+      alert('Veuillez sélectionner au moins une table à exporter.');
+      return;
+    }
+
+    setIsExporting(true);
+    setExportStatus({});
+
+    try {
+      // Créer un nouveau workbook Excel
+      const workbook = XLSX.utils.book_new();
+
+      // Exporter chaque table dans une feuille séparée
+      for (const tableName of selectedTables) {
+        try {
+          setExportStatus(prev => ({ ...prev, [tableName]: 'loading' }));
+          
+          // Récupérer les données
+          const { data, error } = await mockSupabaseData(tableName);
+          
+          if (error) {
+            throw new Error(`Erreur Supabase: ${error.message}`);
+          }
+          
+          let worksheet;
+          if (!data || data.length === 0) {
+            // Créer une feuille avec un message
+            worksheet = XLSX.utils.json_to_sheet([
+              { Message: `Aucune donnée disponible pour cette table` }
+            ]);
+          } else {
+            // Convertir les données JSON en feuille Excel
+            worksheet = XLSX.utils.json_to_sheet(data);
+            
+            // Ajuster la largeur des colonnes
+            const columnWidths = [];
+            const headers = Object.keys(data[0]);
+            headers.forEach((header, index) => {
+              const maxLength = Math.max(
+                header.length,
+                ...data.map(row => String(row[header] || '').length)
+              );
+              columnWidths[index] = { wch: Math.min(maxLength + 2, 50) };
+            });
+            worksheet['!cols'] = columnWidths;
+          }
+          
+          // Nom de la feuille (limité à 31 caractères pour Excel)
+          const sheetName = tableName.length > 31 ? tableName.substring(0, 31) : tableName;
+          XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+          
+          setExportStatus(prev => ({ ...prev, [tableName]: 'success' }));
+          
+        } catch (error) {
+          console.error(`Erreur lors de l'export de ${tableName}:`, error);
+          setExportStatus(prev => ({ ...prev, [tableName]: 'error' }));
+        }
+      }
+      
+      // Télécharger le fichier Excel avec toutes les tables
+      const filename = `tables_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+      downloadExcel(workbook, filename);
+      
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -227,9 +306,9 @@ const CSVExporter = () => {
   return (
     <div className="max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Export CSV des Tables</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Export Excel des Tables</h1>
         <p className="text-gray-600">
-          Sélectionnez les tables que vous souhaitez exporter au format CSV
+          Sélectionnez les tables que vous souhaitez exporter au format Excel (.xlsx)
         </p>
       </div>
 
@@ -255,18 +334,32 @@ const CSVExporter = () => {
             <span className="text-sm text-gray-600">
               {selectedTables.size} table{selectedTables.size > 1 ? 's' : ''} sélectionnée{selectedTables.size > 1 ? 's' : ''}
             </span>
-            <button
-              onClick={exportSelectedTables}
-              disabled={selectedTables.size === 0 || isExporting}
-              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
-            >
-              {isExporting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-              {isExporting ? 'Export en cours...' : 'Exporter les tables sélectionnées'}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={exportSelectedTables}
+                disabled={selectedTables.size === 0 || isExporting}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors text-sm"
+              >
+                {isExporting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                Fichiers séparés
+              </button>
+              <button
+                onClick={exportAllTablesInOneFile}
+                disabled={selectedTables.size === 0 || isExporting}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg transition-colors text-sm"
+              >
+                {isExporting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                Un seul fichier
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -315,4 +408,4 @@ const CSVExporter = () => {
   );
 };
 
-export default CSVExporter;
+export default ExcelExporter;
