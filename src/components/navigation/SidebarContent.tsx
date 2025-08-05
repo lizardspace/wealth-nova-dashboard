@@ -45,18 +45,18 @@ const SidebarSection = ({ title, items, onItemClick }: SidebarSectionProps) => {
     <div className="space-y-1 mb-3">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center w-full px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors group"
+        className="flex items-center w-full px-3 py-2 text-sm font-medium text-slate-700 hover:bg-white/40 hover:backdrop-blur-sm rounded-lg transition-all duration-300 group glass hover:glass-card"
       >
         {isExpanded ? (
-          <ChevronDown className="w-4 h-4 mr-2 text-slate-500 group-hover:text-slate-700 transition-transform" />
+          <ChevronDown className="w-4 h-4 mr-2 text-slate-500 group-hover:text-slate-700 transition-all duration-300 group-hover:rotate-180" />
         ) : (
-          <ChevronRight className="w-4 h-4 mr-2 text-slate-500 group-hover:text-slate-700 transition-transform" />
+          <ChevronRight className="w-4 h-4 mr-2 text-slate-500 group-hover:text-slate-700 transition-all duration-300 group-hover:rotate-90" />
         )}
         <span className="font-medium">{title}</span>
       </button>
       {isExpanded && (
-        <div className="ml-2 space-y-1 border-l-2 border-slate-100 pl-4 animate-accordion-down">
-          {items.map((item) => (
+        <div className="ml-2 space-y-1 border-l-2 border-gradient-to-b from-blue-200 to-purple-200 pl-4 animate-slide-in-left">
+          {items.map((item, index) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -64,20 +64,21 @@ const SidebarSection = ({ title, items, onItemClick }: SidebarSectionProps) => {
               onClick={onItemClick}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200',
+                  'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-300 hover-lift group',
                   isActive
-                    ? 'bg-blue-50 text-blue-600 shadow-sm'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800 hover:translate-x-1'
+                    ? 'glass-card gradient-primary text-white shadow-lg animate-bounce-in'
+                    : 'text-slate-600 hover:glass hover:text-slate-800 hover:translate-x-2'
                 )
               }
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
               {({ isActive }) => (
                 <>
                   <item.icon className={cn(
-                    'w-4 h-4 mr-3 flex-shrink-0 transition-colors',
-                    isActive ? 'text-blue-500' : 'text-slate-500'
+                    'w-4 h-4 mr-3 flex-shrink-0 transition-all duration-300 group-hover:scale-110',
+                    isActive ? 'text-white' : 'text-slate-500 group-hover:text-blue-500'
                   )} />
-                  <span>{item.label}</span>
+                  <span className="transition-all duration-300">{item.label}</span>
                 </>
               )}
             </NavLink>
@@ -197,7 +198,7 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
   ];
 
   return (
-    <div className="w-64 h-full flex flex-col bg-slate-50 border-r border-slate-200 overflow-y-auto">
+    <div className="w-64 h-full flex flex-col glass backdrop-blur-xl border-r border-white/20 overflow-y-auto smooth-scroll">
       <nav className="flex-1 px-3 py-4 space-y-4">
         <SidebarSection title="Tableau de bord" items={dashboardItems} onItemClick={onItemClick} />
         <SidebarSection title="Clients" items={clientsItems} onItemClick={onItemClick} />
@@ -216,14 +217,14 @@ const SidebarContent = ({ onItemClick }: SidebarContentProps) => {
         <SidebarSection title="Train de vie" items={trainDeVieItems} onItemClick={onItemClick} />
       </nav>
 
-      <div className="p-4 border-t border-slate-200 bg-white">
-        <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center">
-            <span className="text-sm font-medium text-purple-600">AD</span>
+      <div className="p-4 border-t border-white/20 glass-card">
+        <div className="flex items-center space-x-3 group">
+          <div className="w-9 h-9 rounded-full gradient-eparnova flex items-center justify-center animate-float group-hover:animate-glow transition-all duration-300">
+            <span className="text-sm font-medium text-white">AD</span>
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-800">Admin User</p>
-            <p className="text-xs text-slate-500">Administrateur</p>
+            <p className="text-sm font-medium text-slate-800 group-hover:text-slate-900 transition-colors">Admin User</p>
+            <p className="text-xs text-slate-500 group-hover:text-slate-600 transition-colors">Administrateur</p>
           </div>
         </div>
       </div>

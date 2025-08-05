@@ -133,6 +133,14 @@
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
   
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
   .hover-scale {
     @apply transition-transform duration-200;
   }
@@ -141,7 +149,84 @@
     transform: scale(1.05);
   }
 
-  /* Ajout de nouvelles classes utilitaires pour les graphiques */
+  /* Glassmorphism Effects */
+  .glass {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+  
+  .glass-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  }
+  
+  .glass-dark {
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.125);
+  }
+
+  /* Modern Gradients */
+  .gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .gradient-success {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  }
+  
+  .gradient-warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  }
+  
+  .gradient-info {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  }
+  
+  .gradient-eparnova {
+    background: linear-gradient(135deg, #0A2463 0%, #247BA0 50%, #2E933C 100%);
+  }
+  
+  .gradient-gold {
+    background: linear-gradient(135deg, #E6AF2E 0%, #F9D56E 100%);
+  }
+
+  .gradient-mesh {
+    background: 
+      radial-gradient(at 40% 20%, hsla(28,100%,74%,1) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsla(355,100%,93%,1) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, hsla(340,100%,76%,1) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(22,100%,77%,1) 0px, transparent 50%),
+      radial-gradient(at 80% 100%, hsla(242,100%,70%,1) 0px, transparent 50%),
+      radial-gradient(at 0% 0%, hsla(343,100%,76%,1) 0px, transparent 50%);
+  }
+
+  /* Enhanced hover effects */
+  .hover-lift {
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+  
+  .hover-glow {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-glow:hover {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+  }
+
+  /* Chart utilities */
   .chart-container {
     @apply w-full h-full flex justify-center items-center overflow-hidden;
   }
@@ -152,7 +237,21 @@
   }
   
   .chart-card {
-    @apply shadow-sm hover:shadow-md transition-all duration-300;
+    @apply shadow-sm hover:shadow-md transition-all duration-300 hover-lift;
+  }
+
+  /* Interactive elements */
+  .interactive-card {
+    @apply transition-all duration-300 ease-out hover-lift hover:shadow-xl;
+  }
+  
+  .interactive-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Smooth scrolling */
+  .smooth-scroll {
+    scroll-behavior: smooth;
   }
 }
 
@@ -196,6 +295,24 @@
   }
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 5px rgba(102, 126, 234, 0.2);
+  }
+  to {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
+  }
+}
+
 /* Ajouts pour les graphiques Recharts */
 .recharts-wrapper {
   margin: 0 auto;
@@ -213,6 +330,22 @@
   padding: 8px 12px !important;
 }
 
+/* Responsive design improvements */
+@media (max-width: 768px) {
+  .glass, .glass-card {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-1px);
+  }
+  
+  .animate-float {
+    animation-duration: 8s;
+  }
+}
+
 @media (max-width: 640px) {
   .recharts-legend-wrapper {
     font-size: 10px !important;
@@ -220,5 +353,25 @@
   
   .recharts-text {
     font-size: 10px !important;
+  }
+  
+  .glass-card {
+    padding: 1rem;
+  }
+  
+  .gradient-mesh {
+    opacity: 0.2;
+  }
+  
+  /* Reduce motion for mobile users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-float,
+    .animate-glow,
+    .animate-bounce,
+    .hover-lift {
+      animation: none;
+      transform: none;
+      transition: none;
+    }
   }
 }

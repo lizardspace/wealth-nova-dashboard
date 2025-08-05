@@ -11,64 +11,77 @@ import UpcomingAppointments from '@/components/dashboard/UpcomingAppointments';
 
 const Index = () => {
   return (
-    <div className="space-y-6">
-      {/* Hero section */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-eparnova-blue">Bonjour, Sophie</h1>
-          <p className="text-muted-foreground mt-1">Bienvenue sur votre tableau de bord</p>
+    <div className="space-y-8 animate-fade-in">
+      {/* Hero section with modern gradient */}
+      <div className="glass-card p-8 rounded-2xl mb-8 relative overflow-hidden">
+        <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
+          <div className="animate-slide-in-left">
+            <h1 className="text-3xl md:text-4xl font-bold gradient-eparnova bg-gradient-to-r from-eparnova-blue via-eparnova-green to-eparnova-gold bg-clip-text text-transparent">
+              Bonjour, Sophie
+            </h1>
+            <p className="text-muted-foreground mt-2 text-lg">Bienvenue sur votre tableau de bord moderne</p>
+          </div>
+          <div className="flex gap-3 animate-slide-in-right">
+            <Button asChild className="hover-lift gradient-primary text-white border-none shadow-lg hover:shadow-xl transition-all duration-300">
+              <Link to="/portfolio/add" className="flex items-center gap-2">
+                <Briefcase className="h-4 w-4" />
+                <span>Ajouter un actif</span>
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="glass hover:glass-card border-white/30 hover-lift">
+              <Link to="/statement" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                <span>Voir mon bilan</span>
+              </Link>
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-3">
-          <Button asChild>
-            <Link to="/portfolio/add" className="flex items-center gap-2">
-              <Briefcase className="h-4 w-4" />
-              <span>Ajouter un actif</span>
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/statement" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              <span>Voir mon bilan</span>
-            </Link>
-          </Button>
-        </div>
+        {/* Floating decoration */}
+        <div className="absolute top-4 right-4 w-16 h-16 gradient-gold rounded-full opacity-20 animate-float"></div>
+        <div className="absolute bottom-4 left-4 w-12 h-12 gradient-success rounded-full opacity-15 animate-float" style={{animationDelay: '2s'}}></div>
       </div>
 
-      {/* Overview cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-l-4 border-l-eparnova-blue">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground font-medium">TOTAL DU PATRIMOINE</CardTitle>
+      {/* Overview cards with staggered animation */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="interactive-card border-none relative overflow-hidden" style={{animationDelay: '0.1s'}}>
+          <div className="absolute inset-0 gradient-primary opacity-10"></div>
+          <div className="absolute -top-2 -left-2 w-8 h-8 gradient-primary rounded-full opacity-30 animate-glow"></div>
+          <CardHeader className="pb-2 relative z-10">
+            <CardTitle className="text-sm text-muted-foreground font-medium tracking-wide">TOTAL DU PATRIMOINE</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">325 000 €</div>
-            <div className="flex items-center text-sm text-green-600 mt-1">
-              <TrendingUp className="h-4 w-4 mr-1" />
-              <span>+5.2% depuis 3 mois</span>
+          <CardContent className="relative z-10">
+            <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">325 000 €</div>
+            <div className="flex items-center text-sm text-green-600 mt-2">
+              <TrendingUp className="h-4 w-4 mr-1 animate-bounce" />
+              <span className="font-medium">+5.2% depuis 3 mois</span>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="border-l-4 border-l-eparnova-green-light">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground font-medium">REVENUS MENSUELS</CardTitle>
+        <Card className="interactive-card border-none relative overflow-hidden" style={{animationDelay: '0.2s'}}>
+          <div className="absolute inset-0 gradient-success opacity-10"></div>
+          <div className="absolute -top-2 -left-2 w-8 h-8 gradient-success rounded-full opacity-30 animate-glow"></div>
+          <CardHeader className="pb-2 relative z-10">
+            <CardTitle className="text-sm text-muted-foreground font-medium tracking-wide">REVENUS MENSUELS</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">3 850 €</div>
-            <div className="flex items-center text-sm text-muted-foreground mt-1">
-              <span>Salaire net mensuel</span>
+          <CardContent className="relative z-10">
+            <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">3 850 €</div>
+            <div className="flex items-center text-sm text-muted-foreground mt-2">
+              <span className="font-medium">Salaire net mensuel</span>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="border-l-4 border-l-eparnova-gold">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground font-medium">ÉPARGNE DISPONIBLE</CardTitle>
+        <Card className="interactive-card border-none relative overflow-hidden" style={{animationDelay: '0.3s'}}>
+          <div className="absolute inset-0 gradient-gold opacity-10"></div>
+          <div className="absolute -top-2 -left-2 w-8 h-8 gradient-gold rounded-full opacity-30 animate-glow"></div>
+          <CardHeader className="pb-2 relative z-10">
+            <CardTitle className="text-sm text-muted-foreground font-medium tracking-wide">ÉPARGNE DISPONIBLE</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">42 500 €</div>
-            <div className="flex items-center text-sm text-muted-foreground mt-1">
-              <span>Sur livrets et comptes courants</span>
+          <CardContent className="relative z-10">
+            <div className="text-3xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">42 500 €</div>
+            <div className="flex items-center text-sm text-muted-foreground mt-2">
+              <span className="font-medium">Sur livrets et comptes courants</span>
             </div>
           </CardContent>
         </Card>
@@ -91,27 +104,31 @@ const Index = () => {
           {/* Upcoming Appointments */}
           <UpcomingAppointments />
           
-          {/* Premium Promo */}
-          <Card className="bg-gradient-to-br from-eparnova-blue to-eparnova-blue-light text-white border-none overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-eparnova-gold/30 rounded-full -mr-5 -mt-5 blur-xl"></div>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-eparnova-gold" />
-                Premium
-              </CardTitle>
-              <CardDescription className="text-white/80">
-                Accédez à toutes les fonctionnalités
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-sm">
-              <p className="opacity-90">Analyses personnalisées, simulateurs avancés et bien plus...</p>
-            </CardContent>
-            <CardFooter>
-              <Button className="w-full bg-eparnova-gold text-black hover:bg-eparnova-gold-light" size="sm">
-                <span>Découvrir l'offre</span>
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            </CardFooter>
+          {/* Premium Promo with enhanced glassmorphism */}
+          <Card className="gradient-eparnova text-white border-none overflow-hidden relative hover-lift group animate-glow">
+            <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+            <div className="absolute top-0 right-0 w-24 h-24 gradient-gold rounded-full opacity-30 -mr-8 -mt-8 blur-2xl animate-float"></div>
+            <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/20 rounded-full -ml-4 -mb-4 blur-xl animate-float" style={{animationDelay: '1s'}}></div>
+            <div className="relative z-10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <Sparkles className="h-6 w-6 text-eparnova-gold animate-pulse" />
+                  Premium
+                </CardTitle>
+                <CardDescription className="text-white/90 text-base">
+                  Accédez à toutes les fonctionnalités
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-sm">
+                <p className="opacity-95 leading-relaxed">Analyses personnalisées, simulateurs avancés et bien plus...</p>
+              </CardContent>
+              <CardFooter>
+                <Button className="w-full gradient-gold text-black hover:scale-105 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl" size="sm">
+                  <span>Découvrir l'offre</span>
+                  <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </CardFooter>
+            </div>
           </Card>
         </div>
       </div>
