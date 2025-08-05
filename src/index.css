@@ -197,6 +197,11 @@
     background: linear-gradient(135deg, #E6AF2E 0%, #F9D56E 100%);
   }
 
+  /* Alert-specific color variants */
+  .border-gold-200\/50 {
+    border-color: rgba(251, 191, 36, 0.5);
+  }
+
   .gradient-mesh {
     background: 
       radial-gradient(at 40% 20%, hsla(28,100%,74%,1) 0px, transparent 50%),

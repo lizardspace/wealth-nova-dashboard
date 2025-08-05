@@ -37,6 +37,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { useToast } from '@/components/ui/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { supabase } from '@/lib/supabase';
 import { 
   User, 
@@ -53,7 +54,11 @@ import {
   Mail,
   Calendar,
   Home,
-  Briefcase
+  Briefcase,
+  Info,
+  AlertTriangle,
+  ShieldCheck,
+  Lightbulb
 } from 'lucide-react';
 
 // Schéma de validation
@@ -81,12 +86,25 @@ const formSchema = z.object({
   estimation_patrimoine_foyer_precise: z.string().min(1, { message: "Veuillez saisir un patrimoine estimé" })
 });
 
+type AlertType = {
+  type: 'info' | 'success' | 'warning' | 'error';
+  title: string;
+  message: string;
+  show: boolean;
+};
+
 const NouveauClientPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState("personnel");
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+  const [alert, setAlert] = useState<AlertType>({
+    type: 'info',
+    title: '',
+    message: '',
+    show: false
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -108,11 +126,31 @@ const NouveauClientPage = () => {
     }
   });
 
+  // Helper function to show alerts
+  const showAlert = (type: AlertType['type'], title: string, message: string, duration: number = 5000) => {
+    setAlert({ type, title, message, show: true });
+    setTimeout(() => {
+      setAlert(prev => ({ ...prev, show: false }));
+    }, duration);
+  };
+
   // Helper function to mark step as completed
   const markStepCompleted = (step: string) => {
     if (!completedSteps.includes(step)) {
       setCompletedSteps([...completedSteps, step]);
+      showAlert('success', 'Étape complétée !', `La section "${getStepTitle(step)}" a été validée avec succès.`, 3000);
     }
+  };
+
+  // Get step title for alerts
+  const getStepTitle = (step: string) => {
+    const titles = {
+      personnel: 'Informations personnelles',
+      adresse: 'Adresse',
+      situation: 'Situation personnelle',
+      finances: 'Informations financières'
+    };
+    return titles[step as keyof typeof titles] || step;
   };
 
   // Validate current step
@@ -129,6 +167,18 @@ const NouveauClientPage = () => {
     
     if (isValid) {
       markStepCompleted(currentStep);
+    } else {
+      const errors = form.formState.errors;
+      let errorMessage = "Veuillez corriger les erreurs dans le formulaire :";
+      
+      fields.forEach(field => {
+        if (errors[field as keyof typeof errors]) {
+          const error = errors[field as keyof typeof errors];
+          errorMessage += `\n• ${error?.message || `Erreur dans le champ ${field}`}`;
+        }
+      });
+      
+      showAlert('error', 'Validation échouée', errorMessage.replace(/\n/g, ' '), 6000);
     }
     
     return isValid;
@@ -136,11 +186,14 @@ const NouveauClientPage = () => {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
+    showAlert('info', 'Création en cours...', 'Nous créons le profil client avec toutes les informations fournies.', 3000);
+    
     try {
       // Enhanced transaction-like approach with better error handling
       console.log("Starting client creation process...");
 
       // Étape 1: Insérer dans la table 'users'
+      showAlert('info', 'Étape 1/5', 'Création du compte utilisateur...', 2000);
       const { data: userData, error: userError } = await supabase
         .from('users')
         .insert([
@@ -163,6 +216,7 @@ const NouveauClientPage = () => {
       console.log("User created with ID:", userId);
 
       // Étape 2: Insérer dans personalinfo (table principale pour les infos client)
+      showAlert('info', 'Étape 2/5', 'Enregistrement des informations personnelles...', 2000);
       const { error: personalInfoError } = await supabase
         .from('personalinfo')
         .insert([
@@ -184,6 +238,7 @@ const NouveauClientPage = () => {
       if (personalInfoError) throw new Error(`Erreur informations personnelles: ${personalInfoError.message}`);
 
       // Étape 3: Insérer dans souscription_formulaire_souscripteur
+      showAlert('info', 'Étape 3/5', 'Configuration du profil souscripteur...', 2000);
       const { data: souscripteurData, error: souscripteurError } = await supabase
         .from('souscription_formulaire_souscripteur')
         .insert([
@@ -209,6 +264,7 @@ const NouveauClientPage = () => {
       const souscripteurId = souscripteurData[0].id;
 
       // Étape 4: Créer la subscription
+      showAlert('info', 'Étape 4/5', 'Création de la souscription...', 2000);
       const { data: subscriptionData, error: subscriptionError } = await supabase
         .from('souscription_formulaire_subscription')
         .insert([
@@ -225,6 +281,7 @@ const NouveauClientPage = () => {
       const subscriptionId = subscriptionData[0].id;
 
       // Étape 5: Ajouter les données financières
+      showAlert('info', 'Étape 5/5', 'Enregistrement des données financières...', 2000);
       const { error: financialDataError } = await supabase
         .from('souscription_formulaire_financialdata')
         .insert([
@@ -239,6 +296,9 @@ const NouveauClientPage = () => {
       if (financialDataError) throw new Error(`Erreur données financières: ${financialDataError.message}`);
 
       // Success notification with enhanced UX
+      showAlert('success', '🎉 Client créé avec succès!', 
+        `${values.prenom} ${values.nom} a été ajouté à la base de données avec toutes ses informations. Redirection en cours...`, 4000);
+      
       toast({
         title: "✅ Client créé avec succès!",
         description: `${values.prenom} ${values.nom} a été ajouté à la base de données avec toutes ses informations.`,
@@ -254,6 +314,9 @@ const NouveauClientPage = () => {
 
     } catch (error: any) {
       console.error("Client creation error:", error);
+      showAlert('error', '❌ Erreur lors de la création', 
+        error.message || "Une erreur inattendue s'est produite. Veuillez vérifier les informations et réessayer.", 8000);
+      
       toast({
         title: "❌ Erreur lors de la création",
         description: error.message || "Une erreur inattendue s'est produite. Veuillez réessayer.",
@@ -293,6 +356,40 @@ const NouveauClientPage = () => {
         <div className="absolute top-4 right-4 w-20 h-20 gradient-primary rounded-full opacity-10 animate-float"></div>
         <div className="absolute bottom-4 left-4 w-16 h-16 gradient-success rounded-full opacity-10 animate-float" style={{animationDelay: '2s'}}></div>
       </div>
+
+      {/* Alert System */}
+      {alert.show && (
+        <div className={`animate-slide-in-right transition-all duration-500 ${
+          alert.type === 'error' ? 'animate-bounce' : ''
+        }`}>
+          <Alert className={`glass-card border-white/20 ${
+            alert.type === 'success' ? 'border-green-400/50 bg-green-50/10' :
+            alert.type === 'error' ? 'border-red-400/50 bg-red-50/10' :
+            alert.type === 'warning' ? 'border-yellow-400/50 bg-yellow-50/10' :
+            'border-blue-400/50 bg-blue-50/10'
+          }`}>
+            <div className="flex items-start space-x-3">
+              <div className={`p-2 rounded-xl ${
+                alert.type === 'success' ? 'gradient-success' :
+                alert.type === 'error' ? 'gradient-warning' :
+                alert.type === 'warning' ? 'gradient-gold' :
+                'gradient-primary'
+              }`}>
+                {alert.type === 'success' && <CheckCircle className="h-5 w-5 text-white" />}
+                {alert.type === 'error' && <AlertCircle className="h-5 w-5 text-white" />}
+                {alert.type === 'warning' && <AlertTriangle className="h-5 w-5 text-white" />}
+                {alert.type === 'info' && <Info className="h-5 w-5 text-white" />}
+              </div>
+              <div className="flex-1">
+                <AlertTitle className="text-base font-semibold">{alert.title}</AlertTitle>
+                <AlertDescription className="text-sm mt-1 opacity-90">
+                  {alert.message}
+                </AlertDescription>
+              </div>
+            </div>
+          </Alert>
+        </div>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -376,6 +473,17 @@ const NouveauClientPage = () => {
                     </div>
                   </div>
                 </CardHeader>
+                
+                {/* Helpful tip alert */}
+                <div className="px-6 pb-4">
+                  <Alert className="glass border-blue-200/50 bg-blue-50/10">
+                    <Lightbulb className="h-4 w-4 text-blue-500" />
+                    <AlertTitle className="text-sm font-medium text-blue-700">Conseil pratique</AlertTitle>
+                    <AlertDescription className="text-xs text-blue-600">
+                      Assurez-vous que l'email est valide car il servira pour les communications importantes. Le téléphone doit être accessible pour la vérification d'identité.
+                    </AlertDescription>
+                  </Alert>
+                </div>
                 <CardContent className="space-y-6 relative z-10">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <FormField
@@ -543,6 +651,18 @@ const NouveauClientPage = () => {
                     </div>
                   </div>
                 </CardHeader>
+                
+                {/* Security tip alert */}
+                <div className="px-6 pb-4">
+                  <Alert className="glass border-green-200/50 bg-green-50/10">
+                    <ShieldCheck className="h-4 w-4 text-green-500" />
+                    <AlertTitle className="text-sm font-medium text-green-700">Sécurité et confidentialité</AlertTitle>
+                    <AlertDescription className="text-xs text-green-600">
+                      Toutes les adresses sont cryptées et stockées de manière sécurisée. Ces informations ne seront utilisées que pour la correspondance officielle.
+                    </AlertDescription>
+                  </Alert>
+                </div>
+                
                 <CardContent className="space-y-6 relative z-10">
                   <FormField
                     control={form.control}
@@ -652,6 +772,18 @@ const NouveauClientPage = () => {
                     </div>
                   </div>
                 </CardHeader>
+                
+                {/* Privacy tip alert */}
+                <div className="px-6 pb-4">
+                  <Alert className="glass border-yellow-200/50 bg-yellow-50/10">
+                    <Heart className="h-4 w-4 text-yellow-500" />
+                    <AlertTitle className="text-sm font-medium text-yellow-700">Informations sensibles</AlertTitle>
+                    <AlertDescription className="text-xs text-yellow-600">
+                      Ces informations nous aident à mieux comprendre la situation du client pour proposer des solutions adaptées à sa famille et sa profession.
+                    </AlertDescription>
+                  </Alert>
+                </div>
+                
                 <CardContent className="space-y-6 relative z-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
@@ -776,6 +908,18 @@ const NouveauClientPage = () => {
                     </div>
                   </div>
                 </CardHeader>
+                
+                {/* Financial tip alert */}
+                <div className="px-6 pb-4">
+                  <Alert className="glass border-gold-200/50 bg-yellow-50/10">
+                    <DollarSign className="h-4 w-4 text-yellow-600" />
+                    <AlertTitle className="text-sm font-medium text-yellow-700">Informations financières</AlertTitle>
+                    <AlertDescription className="text-xs text-yellow-600">
+                      Ces données nous permettent d'évaluer la capacité d'investissement et de proposer des produits financiers adaptés. Toutes les informations sont strictement confidentielles.
+                    </AlertDescription>
+                  </Alert>
+                </div>
+                
                 <CardContent className="space-y-6 relative z-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
