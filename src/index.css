@@ -146,7 +146,7 @@
   }
   
   .hover-scale:hover {
-    transform: scale(1.05);
+    transform: scale(1.02);
   }
 
   /* Glassmorphism Effects */
@@ -219,8 +219,8 @@
   }
   
   .hover-lift:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
   
   .hover-glow {
@@ -228,7 +228,7 @@
   }
   
   .hover-glow:hover {
-    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.25);
   }
 
   /* Chart utilities */
@@ -251,7 +251,7 @@
   }
   
   .interactive-card:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   /* Smooth scrolling */
@@ -271,7 +271,7 @@
 
 @keyframes slideIn {
   from {
-    transform: translateY(10px);
+    transform: translateY(4px);
     opacity: 0;
   }
   to {
@@ -282,7 +282,7 @@
 
 @keyframes scaleIn {
   from {
-    transform: scale(0.95);
+    transform: scale(0.98);
     opacity: 0;
   }
   to {
@@ -305,16 +305,16 @@
     transform: translateY(0px);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-3px);
   }
 }
 
 @keyframes glow {
   from {
-    box-shadow: 0 0 5px rgba(102, 126, 234, 0.2);
+    box-shadow: 0 0 3px rgba(102, 126, 234, 0.15);
   }
   to {
-    box-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.3);
   }
 }
 
@@ -343,7 +343,7 @@
   }
   
   .hover-lift:hover {
-    transform: translateY(-1px);
+    transform: translateY(-0.5px);
   }
   
   .animate-float {
