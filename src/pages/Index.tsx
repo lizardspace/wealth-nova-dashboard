@@ -1,7 +1,6 @@
 
-import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Briefcase, FileText, TrendingUp, Calendar, Sparkles } from 'lucide-react';
+import { ArrowRight, Briefcase, FileText, TrendingUp, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import AssetDistributionChart from '@/components/dashboard/AssetDistributionChart';

@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useNavigate } from 'react-router-dom';
 import { 
   Card, 
   CardContent, 
@@ -37,6 +38,23 @@ import {
 } from "@/components/ui/select";
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
+import { 
+  User, 
+  MapPin, 
+  Heart, 
+  DollarSign, 
+  UserPlus, 
+  ArrowLeft, 
+  Save,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  Phone,
+  Mail,
+  Calendar,
+  Home,
+  Briefcase
+} from 'lucide-react';
 
 // Schéma de validation
 const formSchema = z.object({
@@ -46,40 +64,30 @@ const formSchema = z.object({
   prenom: z.string().min(2, { message: "Le prénom doit contenir au moins 2 caractères" }),
   dateNaissance: z.string().min(1, { message: "Veuillez saisir une date de naissance" }),
   email: z.string().email({ message: "Veuillez saisir une adresse email valide" }),
-  telephone: z.preprocess(
-    (a) => parseInt(z.string().parse(a), 10),
-    z.number().min(1000000000, { message: "Veuillez saisir un numéro de téléphone valide" })
-  ),
+  telephone: z.string().min(10, { message: "Veuillez saisir un numéro de téléphone valide" }),
   
   // Adresse
   adresse: z.string().min(5, { message: "L'adresse doit contenir au moins 5 caractères" }),
-  codePostal: z.preprocess(
-    (a) => parseInt(z.string().parse(a), 10),
-    z.number().min(10000, { message: "Veuillez saisir un code postal valide" })
-  ),
+  codePostal: z.string().min(5, { message: "Veuillez saisir un code postal valide" }),
   ville: z.string().min(2, { message: "Veuillez saisir une ville" }),
   
   // Situation
   situationFamiliale: z.string().min(1, { message: "Veuillez sélectionner une situation familiale" }),
-  nombreEnfants: z.preprocess(
-    (a) => parseInt(z.string().parse(a), 10),
-    z.number().min(0, { message: "Veuillez indiquer le nombre d'enfants" })
-  ),
+  nombreEnfants: z.string().min(1, { message: "Veuillez indiquer le nombre d'enfants" }),
   profession: z.string().min(2, { message: "Veuillez indiquer votre profession" }),
   
   // Informations financières
-  revenuAnnuel: z.preprocess(
-    (a) => parseFloat(z.string().parse(a)),
-    z.number().min(0, { message: "Le revenu annuel doit être un nombre positif" })
-  ),
-  estimation_patrimoine_foyer_precise: z.preprocess(
-    (a) => parseFloat(z.string().parse(a)),
-    z.number().min(0, { message: "Le patrimoine estimé doit être un nombre positif" })
-  )
+  revenuAnnuel: z.string().min(1, { message: "Veuillez saisir un revenu annuel" }),
+  estimation_patrimoine_foyer_precise: z.string().min(1, { message: "Veuillez saisir un patrimoine estimé" })
 });
 
 const NouveauClientPage = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState("personnel");
+  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -93,18 +101,46 @@ const NouveauClientPage = () => {
       codePostal: "",
       ville: "",
       situationFamiliale: "",
-      nombreEnfants: 0,
+      nombreEnfants: "0",
       profession: "",
-      revenuAnnuel: 0,
-      estimation_patrimoine_foyer_precise: 0
+      revenuAnnuel: "",
+      estimation_patrimoine_foyer_precise: ""
     }
   });
 
+  // Helper function to mark step as completed
+  const markStepCompleted = (step: string) => {
+    if (!completedSteps.includes(step)) {
+      setCompletedSteps([...completedSteps, step]);
+    }
+  };
+
+  // Validate current step
+  const validateCurrentStep = async () => {
+    const fieldsToValidate = {
+      personnel: ['civilite', 'nom', 'prenom', 'dateNaissance', 'email', 'telephone'],
+      adresse: ['adresse', 'codePostal', 'ville'],
+      situation: ['situationFamiliale', 'nombreEnfants', 'profession'],
+      finances: ['revenuAnnuel', 'estimation_patrimoine_foyer_precise']
+    };
+
+    const fields = fieldsToValidate[currentStep as keyof typeof fieldsToValidate];
+    const isValid = await form.trigger(fields as any);
+    
+    if (isValid) {
+      markStepCompleted(currentStep);
+    }
+    
+    return isValid;
+  };
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("Form values:", values);
+    setIsLoading(true);
     try {
+      // Enhanced transaction-like approach with better error handling
+      console.log("Starting client creation process...");
+
       // Étape 1: Insérer dans la table 'users'
-      console.log("Étape 1: Insertion dans la table 'users'");
       const { data: userData, error: userError } = await supabase
         .from('users')
         .insert([
@@ -114,20 +150,40 @@ const NouveauClientPage = () => {
             email: values.email,
             civilite: values.civilite,
             date_naissance: values.dateNaissance,
+            power: 0, // Default user level
+            part_fiscale: 1 // Default value
           },
         ])
         .select();
 
-      if (userError) {
-        console.error("Erreur lors de l'insertion dans 'users':", userError);
-        throw userError;
-      }
-      if (!userData) throw new Error("La création de l'utilisateur a échoué.");
-      console.log("User data:", userData);
+      if (userError) throw new Error(`Erreur utilisateur: ${userError.message}`);
+      if (!userData || userData.length === 0) throw new Error("Échec de création de l'utilisateur");
+      
       const userId = userData[0].id;
+      console.log("User created with ID:", userId);
 
-      // Étape 2: Insérer dans la table 'souscription_formulaire_souscripteur'
-      console.log("Étape 2: Insertion dans la table 'souscription_formulaire_souscripteur'");
+      // Étape 2: Insérer dans personalinfo (table principale pour les infos client)
+      const { error: personalInfoError } = await supabase
+        .from('personalinfo')
+        .insert([
+          {
+            user_id: userId,
+            phone: values.telephone,
+            address: values.adresse,
+            postal_code: parseInt(values.codePostal) || 0,
+            city: values.ville,
+            situation_matrimoniale: values.situationFamiliale,
+            nb_enfants_charge: parseInt(values.nombreEnfants) || 0,
+            profession: values.profession,
+            revenu_annuel: parseFloat(values.revenuAnnuel) || 0,
+            capacite_epargne: 0,
+            epargne_precaution: 0,
+          },
+        ]);
+
+      if (personalInfoError) throw new Error(`Erreur informations personnelles: ${personalInfoError.message}`);
+
+      // Étape 3: Insérer dans souscription_formulaire_souscripteur
       const { data: souscripteurData, error: souscripteurError } = await supabase
         .from('souscription_formulaire_souscripteur')
         .insert([
@@ -136,9 +192,9 @@ const NouveauClientPage = () => {
             nom: values.nom,
             prenom: values.prenom,
             email: values.email,
-            telephone: values.telephone,
+            telephone: parseInt(values.telephone) || 0,
             adresse_postale: values.adresse,
-            code_postal: values.codePostal,
+            code_postal: parseInt(values.codePostal) || 0,
             ville: values.ville,
             date_naissance: values.dateNaissance,
             situation_familiale: values.situationFamiliale,
@@ -147,16 +203,12 @@ const NouveauClientPage = () => {
         ])
         .select();
 
-      if (souscripteurError) {
-        console.error("Erreur lors de l'insertion dans 'souscription_formulaire_souscripteur':", souscripteurError);
-        throw souscripteurError;
-      }
-      if (!souscripteurData) throw new Error("La création du souscripteur a échoué.");
-      console.log("Souscripteur data:", souscripteurData);
+      if (souscripteurError) throw new Error(`Erreur souscripteur: ${souscripteurError.message}`);
+      if (!souscripteurData || souscripteurData.length === 0) throw new Error("Échec de création du souscripteur");
+
       const souscripteurId = souscripteurData[0].id;
 
-      // Étape 3: Insérer dans la table 'souscription_formulaire_subscription'
-      console.log("Étape 3: Insertion dans la table 'souscription_formulaire_subscription'");
+      // Étape 4: Créer la subscription
       const { data: subscriptionData, error: subscriptionError } = await supabase
         .from('souscription_formulaire_subscription')
         .insert([
@@ -167,114 +219,181 @@ const NouveauClientPage = () => {
         ])
         .select();
 
-      if (subscriptionError) {
-        console.error("Erreur lors de l'insertion dans 'souscription_formulaire_subscription':", subscriptionError);
-        throw subscriptionError;
-      }
-      if (!subscriptionData) throw new Error("La création de la souscription a échoué.");
-      console.log("Subscription data:", subscriptionData);
+      if (subscriptionError) throw new Error(`Erreur souscription: ${subscriptionError.message}`);
+      if (!subscriptionData || subscriptionData.length === 0) throw new Error("Échec de création de la souscription");
+
       const subscriptionId = subscriptionData[0].id;
 
-      // Étape 4: Insérer dans la table 'souscription_formulaire_financialdata'
-      console.log("Étape 4: Insertion dans la table 'souscription_formulaire_financialdata'");
+      // Étape 5: Ajouter les données financières
       const { error: financialDataError } = await supabase
         .from('souscription_formulaire_financialdata')
         .insert([
           {
             user_id: userId,
             subscription_id: subscriptionId,
-            revenus_annuels_foyer_precise: values.revenuAnnuel,
-            estimation_patrimoine_foyer_precise: values.estimation_patrimoine_foyer_precise,
+            revenus_annuels_foyer_precise: parseFloat(values.revenuAnnuel) || 0,
+            estimation_patrimoine_foyer_precise: parseFloat(values.estimation_patrimoine_foyer_precise) || 0,
           },
         ]);
 
-      if (financialDataError) {
-        console.error("Erreur lors de l'insertion dans 'souscription_formulaire_financialdata':", financialDataError);
-        throw financialDataError;
-      }
-      console.log("Financial data inserted successfully.");
+      if (financialDataError) throw new Error(`Erreur données financières: ${financialDataError.message}`);
 
-      // Étape 5: Insérer dans la table 'personalinfo'
-      console.log("Étape 5: Insertion dans la table 'personalinfo'");
-      const { error: personalInfoError } = await supabase
-        .from('personalinfo')
-        .insert([
-          {
-            user_id: userId,
-            phone: values.telephone,
-            address: values.adresse,
-            postal_code: values.codePostal,
-            city: values.ville,
-            situation_matrimoniale: values.situationFamiliale,
-            nb_enfants_charge: values.nombreEnfants,
-            profession: values.profession,
-            revenu_annuel: values.revenuAnnuel,
-            capacite_epargne: 0, // Valeur par défaut
-            epargne_precaution: 0, // Valeur par défaut
-          },
-        ]);
-
-      if (personalInfoError) {
-        console.error("Erreur lors de l'insertion dans 'personalinfo':", personalInfoError);
-        throw personalInfoError;
-      }
-      console.log("Personal info inserted successfully.");
-
+      // Success notification with enhanced UX
       toast({
-        title: "Client créé avec succès",
-        description: `${values.prenom} ${values.nom} a été ajouté à la base de données.`,
+        title: "✅ Client créé avec succès!",
+        description: `${values.prenom} ${values.nom} a été ajouté à la base de données avec toutes ses informations.`,
       });
-      form.reset(); // Réinitialiser le formulaire
-    } catch (error) {
-      console.error("Erreur lors de la création du client:", error);
+
+      // Reset form and redirect after short delay
+      setTimeout(() => {
+        form.reset();
+        setCompletedSteps([]);
+        setCurrentStep("personnel");
+        navigate('/admin/clients');
+      }, 2000);
+
+    } catch (error: any) {
+      console.error("Client creation error:", error);
       toast({
-        title: "Erreur lors de la création",
-        description: "Une erreur s'est produite. Veuillez réessayer.",
+        title: "❌ Erreur lors de la création",
+        description: error.message || "Une erreur inattendue s'est produite. Veuillez réessayer.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Ajouter un nouveau client</h1>
+    <div className="space-y-8 animate-fade-in">
+      {/* Modern Header with glassmorphism */}
+      <div className="glass-card p-8 rounded-2xl relative overflow-hidden">
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate('/admin/clients')}
+              className="glass hover:glass-card transition-all duration-300 hover-lift"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-eparnova-blue via-eparnova-green to-eparnova-gold bg-clip-text text-transparent">
+                Ajouter un nouveau client
+              </h1>
+              <p className="text-muted-foreground mt-1">Créez un profil client complet avec toutes les informations nécessaires</p>
+            </div>
+          </div>
+          <div className="hidden md:flex items-center space-x-2">
+            <UserPlus className="h-8 w-8 text-eparnova-blue animate-float" />
+          </div>
+        </div>
+        {/* Decorative elements */}
+        <div className="absolute top-4 right-4 w-20 h-20 gradient-primary rounded-full opacity-10 animate-float"></div>
+        <div className="absolute bottom-4 left-4 w-16 h-16 gradient-success rounded-full opacity-10 animate-float" style={{animationDelay: '2s'}}></div>
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <Tabs defaultValue="personnel" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="personnel">Informations personnelles</TabsTrigger>
-              <TabsTrigger value="adresse">Adresse</TabsTrigger>
-              <TabsTrigger value="situation">Situation</TabsTrigger>
-              <TabsTrigger value="finances">Informations financières</TabsTrigger>
-            </TabsList>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <Tabs value={currentStep} onValueChange={setCurrentStep} className="w-full">
+            {/* Enhanced Tab Navigation */}
+            <div className="glass-card p-2 rounded-2xl mb-8">
+              <TabsList className="grid w-full grid-cols-4 bg-transparent gap-2">
+                <TabsTrigger 
+                  value="personnel" 
+                  className={`glass hover:glass-card transition-all duration-300 data-[state=active]:gradient-primary data-[state=active]:text-white relative ${
+                    completedSteps.includes('personnel') ? 'ring-2 ring-green-400' : ''
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <User className="h-4 w-4" />
+                    <span className="hidden sm:inline">Personnel</span>
+                    {completedSteps.includes('personnel') && (
+                      <CheckCircle className="h-4 w-4 text-green-400 absolute -top-1 -right-1" />
+                    )}
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="adresse"
+                  className={`glass hover:glass-card transition-all duration-300 data-[state=active]:gradient-primary data-[state=active]:text-white relative ${
+                    completedSteps.includes('adresse') ? 'ring-2 ring-green-400' : ''
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="h-4 w-4" />
+                    <span className="hidden sm:inline">Adresse</span>
+                    {completedSteps.includes('adresse') && (
+                      <CheckCircle className="h-4 w-4 text-green-400 absolute -top-1 -right-1" />
+                    )}
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="situation"
+                  className={`glass hover:glass-card transition-all duration-300 data-[state=active]:gradient-primary data-[state=active]:text-white relative ${
+                    completedSteps.includes('situation') ? 'ring-2 ring-green-400' : ''
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <Heart className="h-4 w-4" />
+                    <span className="hidden sm:inline">Situation</span>
+                    {completedSteps.includes('situation') && (
+                      <CheckCircle className="h-4 w-4 text-green-400 absolute -top-1 -right-1" />
+                    )}
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="finances"
+                  className={`glass hover:glass-card transition-all duration-300 data-[state=active]:gradient-primary data-[state=active]:text-white relative ${
+                    completedSteps.includes('finances') ? 'ring-2 ring-green-400' : ''
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <DollarSign className="h-4 w-4" />
+                    <span className="hidden sm:inline">Finances</span>
+                    {completedSteps.includes('finances') && (
+                      <CheckCircle className="h-4 w-4 text-green-400 absolute -top-1 -right-1" />
+                    )}
+                  </div>
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
             {/* Onglet 1 : Informations personnelles */}
-            <TabsContent value="personnel">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Informations personnelles</CardTitle>
-                  <CardDescription>
-                    Saisissez les informations de base du client.
-                  </CardDescription>
+            <TabsContent value="personnel" className="animate-slide-in-right">
+              <Card className="border-none relative overflow-hidden">
+                <div className="absolute inset-0 gradient-primary opacity-5"></div>
+                <CardHeader className="relative z-10">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 gradient-primary rounded-xl">
+                      <User className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-2xl font-bold">Informations personnelles</CardTitle>
+                      <CardDescription className="text-base">
+                        Saisissez les informations de base du client
+                      </CardDescription>
+                    </div>
+                  </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <CardContent className="space-y-6 relative z-10">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <FormField
                       control={form.control}
                       name="civilite"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Civilité</FormLabel>
+                          <FormLabel className="flex items-center space-x-2">
+                            <User className="h-4 w-4" />
+                            <span>Civilité</span>
+                          </FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="glass border-white/30 hover:border-white/50 transition-all duration-300">
                                 <SelectValue placeholder="Sélectionnez une civilité" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
+                            <SelectContent className="glass-card border-white/20">
                               <SelectItem value="M.">Monsieur</SelectItem>
                               <SelectItem value="Mme">Madame</SelectItem>
                             </SelectContent>
@@ -288,9 +407,16 @@ const NouveauClientPage = () => {
                       name="nom"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nom</FormLabel>
+                          <FormLabel className="flex items-center space-x-2">
+                            <User className="h-4 w-4" />
+                            <span>Nom</span>
+                          </FormLabel>
                           <FormControl>
-                            <Input placeholder="Nom" {...field} />
+                            <Input 
+                              placeholder="Nom de famille" 
+                              className="glass border-white/30 hover:border-white/50 focus:border-blue-300/50 transition-all duration-300" 
+                              {...field} 
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -301,9 +427,16 @@ const NouveauClientPage = () => {
                       name="prenom"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Prénom</FormLabel>
+                          <FormLabel className="flex items-center space-x-2">
+                            <User className="h-4 w-4" />
+                            <span>Prénom</span>
+                          </FormLabel>
                           <FormControl>
-                            <Input placeholder="Prénom" {...field} />
+                            <Input 
+                              placeholder="Prénom" 
+                              className="glass border-white/30 hover:border-white/50 focus:border-blue-300/50 transition-all duration-300" 
+                              {...field} 
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -311,15 +444,22 @@ const NouveauClientPage = () => {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <FormField
                       control={form.control}
                       name="dateNaissance"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Date de naissance</FormLabel>
+                          <FormLabel className="flex items-center space-x-2">
+                            <Calendar className="h-4 w-4" />
+                            <span>Date de naissance</span>
+                          </FormLabel>
                           <FormControl>
-                            <Input type="date" {...field} />
+                            <Input 
+                              type="date" 
+                              className="glass border-white/30 hover:border-white/50 focus:border-blue-300/50 transition-all duration-300" 
+                              {...field} 
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -330,9 +470,17 @@ const NouveauClientPage = () => {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email</FormLabel>
+                          <FormLabel className="flex items-center space-x-2">
+                            <Mail className="h-4 w-4" />
+                            <span>Email</span>
+                          </FormLabel>
                           <FormControl>
-                            <Input placeholder="email@exemple.com" type="email" {...field} />
+                            <Input 
+                              placeholder="email@exemple.com" 
+                              type="email" 
+                              className="glass border-white/30 hover:border-white/50 focus:border-blue-300/50 transition-all duration-300" 
+                              {...field} 
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -343,52 +491,96 @@ const NouveauClientPage = () => {
                       name="telephone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Téléphone</FormLabel>
+                          <FormLabel className="flex items-center space-x-2">
+                            <Phone className="h-4 w-4" />
+                            <span>Téléphone</span>
+                          </FormLabel>
                           <FormControl>
-                            <Input placeholder="06 12 34 56 78" {...field} />
+                            <Input 
+                              placeholder="06 12 34 56 78" 
+                              className="glass border-white/30 hover:border-white/50 focus:border-blue-300/50 transition-all duration-300" 
+                              {...field} 
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
+                  
+                  {/* Next Step Button */}
+                  <div className="flex justify-end pt-4">
+                    <Button 
+                      type="button"
+                      onClick={async () => {
+                        const isValid = await validateCurrentStep();
+                        if (isValid) setCurrentStep("adresse");
+                      }}
+                      className="gradient-primary text-white hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                    >
+                      Suivant: Adresse
+                      <ArrowLeft className="h-4 w-4 ml-2 rotate-180" />
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
             {/* Onglet 2 : Adresse */}
-            <TabsContent value="adresse">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Adresse</CardTitle>
-                  <CardDescription>
-                    Saisissez l'adresse complète du client.
-                  </CardDescription>
+            <TabsContent value="adresse" className="animate-slide-in-right">
+              <Card className="border-none relative overflow-hidden">
+                <div className="absolute inset-0 gradient-success opacity-5"></div>
+                <CardHeader className="relative z-10">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 gradient-success rounded-xl">
+                      <MapPin className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-2xl font-bold">Adresse du client</CardTitle>
+                      <CardDescription className="text-base">
+                        Informations de localisation et de contact
+                      </CardDescription>
+                    </div>
+                  </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6 relative z-10">
                   <FormField
                     control={form.control}
                     name="adresse"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Adresse</FormLabel>
+                        <FormLabel className="flex items-center space-x-2">
+                          <Home className="h-4 w-4" />
+                          <span>Adresse complète</span>
+                        </FormLabel>
                         <FormControl>
-                          <Input placeholder="Adresse" {...field} />
+                          <Input 
+                            placeholder="Numéro et nom de rue" 
+                            className="glass border-white/30 hover:border-white/50 focus:border-blue-300/50 transition-all duration-300" 
+                            {...field} 
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
                       name="codePostal"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Code postal</FormLabel>
+                          <FormLabel className="flex items-center space-x-2">
+                            <MapPin className="h-4 w-4" />
+                            <span>Code postal</span>
+                          </FormLabel>
                           <FormControl>
-                            <Input placeholder="Code postal" {...field} />
+                            <Input 
+                              placeholder="75001" 
+                              className="glass border-white/30 hover:border-white/50 focus:border-blue-300/50 transition-all duration-300" 
+                              {...field} 
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -399,43 +591,85 @@ const NouveauClientPage = () => {
                       name="ville"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Ville</FormLabel>
+                          <FormLabel className="flex items-center space-x-2">
+                            <Home className="h-4 w-4" />
+                            <span>Ville</span>
+                          </FormLabel>
                           <FormControl>
-                            <Input placeholder="Ville" {...field} />
+                            <Input 
+                              placeholder="Paris" 
+                              className="glass border-white/30 hover:border-white/50 focus:border-blue-300/50 transition-all duration-300" 
+                              {...field} 
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
+                  
+                  {/* Navigation Buttons */}
+                  <div className="flex justify-between pt-4">
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      onClick={() => setCurrentStep("personnel")}
+                      className="glass border-white/30 hover:glass-card"
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Précédent
+                    </Button>
+                    <Button 
+                      type="button"
+                      onClick={async () => {
+                        const isValid = await validateCurrentStep();
+                        if (isValid) setCurrentStep("situation");
+                      }}
+                      className="gradient-success text-white hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                    >
+                      Suivant: Situation
+                      <ArrowLeft className="h-4 w-4 ml-2 rotate-180" />
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
             {/* Onglet 3 : Situation */}
-            <TabsContent value="situation">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Situation personnelle</CardTitle>
-                  <CardDescription>
-                    Informations sur la situation personnelle et professionnelle du client.
-                  </CardDescription>
+            <TabsContent value="situation" className="animate-slide-in-right">
+              <Card className="border-none relative overflow-hidden">
+                <div className="absolute inset-0 gradient-warning opacity-5"></div>
+                <CardHeader className="relative z-10">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 gradient-warning rounded-xl">
+                      <Heart className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-2xl font-bold">Situation personnelle</CardTitle>
+                      <CardDescription className="text-base">
+                        Informations familiales et professionnelles
+                      </CardDescription>
+                    </div>
+                  </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CardContent className="space-y-6 relative z-10">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
                       name="situationFamiliale"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Situation familiale</FormLabel>
+                          <FormLabel className="flex items-center space-x-2">
+                            <Heart className="h-4 w-4" />
+                            <span>Situation familiale</span>
+                          </FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="glass border-white/30 hover:border-white/50 transition-all duration-300">
                                 <SelectValue placeholder="Sélectionnez une situation" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
+                            <SelectContent className="glass-card border-white/20">
                               <SelectItem value="celibataire">Célibataire</SelectItem>
                               <SelectItem value="marie">Marié(e)</SelectItem>
                               <SelectItem value="pacse">Pacsé(e)</SelectItem>
@@ -452,20 +686,23 @@ const NouveauClientPage = () => {
                       name="nombreEnfants"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nombre d'enfants</FormLabel>
+                          <FormLabel className="flex items-center space-x-2">
+                            <User className="h-4 w-4" />
+                            <span>Nombre d'enfants</span>
+                          </FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="glass border-white/30 hover:border-white/50 transition-all duration-300">
                                 <SelectValue placeholder="Sélectionnez un nombre" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
+                            <SelectContent className="glass-card border-white/20">
                               <SelectItem value="0">0</SelectItem>
                               <SelectItem value="1">1</SelectItem>
                               <SelectItem value="2">2</SelectItem>
                               <SelectItem value="3">3</SelectItem>
                               <SelectItem value="4">4</SelectItem>
-                              <SelectItem value="5+">5 ou plus</SelectItem>
+                              <SelectItem value="5">5 ou plus</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -479,39 +716,86 @@ const NouveauClientPage = () => {
                     name="profession"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Profession</FormLabel>
+                        <FormLabel className="flex items-center space-x-2">
+                          <Briefcase className="h-4 w-4" />
+                          <span>Profession</span>
+                        </FormLabel>
                         <FormControl>
-                          <Input placeholder="Profession" {...field} />
+                          <Input 
+                            placeholder="Ingénieur, Médecin, Enseignant..." 
+                            className="glass border-white/30 hover:border-white/50 focus:border-blue-300/50 transition-all duration-300" 
+                            {...field} 
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+                  
+                  {/* Navigation Buttons */}
+                  <div className="flex justify-between pt-4">
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      onClick={() => setCurrentStep("adresse")}
+                      className="glass border-white/30 hover:glass-card"
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Précédent
+                    </Button>
+                    <Button 
+                      type="button"
+                      onClick={async () => {
+                        const isValid = await validateCurrentStep();
+                        if (isValid) setCurrentStep("finances");
+                      }}
+                      className="gradient-warning text-white hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                    >
+                      Suivant: Finances
+                      <ArrowLeft className="h-4 w-4 ml-2 rotate-180" />
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
             {/* Onglet 4 : Informations financières */}
-            <TabsContent value="finances">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Informations financières</CardTitle>
-                  <CardDescription>
-                    Saisissez les informations financières de base du client.
-                  </CardDescription>
+            <TabsContent value="finances" className="animate-slide-in-right">
+              <Card className="border-none relative overflow-hidden">
+                <div className="absolute inset-0 gradient-gold opacity-5"></div>
+                <CardHeader className="relative z-10">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 gradient-gold rounded-xl">
+                      <DollarSign className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-2xl font-bold">Informations financières</CardTitle>
+                      <CardDescription className="text-base">
+                        Situation financière et patrimoine du client
+                      </CardDescription>
+                    </div>
+                  </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CardContent className="space-y-6 relative z-10">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
                       name="revenuAnnuel"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Revenu annuel (€)</FormLabel>
+                          <FormLabel className="flex items-center space-x-2">
+                            <DollarSign className="h-4 w-4" />
+                            <span>Revenu annuel (€)</span>
+                          </FormLabel>
                           <FormControl>
-                            <Input placeholder="Revenu annuel" type="number" {...field} />
+                            <Input 
+                              placeholder="45000" 
+                              type="number" 
+                              className="glass border-white/30 hover:border-white/50 focus:border-blue-300/50 transition-all duration-300" 
+                              {...field} 
+                            />
                           </FormControl>
-                          <FormDescription>
+                          <FormDescription className="text-sm text-muted-foreground">
                             Revenu annuel net avant impôts
                           </FormDescription>
                           <FormMessage />
@@ -523,11 +807,19 @@ const NouveauClientPage = () => {
                       name="estimation_patrimoine_foyer_precise"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Patrimoine estimé (€)</FormLabel>
+                          <FormLabel className="flex items-center space-x-2">
+                            <Briefcase className="h-4 w-4" />
+                            <span>Patrimoine estimé (€)</span>
+                          </FormLabel>
                           <FormControl>
-                            <Input placeholder="Patrimoine estimé" type="number" {...field} />
+                            <Input 
+                              placeholder="150000" 
+                              type="number" 
+                              className="glass border-white/30 hover:border-white/50 focus:border-blue-300/50 transition-all duration-300" 
+                              {...field} 
+                            />
                           </FormControl>
-                          <FormDescription>
+                          <FormDescription className="text-sm text-muted-foreground">
                             Estimation globale du patrimoine
                           </FormDescription>
                           <FormMessage />
@@ -535,10 +827,37 @@ const NouveauClientPage = () => {
                       )}
                     />
                   </div>
+                  
+                  {/* Navigation and Submit */}
+                  <div className="flex justify-between pt-6">
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      onClick={() => setCurrentStep("situation")}
+                      className="glass border-white/30 hover:glass-card"
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Précédent
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      disabled={isLoading}
+                      className="gradient-gold text-black hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl min-w-[200px]"
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Création en cours...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Créer le client
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </CardContent>
-                <CardFooter className="flex justify-end">
-                  <Button type="submit">Créer le client</Button>
-                </CardFooter>
               </Card>
             </TabsContent>
           </Tabs>
