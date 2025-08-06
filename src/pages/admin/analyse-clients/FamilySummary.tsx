@@ -119,7 +119,7 @@ const FamilySummary: React.FC = () => {
   }, [toast]);
 
   const formatCurrency = (amount: number) => {
-    if (amount === null || amount === undefined) return 'N/A';
+    if (amount === null || amount === undefined || isNaN(amount)) return 'N/A';
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: 'EUR',
@@ -184,8 +184,14 @@ const FamilySummary: React.FC = () => {
   });
 
   // Statistics calculations
-  const totalFamilyAssets = familySummaries.reduce((sum, family) => sum + (family.family_total_assets || 0), 0);
-  const totalFamilyNetWorth = familySummaries.reduce((sum, family) => sum + (family.family_net_worth || 0), 0);
+  const totalFamilyAssets = familySummaries.reduce((sum, family) => {
+    const assets = family.family_total_assets;
+    return sum + (assets && !isNaN(assets) ? assets : 0);
+  }, 0);
+  const totalFamilyNetWorth = familySummaries.reduce((sum, family) => {
+    const netWorth = family.family_net_worth;
+    return sum + (netWorth && !isNaN(netWorth) ? netWorth : 0);
+  }, 0);
   const averageFamilyAssets = familySummaries.length > 0 ? totalFamilyAssets / familySummaries.length : 0;
   const averageFamilyNetWorth = familySummaries.length > 0 ? totalFamilyNetWorth / familySummaries.length : 0;
   const linkedFamilies = familySummaries.filter(family => family.linked).length;
@@ -229,14 +235,6 @@ const FamilySummary: React.FC = () => {
         <div className="absolute inset-0 gradient-primary opacity-5"></div>
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/admin/analyse-clients')}
-              className="glass hover:glass-card transition-all duration-200"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-eparnova-blue via-eparnova-green to-eparnova-gold bg-clip-text text-transparent">
                 Synthèse des Familles
