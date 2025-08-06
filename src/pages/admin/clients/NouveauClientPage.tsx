@@ -244,6 +244,7 @@ const NouveauClientPage = () => {
         .insert([
           {
             user_id: userId,
+            civilite: values.civilite,
             nom: values.nom,
             prenom: values.prenom,
             email: values.email,
