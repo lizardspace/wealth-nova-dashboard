@@ -1,44 +1,60 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Typography,
-  Button,
-  Paper,
-  TextField,
-  MenuItem,
-  Grid,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
+  TableHeader,
   TableRow,
-  Chip,
-  Card,
-  CardContent,
-  LinearProgress,
-  FormControl,
-  InputLabel,
-  Select,
-  Snackbar,
-  Alert,
-  IconButton,
-  Tooltip,
-  CircularProgress
-} from '@mui/material';
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 import {
-  FilterAlt as FilterIcon,
-  Search as SearchIcon,
-  Clear as ClearIcon,
-  TrendingUp as TrendingUpIcon,
-  CreditCard as CreditCardIcon,
-  Percent as PercentIcon,
-  People as PeopleIcon,
-  Euro as EuroIcon,
-  Scale as ScaleIcon,
-  PieChart as PieChartIcon
-} from '@mui/icons-material';
+  CreditCard,
+  Users,
+  Percent,
+  Euro,
+  TrendingUp,
+  TrendingDown,
+  Search,
+  Filter,
+  AlertCircle,
+  ArrowLeft,
+  DollarSign,
+  PieChart,
+  BarChart3,
+  Calculator,
+  Target,
+  Wallet,
+  ShieldCheck,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Award,
+  Zap,
+} from 'lucide-react';
 import { supabase } from './../../../lib/supabase';
+import { useToast } from '@/components/ui/use-toast';
 
 interface CreditAnalysis {
   user_id: string;
@@ -55,17 +71,13 @@ interface CreditAnalysis {
 }
 
 const CreditAnalysis: React.FC = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [creditAnalyses, setCreditAnalyses] = useState<CreditAnalysis[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterHasCredit, setFilterHasCredit] = useState<string>('');
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: '',
-    severity: 'success' as 'success' | 'error'
-  });
+  const [filterHasCredit, setFilterHasCredit] = useState<string>('all');
 
-  // Fetch credit analyses from view
   useEffect(() => {
     const fetchCreditAnalyses = async () => {
       setLoading(true);
@@ -79,10 +91,10 @@ const CreditAnalysis: React.FC = () => {
         setCreditAnalyses(data || []);
       } catch (error) {
         console.error('Error fetching credit analyses:', error);
-        setSnackbar({
-          open: true,
-          message: 'Failed to fetch credit analysis data',
-          severity: 'error'
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les analyses de crédit",
+          variant: "destructive",
         });
       } finally {
         setLoading(false);
@@ -90,14 +102,14 @@ const CreditAnalysis: React.FC = () => {
     };
 
     fetchCreditAnalyses();
-  }, []);
+  }, [toast]);
 
-  // Helper functions
   const formatCurrency = (amount: number) => {
     if (amount === null || amount === undefined) return '0 €';
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
-      currency: 'EUR'
+      currency: 'EUR',
+      maximumFractionDigits: 0
     }).format(amount);
   };
 
@@ -106,45 +118,49 @@ const CreditAnalysis: React.FC = () => {
     return `${rate.toFixed(2)}%`;
   };
 
-  const getCreditSituationColor = (situation: string) => {
+  const getCreditSituationBadge = (situation: string) => {
     switch (situation) {
       case 'Aucun crédit':
-        return 'success';
+        return { variant: 'default', icon: CheckCircle };
       case 'Un crédit':
-        return 'primary';
+        return { variant: 'secondary', icon: CreditCard };
       case 'Plusieurs crédits':
-        return 'warning';
+        return { variant: 'destructive', icon: AlertCircle };
       default:
-        return 'default';
+        return { variant: 'outline', icon: XCircle };
     }
   };
 
-  const getMonthlyPaymentCategoryColor = (category: string) => {
+  const getMonthlyPaymentCategoryBadge = (category: string) => {
     switch (category) {
       case 'Aucune mensualité':
-        return 'success';
+        return { variant: 'default', color: 'text-green-600' };
       case 'Faible charge':
-        return 'info';
+        return { variant: 'secondary', color: 'text-blue-600' };
       case 'Charge modérée':
-        return 'warning';
+        return { variant: 'outline', color: 'text-orange-600' };
       case 'Forte charge':
-        return 'error';
+        return { variant: 'destructive', color: 'text-red-600' };
       default:
-        return 'default';
+        return { variant: 'outline', color: 'text-gray-600' };
     }
   };
 
   const getDebtLevel = (remainingCapital: number) => {
-    if (remainingCapital === 0) return { label: 'Aucune dette', color: 'success' };
-    if (remainingCapital < 50000) return { label: 'Faible dette', color: 'info' };
-    if (remainingCapital < 200000) return { label: 'Dette modérée', color: 'warning' };
-    return { label: 'Forte dette', color: 'error' };
+    if (remainingCapital === 0) return { label: 'Aucune dette', variant: 'default', color: 'text-green-600' };
+    if (remainingCapital < 50000) return { label: 'Faible dette', variant: 'secondary', color: 'text-blue-600' };
+    if (remainingCapital < 200000) return { label: 'Dette modérée', variant: 'outline', color: 'text-orange-600' };
+    return { label: 'Forte dette', variant: 'destructive', color: 'text-red-600' };
+  };
+
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
   };
 
   // Filter analyses
   const filteredAnalyses = creditAnalyses.filter(analysis => {
     const nameMatch = `${analysis.first_name} ${analysis.last_name}`.toLowerCase().includes(searchTerm.toLowerCase());
-    const creditMatch = !filterHasCredit || 
+    const creditMatch = filterHasCredit === 'all' || 
       (filterHasCredit === 'true' && analysis.credit_count > 0) ||
       (filterHasCredit === 'false' && analysis.credit_count === 0);
     
@@ -182,374 +198,415 @@ const CreditAnalysis: React.FC = () => {
 
   const handleClearFilters = () => {
     setSearchTerm('');
-    setFilterHasCredit('');
+    setFilterHasCredit('all');
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1">
-          Analyse des Crédits Clients
-        </Typography>
-        <Box>
-          <Tooltip title="Réinitialiser les filtres">
-            <IconButton onClick={handleClearFilters} color="primary">
-              <ClearIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      </Box>
+    <div className="space-y-8 animate-fade-in p-6">
+      {/* Enhanced Header with glassmorphism */}
+      <div className="glass-card p-8 rounded-2xl relative overflow-hidden border-white/20">
+        <div className="absolute inset-0 gradient-primary opacity-5"></div>
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/admin/analyse-clients')}
+              className="glass hover:glass-card transition-all duration-200"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-eparnova-blue via-eparnova-green to-eparnova-gold bg-clip-text text-transparent">
+                Analyse des Crédits Clients
+              </h1>
+              <p className="text-muted-foreground mt-2 text-lg">
+                Analyse détaillée des engagements de crédit et capacité de remboursement
+              </p>
+            </div>
+          </div>
+          <div className="hidden md:flex items-center space-x-2">
+            <CreditCard className="h-10 w-10 text-eparnova-blue animate-float" />
+            <Calculator className="h-8 w-8 text-eparnova-green animate-float" style={{animationDelay: '1s'}} />
+          </div>
+        </div>
+        {/* Decorative elements */}
+        <div className="absolute top-4 right-4 w-24 h-24 gradient-warning rounded-full opacity-10 animate-float"></div>
+        <div className="absolute bottom-4 left-4 w-20 h-20 gradient-success rounded-full opacity-10 animate-float" style={{animationDelay: '2s'}}></div>
+      </div>
 
-      {/* Statistics Cards */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography color="textSecondary" gutterBottom>
-                    Total Clients
-                  </Typography>
-                  <Typography variant="h5">
-                    {creditAnalyses.length}
-                  </Typography>
-                </Box>
-                <PeopleIcon color="primary" fontSize="large" />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography color="textSecondary" gutterBottom>
-                    Clients avec Crédit
-                  </Typography>
-                  <Typography variant="h5">
-                    {usersWithCredit} ({creditAnalyses.length > 0 ? ((usersWithCredit / creditAnalyses.length) * 100).toFixed(1) : 0}%)
-                  </Typography>
-                </Box>
-                <CreditCardIcon color="primary" fontSize="large" />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography color="textSecondary" gutterBottom>
-                    Taux Moyen
-                  </Typography>
-                  <Typography variant="h5">
-                    {formatPercentage(averageRate)}
-                  </Typography>
-                </Box>
-                <PercentIcon color="primary" fontSize="large" />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography color="textSecondary" gutterBottom>
-                    Capital Restant
-                  </Typography>
-                  <Typography variant="h5">
-                    {formatCurrency(totalRemainingCapital)}
-                  </Typography>
-                </Box>
-                <EuroIcon color="error" fontSize="large" />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      {/* Enhanced Statistics Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Total Clients */}
+        <Card className="glass-card border-white/20 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+          <div className="absolute inset-0 gradient-primary opacity-5"></div>
+          <CardContent className="p-6 relative z-10">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Clients</p>
+                <p className="text-3xl font-bold text-foreground">{creditAnalyses.length}</p>
+                <p className="text-xs text-muted-foreground mt-1">clients analysés</p>
+              </div>
+              <div className="p-3 gradient-primary rounded-xl">
+                <Users className="h-6 w-6 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Clients with Credit */}
+        <Card className="glass-card border-white/20 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+          <div className="absolute inset-0 gradient-warning opacity-5"></div>
+          <CardContent className="p-6 relative z-10">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Clients avec Crédit</p>
+                <p className="text-3xl font-bold text-orange-600">{usersWithCredit}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {creditAnalyses.length > 0 ? ((usersWithCredit / creditAnalyses.length) * 100).toFixed(1) : 0}% du total
+                </p>
+              </div>
+              <div className="p-3 gradient-warning rounded-xl">
+                <CreditCard className="h-6 w-6 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Average Rate */}
+        <Card className="glass-card border-white/20 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+          <div className="absolute inset-0 gradient-success opacity-5"></div>
+          <CardContent className="p-6 relative z-10">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Taux Moyen</p>
+                <p className="text-3xl font-bold text-blue-600">{formatPercentage(averageRate)}</p>
+                <p className="text-xs text-muted-foreground mt-1">taux d'intérêt moyen</p>
+              </div>
+              <div className="p-3 gradient-success rounded-xl">
+                <Percent className="h-6 w-6 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Total Remaining Capital */}
+        <Card className="glass-card border-white/20 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+          <div className="absolute inset-0 gradient-gold opacity-5"></div>
+          <CardContent className="p-6 relative z-10">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Capital Restant</p>
+                <p className="text-2xl font-bold text-red-600">{formatCurrency(totalRemainingCapital)}</p>
+                <p className="text-xs text-muted-foreground mt-1">à rembourser</p>
+              </div>
+              <div className="p-3 gradient-gold rounded-xl">
+                <Euro className="h-6 w-6 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Financial Overview Cards */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Capital Initial Total
-              </Typography>
-              <Typography variant="h6" color="primary">
-                {formatCurrency(totalInitialAmount)}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Moyenne: {formatCurrency(averageInitialAmount)}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Mensualités Totales
-              </Typography>
-              <Typography variant="h6" color="warning.main">
-                {formatCurrency(totalMonthlyPayments)}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Moyenne: {formatCurrency(averageMonthlyPayment)}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Assurances Totales
-              </Typography>
-              <Typography variant="h6" color="info.main">
-                {formatCurrency(totalInsurance)}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Moyenne: {formatCurrency(creditAnalyses.length > 0 ? totalInsurance / creditAnalyses.length : 0)}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Progression Remboursement
-              </Typography>
-              <Typography variant="h6" color={totalRepaymentProgress > 50 ? 'success' : 'warning'}>
-                {totalRepaymentProgress.toFixed(1)}%
-              </Typography>
-              <LinearProgress 
-                variant="determinate" 
-                value={totalRepaymentProgress} 
-                color={totalRepaymentProgress > 50 ? 'success' : 'warning'}
-                sx={{ height: 8, mt: 1 }}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="glass-card border-white/20 hover:shadow-lg transition-all duration-300">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+              <Target className="h-4 w-4 mr-2 text-blue-500" />
+              Capital Initial Total
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold text-blue-600">{formatCurrency(totalInitialAmount)}</p>
+            <p className="text-sm text-muted-foreground mt-1">Moyenne: {formatCurrency(averageInitialAmount)}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card border-white/20 hover:shadow-lg transition-all duration-300">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+              <Clock className="h-4 w-4 mr-2 text-orange-500" />
+              Mensualités Totales
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold text-orange-600">{formatCurrency(totalMonthlyPayments)}</p>
+            <p className="text-sm text-muted-foreground mt-1">Moyenne: {formatCurrency(averageMonthlyPayment)}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card border-white/20 hover:shadow-lg transition-all duration-300">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+              <ShieldCheck className="h-4 w-4 mr-2 text-teal-500" />
+              Assurances Totales
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold text-teal-600">{formatCurrency(totalInsurance)}</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Moyenne: {formatCurrency(creditAnalyses.length > 0 ? totalInsurance / creditAnalyses.length : 0)}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card border-white/20 hover:shadow-lg transition-all duration-300">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+              <TrendingUp className="h-4 w-4 mr-2 text-green-500" />
+              Progression Remboursement
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className={`text-2xl font-bold ${totalRepaymentProgress > 50 ? 'text-green-600' : 'text-orange-600'}`}>
+              {totalRepaymentProgress.toFixed(1)}%
+            </p>
+            <Progress value={totalRepaymentProgress} className="mt-2 h-2" />
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Distribution Charts */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Répartition des Situations de Crédit
-              </Typography>
-              {Object.entries(creditSituationStats).map(([situation, count]) => (
-                <Box key={situation} sx={{ mb: 2 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body2">
-                      <Chip 
-                        label={situation} 
-                        size="small" 
-                        color={getCreditSituationColor(situation) as any}
-                        sx={{ mr: 1 }}
-                      />
-                    </Typography>
-                    <Typography variant="body2">
-                      {count} ({creditAnalyses.length > 0 ? ((count / creditAnalyses.length) * 100).toFixed(1) : 0}%)
-                    </Typography>
-                  </Box>
-                  <LinearProgress 
-                    variant="determinate" 
-                    value={(count / creditAnalyses.length) * 100}
-                    color={getCreditSituationColor(situation) as any}
-                  />
-                </Box>
-              ))}
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Répartition des Charges de Remboursement
-              </Typography>
-              {Object.entries(monthlyPaymentCategoryStats).map(([category, count]) => (
-                <Box key={category} sx={{ mb: 2 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body2">
-                      <Chip 
-                        label={category} 
-                        size="small" 
-                        color={getMonthlyPaymentCategoryColor(category) as any}
-                        sx={{ mr: 1 }}
-                      />
-                    </Typography>
-                    <Typography variant="body2">
-                      {count} ({creditAnalyses.length > 0 ? ((count / creditAnalyses.length) * 100).toFixed(1) : 0}%)
-                    </Typography>
-                  </Box>
-                  <LinearProgress 
-                    variant="determinate" 
-                    value={(count / creditAnalyses.length) * 100}
-                    color={getMonthlyPaymentCategoryColor(category) as any}
-                  />
-                </Box>
-              ))}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="glass-card border-white/20">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <PieChart className="h-5 w-5 text-eparnova-blue" />
+              <span>Situations de Crédit</span>
+            </CardTitle>
+            <CardDescription>Répartition des situations par type de crédit</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {Object.entries(creditSituationStats).map(([situation, count]) => {
+              const badgeInfo = getCreditSituationBadge(situation);
+              const IconComponent = badgeInfo.icon;
+              const percentage = creditAnalyses.length > 0 ? (count / creditAnalyses.length) * 100 : 0;
+              
+              return (
+                <div key={situation} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <IconComponent className="h-4 w-4" />
+                      <Badge variant={badgeInfo.variant as any}>
+                        {situation}
+                      </Badge>
+                    </div>
+                    <span className="text-sm font-medium">
+                      {count} ({percentage.toFixed(1)}%)
+                    </span>
+                  </div>
+                  <Progress value={percentage} className="h-2" />
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
 
-      {/* Filters */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            label="Rechercher un client"
-            variant="outlined"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            InputProps={{
-              startAdornment: <SearchIcon color="action" sx={{ mr: 1 }} />
-            }}
-          />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <FormControl fullWidth>
-            <InputLabel>Statut Crédit</InputLabel>
-            <Select
-              value={filterHasCredit}
-              label="Statut Crédit"
-              onChange={(e) => setFilterHasCredit(e.target.value as string)}
+        <Card className="glass-card border-white/20">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <BarChart3 className="h-5 w-5 text-eparnova-green" />
+              <span>Charges de Remboursement</span>
+            </CardTitle>
+            <CardDescription>Répartition par niveau de charge mensuelle</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {Object.entries(monthlyPaymentCategoryStats).map(([category, count]) => {
+              const badgeInfo = getMonthlyPaymentCategoryBadge(category);
+              const percentage = creditAnalyses.length > 0 ? (count / creditAnalyses.length) * 100 : 0;
+              
+              return (
+                <div key={category} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Badge variant={badgeInfo.variant as any} className={badgeInfo.color}>
+                      {category}
+                    </Badge>
+                    <span className="text-sm font-medium">
+                      {count} ({percentage.toFixed(1)}%)
+                    </span>
+                  </div>
+                  <Progress value={percentage} className="h-2" />
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Enhanced Filters */}
+      <Card className="glass-card border-white/20">
+        <CardHeader>
+          <div className="flex items-center space-x-2">
+            <Filter className="h-5 w-5 text-eparnova-blue" />
+            <CardTitle className="text-lg">Filtres et Recherche</CardTitle>
+          </div>
+          <CardDescription>Affinez votre recherche avec les filtres ci-dessous</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Rechercher un client</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Nom ou prénom..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 glass border-white/30 hover:border-white/50 focus:border-blue-300/50"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Statut Crédit</label>
+              <Select value={filterHasCredit} onValueChange={setFilterHasCredit}>
+                <SelectTrigger className="glass border-white/30 hover:border-white/50">
+                  <SelectValue placeholder="Tous les clients" />
+                </SelectTrigger>
+                <SelectContent className="glass-card border-white/20">
+                  <SelectItem value="all">Tous les clients</SelectItem>
+                  <SelectItem value="true">Avec crédit(s)</SelectItem>
+                  <SelectItem value="false">Sans crédit</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="flex justify-between items-center mt-6 pt-4 border-t border-white/10">
+            <div className="text-sm text-muted-foreground">
+              {filteredAnalyses.length} client(s) trouvé(s) sur {creditAnalyses.length} au total
+            </div>
+            <Button 
+              onClick={handleClearFilters}
+              variant="outline"
+              className="glass border-white/30 hover:glass-card"
             >
-              <MenuItem value="">Tous les clients</MenuItem>
-              <MenuItem value="true">Avec crédit(s)</MenuItem>
-              <MenuItem value="false">Sans crédit</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-      </Grid>
+              Réinitialiser les filtres
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Data Table */}
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-          <CircularProgress />
-        </Box>
-      ) : (
-        <Paper sx={{ overflow: 'hidden' }}>
-          <TableContainer>
-            <Table stickyHeader>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Client</TableCell>
-                  <TableCell align="center">Nb Crédits</TableCell>
-                  <TableCell align="right">Montant Initial</TableCell>
-                  <TableCell align="right">Capital Restant</TableCell>
-                  <TableCell align="right">Mensualité</TableCell>
-                  <TableCell align="right">Assurance</TableCell>
-                  <TableCell align="center">Taux Moyen</TableCell>
-                  <TableCell>Niveau Dette</TableCell>
-                  <TableCell>Charge</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredAnalyses.length > 0 ? (
-                  filteredAnalyses.map((analysis) => {
-                    const debtLevel = getDebtLevel(analysis.total_remaining_capital);
-                    
-                    return (
-                      <TableRow key={analysis.user_id} hover>
-                        <TableCell>
-                          {analysis.first_name} {analysis.last_name}
-                        </TableCell>
-                        <TableCell align="center">
-                          <Chip 
-                            label={analysis.credit_count} 
-                            color={analysis.credit_count > 0 ? 'primary' : 'default'}
-                            size="small"
-                          />
-                        </TableCell>
-                        <TableCell align="right">
-                          {formatCurrency(analysis.total_initial_amount)}
-                        </TableCell>
-                        <TableCell align="right" sx={{ 
-                          color: analysis.total_remaining_capital > 0 ? 'error.main' : 'text.primary',
-                          fontWeight: analysis.total_remaining_capital > 0 ? 'bold' : 'normal'
-                        }}>
-                          {formatCurrency(analysis.total_remaining_capital)}
-                        </TableCell>
-                        <TableCell align="right">
-                          {formatCurrency(analysis.total_monthly_payment)}
-                        </TableCell>
-                        <TableCell align="right">
-                          {formatCurrency(analysis.total_insurance)}
-                        </TableCell>
-                        <TableCell align="center">
-                          {analysis.average_rate ? (
-                            <Chip 
-                              label={formatPercentage(analysis.average_rate)} 
-                              size="small"
-                              variant="outlined"
-                            />
-                          ) : (
-                            <Chip 
-                              label="N/A" 
-                              size="small"
-                              variant="outlined"
-                            />
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Chip 
-                            label={debtLevel.label} 
-                            color={debtLevel.color as any}
-                            size="small"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Chip 
-                            label={analysis.monthly_payment_category} 
-                            color={getMonthlyPaymentCategoryColor(analysis.monthly_payment_category) as any}
-                            size="small"
-                          />
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
-                      <Typography color="textSecondary">
-                        Aucun résultat trouvé
-                      </Typography>
-                    </TableCell>
+      {/* Enhanced Data Table */}
+      <Card className="glass-card border-white/20">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Wallet className="h-5 w-5 text-eparnova-blue" />
+            <span>Détail par Client</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-eparnova-blue"></div>
+              <span className="ml-3 text-muted-foreground">Chargement des analyses...</span>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-white/20 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-white/5 hover:bg-white/10">
+                    <TableHead className="font-semibold">Client</TableHead>
+                    <TableHead className="font-semibold text-center">Nb Crédits</TableHead>
+                    <TableHead className="font-semibold text-right">Montant Initial</TableHead>
+                    <TableHead className="font-semibold text-right">Capital Restant</TableHead>
+                    <TableHead className="font-semibold text-right">Mensualité</TableHead>
+                    <TableHead className="font-semibold text-right">Assurance</TableHead>
+                    <TableHead className="font-semibold text-center">Taux Moyen</TableHead>
+                    <TableHead className="font-semibold">Niveau Dette</TableHead>
+                    <TableHead className="font-semibold">Charge</TableHead>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
-      )}
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+                </TableHeader>
+                <TableBody>
+                  {filteredAnalyses.length > 0 ? (
+                    filteredAnalyses.map((analysis) => {
+                      const debtLevel = getDebtLevel(analysis.total_remaining_capital);
+                      const paymentCategory = getMonthlyPaymentCategoryBadge(analysis.monthly_payment_category);
+                      
+                      return (
+                        <TableRow key={analysis.user_id} className="hover:bg-white/5 transition-colors">
+                          <TableCell>
+                            <div className="flex items-center space-x-3">
+                              <Avatar className="h-9 w-9">
+                                <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm font-medium">
+                                  {getInitials(analysis.first_name, analysis.last_name)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium text-foreground">
+                                  {analysis.first_name} {analysis.last_name}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  ID: {analysis.user_id.slice(0, 8)}...
+                                </p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge 
+                              variant={analysis.credit_count > 0 ? "default" : "outline"}
+                              className="font-medium"
+                            >
+                              {analysis.credit_count}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right font-medium text-blue-600">
+                            {formatCurrency(analysis.total_initial_amount)}
+                          </TableCell>
+                          <TableCell className={`text-right font-bold ${
+                            analysis.total_remaining_capital > 0 ? 'text-red-600' : 'text-green-600'
+                          }`}>
+                            {formatCurrency(analysis.total_remaining_capital)}
+                          </TableCell>
+                          <TableCell className="text-right font-medium text-orange-600">
+                            {formatCurrency(analysis.total_monthly_payment)}
+                          </TableCell>
+                          <TableCell className="text-right font-medium text-teal-600">
+                            {formatCurrency(analysis.total_insurance)}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {analysis.average_rate ? (
+                              <Badge variant="outline" className="font-medium">
+                                {formatPercentage(analysis.average_rate)}
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-muted-foreground">
+                                N/A
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={debtLevel.variant as any} className={debtLevel.color}>
+                              {debtLevel.label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={paymentCategory.variant as any} className={paymentCategory.color}>
+                              {analysis.monthly_payment_category}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={9} className="text-center py-12">
+                        <div className="flex flex-col items-center space-y-2">
+                          <CreditCard className="h-12 w-12 text-muted-foreground opacity-50" />
+                          <p className="text-muted-foreground">Aucun résultat trouvé</p>
+                          <p className="text-sm text-muted-foreground">Essayez de modifier vos critères de recherche</p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

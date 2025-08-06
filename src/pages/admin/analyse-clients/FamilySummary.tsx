@@ -86,9 +86,9 @@ const FamilySummary: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterRelation, setFilterRelation] = useState('');
-  const [filterLinked, setFilterLinked] = useState('');
-  const [filterWealth, setFilterWealth] = useState('');
+  const [filterRelation, setFilterRelation] = useState('all');
+  const [filterLinked, setFilterLinked] = useState('all');
+  const [filterWealth, setFilterWealth] = useState('all');
   const [selectedFamily, setSelectedFamily] = useState<FamilySummary | null>(null);
 
   useEffect(() => {
@@ -174,11 +174,11 @@ const FamilySummary: React.FC = () => {
     const nameMatch = 
       `${family.user1_first_name} ${family.user1_last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
       `${family.user2_first_name} ${family.user2_last_name}`.toLowerCase().includes(searchTerm.toLowerCase());
-    const relationMatch = !filterRelation || family.relation === filterRelation;
-    const linkedMatch = !filterLinked || 
+    const relationMatch = filterRelation === 'all' || family.relation === filterRelation;
+    const linkedMatch = filterLinked === 'all' || 
       (filterLinked === 'true' && family.linked) ||
       (filterLinked === 'false' && !family.linked);
-    const wealthMatch = !filterWealth || family.wealth_category === filterWealth;
+    const wealthMatch = filterWealth === 'all' || family.wealth_category === filterWealth;
     
     return nameMatch && relationMatch && linkedMatch && wealthMatch;
   });
@@ -364,7 +364,7 @@ const FamilySummary: React.FC = () => {
                   <SelectValue placeholder="Toutes les relations" />
                 </SelectTrigger>
                 <SelectContent className="glass-card border-white/20">
-                  <SelectItem value="">Toutes</SelectItem>
+                  <SelectItem value="all">Toutes</SelectItem>
                   {relationStats.map(relation => (
                     <SelectItem key={relation} value={relation}>{relation}</SelectItem>
                   ))}
@@ -379,7 +379,7 @@ const FamilySummary: React.FC = () => {
                   <SelectValue placeholder="Tous les statuts" />
                 </SelectTrigger>
                 <SelectContent className="glass-card border-white/20">
-                  <SelectItem value="">Tous</SelectItem>
+                  <SelectItem value="all">Tous</SelectItem>
                   <SelectItem value="true">Liées</SelectItem>
                   <SelectItem value="false">Non liées</SelectItem>
                 </SelectContent>
@@ -393,7 +393,7 @@ const FamilySummary: React.FC = () => {
                   <SelectValue placeholder="Toutes les catégories" />
                 </SelectTrigger>
                 <SelectContent className="glass-card border-white/20">
-                  <SelectItem value="">Toutes</SelectItem>
+                  <SelectItem value="all">Toutes</SelectItem>
                   {wealthCategoryStats.map(category => (
                     <SelectItem key={category} value={category}>{category}</SelectItem>
                   ))}
