@@ -26,14 +26,9 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
 import {
-  Tooltip,
-  TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
   Tabs,
@@ -43,13 +38,10 @@ import {
 } from "@/components/ui/tabs";
 import {
   Users,
-  DollarSign,
   TrendingUp,
   TrendingDown,
   Search,
   Filter,
-  AlertCircle,
-  ArrowLeft,
   PieChart,
   BarChart3,
   Calculator,
@@ -66,11 +58,8 @@ import {
   Shield,
   RefreshCw,
   Award,
-  Zap,
   Activity,
   Star,
-  CheckCircle,
-  Clock,
 } from 'lucide-react';
 import { supabase } from './../../../lib/supabase';
 import { useToast } from '@/components/ui/use-toast';
@@ -95,7 +84,6 @@ interface BudgetLifestyle {
 }
 
 const BudgetLifestyle: React.FC = () => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [budgetLifestyles, setBudgetLifestyles] = useState<BudgetLifestyle[]>([]);
   const [filteredBudgets, setFilteredBudgets] = useState<BudgetLifestyle[]>([]);
@@ -229,7 +217,10 @@ const BudgetLifestyle: React.FC = () => {
   // Category averages
   const categoryAverages = expenseCategories.reduce((acc, category) => {
     const total = budgetLifestyles.reduce(
-      (sum, budget) => sum + (budget[category.key as keyof BudgetLifestyle] || 0), 0
+      (sum, budget) => {
+        const value = budget[category.key as keyof BudgetLifestyle];
+        return sum + (typeof value === 'number' ? value : 0);
+      }, 0
     );
     return {
       ...acc,
@@ -632,11 +623,14 @@ const BudgetLifestyle: React.FC = () => {
                           <TableCell className="font-medium">
                             {budget.first_name} {budget.last_name}
                           </TableCell>
-                          {expenseCategories.map((category) => (
-                            <TableCell key={category.key} className="text-right">
-                              {formatCurrency(budget[category.key as keyof BudgetLifestyle] || 0)}
-                            </TableCell>
-                          ))}
+                          {expenseCategories.map((category) => {
+                            const value = budget[category.key as keyof BudgetLifestyle];
+                            return (
+                              <TableCell key={category.key} className="text-right">
+                                {formatCurrency(typeof value === 'number' ? value : 0)}
+                              </TableCell>
+                            );
+                          })}
                           <TableCell className="text-right font-bold text-orange-600">
                             {formatCurrency(budget.total_expenses)}
                           </TableCell>
