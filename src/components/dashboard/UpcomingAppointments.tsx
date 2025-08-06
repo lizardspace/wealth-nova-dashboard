@@ -45,7 +45,7 @@ const UpcomingAppointments = () => {
             </div>
           ) : (
             appointments.map((appointment) => (
-              <div key={appointment.id} className="p-3 border rounded-md hover:bg-muted/40 transition-colors">
+              <div key={appointment.id} className="p-3 border rounded-md hover:bg-muted/20 transition-colors duration-200">
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="font-medium">{appointment.title}</h4>

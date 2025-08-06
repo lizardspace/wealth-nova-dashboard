@@ -247,13 +247,12 @@ const NouveauClientPage = () => {
             nom: values.nom,
             prenom: values.prenom,
             email: values.email,
-            telephone: parseInt(values.telephone) || 0,
+            telephone: values.telephone,
             adresse_postale: values.adresse,
-            code_postal: parseInt(values.codePostal) || 0,
+            code_postal: values.codePostal,
             ville: values.ville,
             date_naissance: values.dateNaissance,
             situation_familiale: values.situationFamiliale,
-            profession: values.profession,
           },
         ])
         .select();

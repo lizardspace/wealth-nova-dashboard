@@ -45,12 +45,12 @@ const SidebarSection = ({ title, items, onItemClick }: SidebarSectionProps) => {
     <div className="space-y-1 mb-3">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center w-full px-3 py-2 text-sm font-medium text-slate-700 hover:bg-white/40 hover:backdrop-blur-sm rounded-lg transition-all duration-300 group glass hover:glass-card"
+        className="flex items-center w-full px-3 py-2 text-sm font-medium text-slate-700 hover:bg-white/20 hover:backdrop-blur-sm rounded-lg transition-all duration-200 group glass"
       >
         {isExpanded ? (
-          <ChevronDown className="w-4 h-4 mr-2 text-slate-500 group-hover:text-slate-700 transition-all duration-300 group-hover:rotate-180" />
+          <ChevronDown className="w-4 h-4 mr-2 text-slate-500 group-hover:text-slate-700 transition-all duration-200" />
         ) : (
-          <ChevronRight className="w-4 h-4 mr-2 text-slate-500 group-hover:text-slate-700 transition-all duration-300 group-hover:rotate-90" />
+          <ChevronRight className="w-4 h-4 mr-2 text-slate-500 group-hover:text-slate-700 transition-all duration-200" />
         )}
         <span className="font-medium">{title}</span>
       </button>
@@ -64,10 +64,10 @@ const SidebarSection = ({ title, items, onItemClick }: SidebarSectionProps) => {
               onClick={onItemClick}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-300 hover-lift group',
+                  'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 group',
                   isActive
                     ? 'glass-card gradient-primary text-white shadow-lg animate-bounce-in'
-                    : 'text-slate-600 hover:glass hover:text-slate-800 hover:translate-x-2'
+                    : 'text-slate-600 hover:bg-white/10 hover:text-slate-800'
                 )
               }
               style={{ animationDelay: `${index * 0.1}s` }}
