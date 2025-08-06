@@ -1,64 +1,65 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Typography,
-  Button,
-  Paper,
-  TextField,
-  MenuItem,
-  Grid,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
+  TableHeader,
   TableRow,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Snackbar,
-  Alert,
-  FormControl,
-  InputLabel,
-  Select,
-  Card,
-  CardContent,
-  CardHeader,
-  Chip,
-  LinearProgress,
-  Avatar,
-  AvatarGroup,
-  TableSortLabel,
-  TablePagination,
-  Tooltip,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon
-} from '@mui/material';
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Save as SaveIcon,
-  Add as AddIcon,
-  TrendingUp as TrendingUpIcon,
-  PieChart as PieChartIcon,
-  BarChart as BarChartIcon,
-  People as PeopleIcon,
-  Favorite as FavoriteIcon,
-  Link as LinkIcon,
-  AttachMoney as AttachMoneyIcon,
-  Download as DownloadIcon,
-  Info as InfoIcon,
-  CheckCircle as CheckCircleIcon,
-  Pending as PendingIcon,
-  FamilyRestroom as FamilyIcon
-} from '@mui/icons-material';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
+import {
+  Users,
+  Heart,
+  DollarSign,
+  TrendingUp,
+  Link,
+  Download,
+  Search,
+  Filter,
+  Eye,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  ArrowLeft,
+  Home,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  PieChart,
+  BarChart3,
+} from 'lucide-react';
 import { supabase } from './../../../lib/supabase';
-import { CSVLink } from 'react-csv';
+import { useToast } from '@/components/ui/use-toast';
 
 interface FamilySummary {
   family_id: string;
@@ -78,9 +79,9 @@ interface FamilySummary {
   wealth_category: string;
 }
 
-type Order = 'asc' | 'desc';
-
 const FamilySummary: React.FC = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [familySummaries, setFamilySummaries] = useState<FamilySummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -88,14 +89,8 @@ const FamilySummary: React.FC = () => {
   const [filterRelation, setFilterRelation] = useState('');
   const [filterLinked, setFilterLinked] = useState('');
   const [filterWealth, setFilterWealth] = useState('');
-  const [order, setOrder] = useState<Order>('desc');
-  const [orderBy, setOrderBy] = useState<keyof FamilySummary>('family_net_worth');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [selectedFamily, setSelectedFamily] = useState<FamilySummary | null>(null);
-  const [openDetails, setOpenDetails] = useState(false);
 
-  // Fetch family summaries from view
   useEffect(() => {
     const fetchFamilySummaries = async () => {
       setLoading(true);
@@ -110,13 +105,18 @@ const FamilySummary: React.FC = () => {
       } catch (err) {
         console.error('Error fetching family summaries:', err);
         setError('Failed to fetch family summary data');
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les données familiales",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchFamilySummaries();
-  }, []);
+  }, [toast]);
 
   const formatCurrency = (amount: number) => {
     if (amount === null || amount === undefined) return 'N/A';
@@ -127,71 +127,47 @@ const FamilySummary: React.FC = () => {
     }).format(amount);
   };
 
-  const getRelationColor = (relation: string) => {
-    if (!relation) return 'default';
+  const getRelationBadgeVariant = (relation: string) => {
+    if (!relation) return 'secondary';
     switch (relation.toLowerCase()) {
       case 'conjoint':
       case 'époux':
       case 'épouse':
-        return 'error';
+        return 'destructive';
       case 'enfant':
       case 'fils':
       case 'fille':
-        return 'primary';
+        return 'default';
       case 'parent':
       case 'père':
       case 'mère':
         return 'secondary';
       case 'frère':
       case 'sœur':
-        return 'info';
+        return 'outline';
       default:
-        return 'default';
+        return 'secondary';
     }
   };
 
-  const getWealthColor = (category: string) => {
-    if (!category) return 'default';
+  const getWealthBadgeVariant = (category: string) => {
+    if (!category) return 'secondary';
     switch (category.toLowerCase()) {
       case 'patrimoine modeste':
-        return 'info';
+        return 'outline';
       case 'patrimoine moyen':
-        return 'primary';
-      case 'patrimoine important':
-        return 'success';
-      case 'patrimoine très élevé':
-        return 'warning';
-      default:
         return 'default';
+      case 'patrimoine important':
+        return 'secondary';
+      case 'patrimoine très élevé':
+        return 'destructive';
+      default:
+        return 'secondary';
     }
   };
 
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
-  };
-
-  const handleRequestSort = (property: keyof FamilySummary) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
-
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const handleOpenDetails = (family: FamilySummary) => {
-    setSelectedFamily(family);
-    setOpenDetails(true);
-  };
-
-  const handleCloseDetails = () => {
-    setOpenDetails(false);
   };
 
   const filteredFamilies = familySummaries.filter(family => {
@@ -207,543 +183,484 @@ const FamilySummary: React.FC = () => {
     return nameMatch && relationMatch && linkedMatch && wealthMatch;
   });
 
-  const sortedFamilies = filteredFamilies.sort((a, b) => {
-    if (a[orderBy] === null) return 1;
-    if (b[orderBy] === null) return -1;
-    if (a[orderBy] === b[orderBy]) return 0;
-
-    const compareResult = 
-      typeof a[orderBy] === 'number' && typeof b[orderBy] === 'number'
-        ? (a[orderBy] as number) - (b[orderBy] as number)
-        : String(a[orderBy]).localeCompare(String(b[orderBy]));
-
-    return order === 'asc' ? compareResult : -compareResult;
-  });
-
-  const paginatedFamilies = sortedFamilies.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
-
   // Statistics calculations
   const totalFamilyAssets = familySummaries.reduce((sum, family) => sum + (family.family_total_assets || 0), 0);
   const totalFamilyNetWorth = familySummaries.reduce((sum, family) => sum + (family.family_net_worth || 0), 0);
   const averageFamilyAssets = familySummaries.length > 0 ? totalFamilyAssets / familySummaries.length : 0;
   const averageFamilyNetWorth = familySummaries.length > 0 ? totalFamilyNetWorth / familySummaries.length : 0;
-
   const linkedFamilies = familySummaries.filter(family => family.linked).length;
-  const unlinkedFamilies = familySummaries.filter(family => !family.linked).length;
 
-  // Relation distribution
-  const relationStats = familySummaries.reduce((acc, family) => {
-    const relation = family.relation || 'Non défini';
-    acc[relation] = (acc[relation] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  // Get unique relations and wealth categories for filters
+  const relationStats = [...new Set(familySummaries.map(f => f.relation).filter(Boolean))];
+  const wealthCategoryStats = [...new Set(familySummaries.map(f => f.wealth_category).filter(Boolean))];
 
-  // Wealth category distribution
-  const wealthCategoryStats = familySummaries.reduce((acc, family) => {
-    const category = family.wealth_category || 'Non défini';
-    acc[category] = (acc[category] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const exportToCSV = () => {
+    const csvData = filteredFamilies.map(family => ({
+      'ID Famille': family.family_id,
+      'Membre 1': `${family.user1_first_name} ${family.user1_last_name}`,
+      'Membre 2': `${family.user2_first_name} ${family.user2_last_name}`,
+      'Relation': family.relation,
+      'Statut': family.linked ? 'Liée' : 'Non liée',
+      'Patrimoine Total': family.family_total_assets,
+      'Patrimoine Net': family.family_net_worth,
+      'Catégorie Patrimoine': family.wealth_category,
+      'Invitations Acceptées': family.accepted_invitations,
+      'Invitations En Attente': family.pending_invitations
+    }));
 
-  // Prepare data for CSV export
-  const csvData = filteredFamilies.map(family => ({
-    'ID Famille': family.family_id,
-    'Membre 1': `${family.user1_first_name} ${family.user1_last_name}`,
-    'Membre 2': `${family.user2_first_name} ${family.user2_last_name}`,
-    'Relation': family.relation,
-    'Statut': family.linked ? 'Liée' : 'Non liée',
-    'Patrimoine Total': formatCurrency(family.family_total_assets),
-    'Patrimoine Net': formatCurrency(family.family_net_worth),
-    'Catégorie Patrimoine': family.wealth_category,
-    'Invitations Acceptées': family.accepted_invitations,
-    'Invitations En Attente': family.pending_invitations
-  }));
+    const csv = [
+      Object.keys(csvData[0]).join(','),
+      ...csvData.map(row => Object.values(row).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `familles-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4">Synthèse Familles</Typography>
-        <Box>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            startIcon={<DownloadIcon />}
-            sx={{ mr: 2 }}
-          >
-            <CSVLink 
-              data={csvData} 
-              filename={`familles-${new Date().toISOString().slice(0, 10)}.csv`}
-              style={{ color: 'inherit', textDecoration: 'none' }}
+    <div className="space-y-8 animate-fade-in p-6">
+      {/* Enhanced Header with glassmorphism */}
+      <div className="glass-card p-8 rounded-2xl relative overflow-hidden border-white/20">
+        <div className="absolute inset-0 gradient-primary opacity-5"></div>
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/admin/analyse-clients')}
+              className="glass hover:glass-card transition-all duration-200"
             >
-              Exporter CSV
-            </CSVLink>
-          </Button>
-        </Box>
-      </Box>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-eparnova-blue via-eparnova-green to-eparnova-gold bg-clip-text text-transparent">
+                Synthèse des Familles
+              </h1>
+              <p className="text-muted-foreground mt-2 text-lg">
+                Analyse complète des liens familiaux et du patrimoine
+              </p>
+            </div>
+          </div>
+          <div className="hidden md:flex items-center space-x-2">
+            <Users className="h-10 w-10 text-eparnova-blue animate-float" />
+            <Heart className="h-8 w-8 text-eparnova-green animate-float" style={{animationDelay: '1s'}} />
+          </div>
+        </div>
+        {/* Decorative elements */}
+        <div className="absolute top-4 right-4 w-24 h-24 gradient-success rounded-full opacity-10 animate-float"></div>
+        <div className="absolute bottom-4 left-4 w-20 h-20 gradient-warning rounded-full opacity-10 animate-float" style={{animationDelay: '2s'}}></div>
+      </div>
 
-      {/* Statistics Cards */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography color="textSecondary" gutterBottom>
-                    Total Familles
-                  </Typography>
-                  <Typography variant="h5">
-                    {familySummaries.length}
-                  </Typography>
-                </Box>
-                <PeopleIcon fontSize="large" color="primary" />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography color="textSecondary" gutterBottom>
-                    Familles Liées
-                  </Typography>
-                  <Typography variant="h5">
-                    {linkedFamilies} ({((linkedFamilies / familySummaries.length) * 100).toFixed(1)}%)
-                  </Typography>
-                </Box>
-                <LinkIcon fontSize="large" color="success" />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography color="textSecondary" gutterBottom>
-                    Patrimoine Moyen
-                  </Typography>
-                  <Typography variant="h5">
-                    {formatCurrency(averageFamilyAssets)}
-                  </Typography>
-                </Box>
-                <AttachMoneyIcon fontSize="large" color="primary" />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography color="textSecondary" gutterBottom>
-                    Patrimoine Net Moyen
-                  </Typography>
-                  <Typography variant="h5">
-                    {formatCurrency(averageFamilyNetWorth)}
-                  </Typography>
-                </Box>
-                <TrendingUpIcon fontSize="large" color="success" />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* Filters */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={3}>
-          <TextField
-            fullWidth
-            label="Rechercher une famille"
-            variant="outlined"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            InputProps={{
-              startAdornment: <PeopleIcon color="action" sx={{ mr: 1 }} />
-            }}
-          />
-        </Grid>
-        <Grid item xs={12} md={3}>
-          <FormControl fullWidth>
-            <InputLabel>Type de Relation</InputLabel>
-            <Select
-              value={filterRelation}
-              label="Type de Relation"
-              onChange={(e) => setFilterRelation(e.target.value)}
-            >
-              <MenuItem value="">Toutes</MenuItem>
-              {Object.keys(relationStats).map(relation => (
-                <MenuItem key={relation} value={relation}>{relation}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} md={3}>
-          <FormControl fullWidth>
-            <InputLabel>Statut de Liaison</InputLabel>
-            <Select
-              value={filterLinked}
-              label="Statut de Liaison"
-              onChange={(e) => setFilterLinked(e.target.value)}
-            >
-              <MenuItem value="">Tous</MenuItem>
-              <MenuItem value="true">Liées</MenuItem>
-              <MenuItem value="false">Non liées</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} md={3}>
-          <FormControl fullWidth>
-            <InputLabel>Catégorie Patrimoine</InputLabel>
-            <Select
-              value={filterWealth}
-              label="Catégorie Patrimoine"
-              onChange={(e) => setFilterWealth(e.target.value)}
-            >
-              <MenuItem value="">Toutes</MenuItem>
-              {Object.keys(wealthCategoryStats).map(category => (
-                <MenuItem key={category} value={category}>{category}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-      </Grid>
-
-      {error ? (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="destructive" className="animate-slide-in">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
-      ) : loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-          <LinearProgress sx={{ width: '100%' }} />
-        </Box>
-      ) : (
-        <>
-          <Paper sx={{ mb: 2 }}>
-            <TableContainer>
+      )}
+
+      {/* Enhanced Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="glass-card border-white/20 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+          <div className="absolute inset-0 gradient-primary opacity-5"></div>
+          <CardContent className="p-6 relative z-10">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Familles</p>
+                <p className="text-3xl font-bold text-foreground">{familySummaries.length}</p>
+                <p className="text-xs text-muted-foreground mt-1">familles référencées</p>
+              </div>
+              <div className="p-3 gradient-primary rounded-xl">
+                <Users className="h-6 w-6 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card border-white/20 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+          <div className="absolute inset-0 gradient-success opacity-5"></div>
+          <CardContent className="p-6 relative z-10">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Familles Liées</p>
+                <p className="text-3xl font-bold text-green-600">{linkedFamilies}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {((linkedFamilies / (familySummaries.length || 1)) * 100).toFixed(1)}% du total
+                </p>
+              </div>
+              <div className="p-3 gradient-success rounded-xl">
+                <Link className="h-6 w-6 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card border-white/20 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+          <div className="absolute inset-0 gradient-warning opacity-5"></div>
+          <CardContent className="p-6 relative z-10">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Patrimoine Moyen</p>
+                <p className="text-2xl font-bold text-blue-600">{formatCurrency(averageFamilyAssets)}</p>
+                <p className="text-xs text-muted-foreground mt-1">par famille</p>
+              </div>
+              <div className="p-3 gradient-warning rounded-xl">
+                <DollarSign className="h-6 w-6 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card border-white/20 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+          <div className="absolute inset-0 gradient-gold opacity-5"></div>
+          <CardContent className="p-6 relative z-10">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Patrimoine Net</p>
+                <p className="text-2xl font-bold text-emerald-600">{formatCurrency(averageFamilyNetWorth)}</p>
+                <p className="text-xs text-muted-foreground mt-1">moyenne nette</p>
+              </div>
+              <div className="p-3 gradient-gold rounded-xl">
+                <TrendingUp className="h-6 w-6 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Enhanced Filters */}
+      <Card className="glass-card border-white/20">
+        <CardHeader className="pb-4">
+          <div className="flex items-center space-x-2">
+            <Filter className="h-5 w-5 text-eparnova-blue" />
+            <CardTitle className="text-lg">Filtres et Recherche</CardTitle>
+          </div>
+          <CardDescription>Affinez votre recherche avec les filtres ci-dessous</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Rechercher une famille</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Nom ou prénom..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 glass border-white/30 hover:border-white/50 focus:border-blue-300/50"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Type de Relation</label>
+              <Select value={filterRelation} onValueChange={setFilterRelation}>
+                <SelectTrigger className="glass border-white/30 hover:border-white/50">
+                  <SelectValue placeholder="Toutes les relations" />
+                </SelectTrigger>
+                <SelectContent className="glass-card border-white/20">
+                  <SelectItem value="">Toutes</SelectItem>
+                  {relationStats.map(relation => (
+                    <SelectItem key={relation} value={relation}>{relation}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Statut de Liaison</label>
+              <Select value={filterLinked} onValueChange={setFilterLinked}>
+                <SelectTrigger className="glass border-white/30 hover:border-white/50">
+                  <SelectValue placeholder="Tous les statuts" />
+                </SelectTrigger>
+                <SelectContent className="glass-card border-white/20">
+                  <SelectItem value="">Tous</SelectItem>
+                  <SelectItem value="true">Liées</SelectItem>
+                  <SelectItem value="false">Non liées</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Catégorie Patrimoine</label>
+              <Select value={filterWealth} onValueChange={setFilterWealth}>
+                <SelectTrigger className="glass border-white/30 hover:border-white/50">
+                  <SelectValue placeholder="Toutes les catégories" />
+                </SelectTrigger>
+                <SelectContent className="glass-card border-white/20">
+                  <SelectItem value="">Toutes</SelectItem>
+                  {wealthCategoryStats.map(category => (
+                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="flex justify-between items-center mt-6 pt-4 border-t border-white/10">
+            <div className="text-sm text-muted-foreground">
+              {filteredFamilies.length} famille(s) trouvée(s) sur {familySummaries.length} au total
+            </div>
+            <Button 
+              onClick={exportToCSV}
+              variant="outline"
+              className="glass border-white/30 hover:glass-card"
+              disabled={filteredFamilies.length === 0}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Exporter CSV
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Enhanced Table */}
+      <Card className="glass-card border-white/20">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <BarChart3 className="h-5 w-5 text-eparnova-blue" />
+            <span>Liste des Familles</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-eparnova-blue"></div>
+              <span className="ml-3 text-muted-foreground">Chargement des données...</span>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-white/20 overflow-hidden">
               <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>
-                      <TableSortLabel
-                        active={orderBy === 'user1_last_name'}
-                        direction={orderBy === 'user1_last_name' ? order : 'asc'}
-                        onClick={() => handleRequestSort('user1_last_name')}
-                      >
-                        Membres de la Famille
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell>
-                      <TableSortLabel
-                        active={orderBy === 'relation'}
-                        direction={orderBy === 'relation' ? order : 'asc'}
-                        onClick={() => handleRequestSort('relation')}
-                      >
-                        Relation
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell>
-                      <TableSortLabel
-                        active={orderBy === 'linked'}
-                        direction={orderBy === 'linked' ? order : 'asc'}
-                        onClick={() => handleRequestSort('linked')}
-                      >
-                        Statut
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell align="right">
-                      <TableSortLabel
-                        active={orderBy === 'family_total_assets'}
-                        direction={orderBy === 'family_total_assets' ? order : 'desc'}
-                        onClick={() => handleRequestSort('family_total_assets')}
-                      >
-                        Patrimoine Total
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell align="right">
-                      <TableSortLabel
-                        active={orderBy === 'family_net_worth'}
-                        direction={orderBy === 'family_net_worth' ? order : 'desc'}
-                        onClick={() => handleRequestSort('family_net_worth')}
-                      >
-                        Patrimoine Net
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell>
-                      <TableSortLabel
-                        active={orderBy === 'wealth_category'}
-                        direction={orderBy === 'wealth_category' ? order : 'asc'}
-                        onClick={() => handleRequestSort('wealth_category')}
-                      >
-                        Catégorie
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell>Actions</TableCell>
+                <TableHeader>
+                  <TableRow className="bg-white/5 hover:bg-white/10">
+                    <TableHead className="font-semibold">Membres de la Famille</TableHead>
+                    <TableHead className="font-semibold">Relation</TableHead>
+                    <TableHead className="font-semibold">Statut</TableHead>
+                    <TableHead className="font-semibold text-right">Patrimoine Total</TableHead>
+                    <TableHead className="font-semibold text-right">Patrimoine Net</TableHead>
+                    <TableHead className="font-semibold">Catégorie</TableHead>
+                    <TableHead className="font-semibold text-center">Actions</TableHead>
                   </TableRow>
-                </TableHead>
+                </TableHeader>
                 <TableBody>
-                  {paginatedFamilies.map((family) => (
-                    <TableRow key={family.family_id} hover>
+                  {filteredFamilies.map((family) => (
+                    <TableRow key={family.family_id} className="hover:bg-white/5 transition-colors">
                       <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <AvatarGroup max={2} sx={{ mr: 2 }}>
-                            <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32, fontSize: '0.875rem' }}>
-                              {getInitials(family.user1_first_name, family.user1_last_name)}
+                        <div className="flex items-center space-x-3">
+                          <div className="flex -space-x-2">
+                            <Avatar className="h-9 w-9 border-2 border-white/20">
+                              <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm font-medium">
+                                {getInitials(family.user1_first_name, family.user1_last_name)}
+                              </AvatarFallback>
                             </Avatar>
-                            <Avatar sx={{ bgcolor: 'secondary.main', width: 32, height: 32, fontSize: '0.875rem' }}>
-                              {getInitials(family.user2_first_name, family.user2_last_name)}
+                            <Avatar className="h-9 w-9 border-2 border-white/20">
+                              <AvatarFallback className="bg-gradient-to-r from-green-500 to-teal-500 text-white text-sm font-medium">
+                                {getInitials(family.user2_first_name, family.user2_last_name)}
+                              </AvatarFallback>
                             </Avatar>
-                          </AvatarGroup>
-                          <Box>
-                            <Typography variant="body2" fontWeight="bold">
-                              {family.user1_first_name} {family.user1_last_name}
-                            </Typography>
-                            <Typography variant="body2" color="textSecondary">
-                              {family.user2_first_name} {family.user2_last_name}
-                            </Typography>
-                          </Box>
-                        </Box>
+                          </div>
+                          <div>
+                            <p className="font-medium text-foreground">{family.user1_first_name} {family.user1_last_name}</p>
+                            <p className="text-sm text-muted-foreground">{family.user2_first_name} {family.user2_last_name}</p>
+                          </div>
+                        </div>
                       </TableCell>
                       <TableCell>
-                        <Chip 
-                          label={family.relation || 'Non défini'} 
-                          color={getRelationColor(family.relation) as any}
-                          size="small"
-                          icon={<FavoriteIcon fontSize="small" />}
-                        />
+                        <Badge variant={getRelationBadgeVariant(family.relation) as any} className="flex items-center space-x-1">
+                          <Heart className="h-3 w-3" />
+                          <span>{family.relation || 'Non défini'}</span>
+                        </Badge>
                       </TableCell>
                       <TableCell>
-                        <Chip 
-                          label={family.linked ? 'Liée' : 'Non liée'} 
-                          color={family.linked ? 'success' : 'default'}
-                          size="small"
-                          icon={family.linked ? <CheckCircleIcon fontSize="small" /> : <PendingIcon fontSize="small" />}
-                        />
-                        {family.pending_invitations > 0 && (
-                          <Tooltip title={`${family.pending_invitations} invitation(s) en attente`}>
-                            <Chip 
-                              label={family.pending_invitations}
-                              color="warning"
-                              size="small"
-                              sx={{ ml: 1 }}
-                              icon={<PendingIcon fontSize="small" />}
-                            />
-                          </Tooltip>
-                        )}
+                        <div className="flex items-center space-x-2">
+                          <Badge variant={family.linked ? "default" : "outline"} className="flex items-center space-x-1">
+                            {family.linked ? <CheckCircle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                            <span>{family.linked ? 'Liée' : 'Non liée'}</span>
+                          </Badge>
+                          {family.pending_invitations > 0 && (
+                            <Badge variant="destructive" className="text-xs">
+                              {family.pending_invitations} en attente
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                      <TableCell className="text-right font-medium text-blue-600">
                         {formatCurrency(family.family_total_assets)}
                       </TableCell>
-                      <TableCell align="right" sx={{ 
-                        fontWeight: 'bold',
-                        color: family.family_net_worth >= 0 ? 'success.main' : 'error.main'
-                      }}>
+                      <TableCell className={`text-right font-medium ${
+                        family.family_net_worth >= 0 ? 'text-green-600' : 'text-red-600'
+                      }`}>
                         {formatCurrency(family.family_net_worth)}
                       </TableCell>
                       <TableCell>
-                        <Chip 
-                          label={family.wealth_category || 'Non défini'} 
-                          color={getWealthColor(family.wealth_category) as any}
-                          size="small"
-                        />
+                        <Badge variant={getWealthBadgeVariant(family.wealth_category) as any}>
+                          {family.wealth_category || 'Non défini'}
+                        </Badge>
                       </TableCell>
-                      <TableCell>
-                        <Tooltip title="Voir les détails">
-                          <IconButton onClick={() => handleOpenDetails(family)}>
-                            <InfoIcon color="info" />
-                          </IconButton>
-                        </Tooltip>
+                      <TableCell className="text-center">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="glass hover:glass-card"
+                              onClick={() => setSelectedFamily(family)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="glass-card border-white/20 max-w-2xl">
+                            <DialogHeader>
+                              <DialogTitle className="flex items-center space-x-2">
+                                <Users className="h-5 w-5 text-eparnova-blue" />
+                                <span>Détails de la Famille</span>
+                              </DialogTitle>
+                              <DialogDescription>
+                                Informations détaillées sur cette famille
+                              </DialogDescription>
+                            </DialogHeader>
+                            
+                            {selectedFamily && (
+                              <div className="space-y-6 py-4">
+                                {/* Family Members Section */}
+                                <div className="space-y-4">
+                                  <h3 className="text-lg font-semibold flex items-center space-x-2">
+                                    <Users className="h-5 w-5 text-eparnova-blue" />
+                                    <span>Membres de la Famille</span>
+                                  </h3>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <Card className="glass border-white/10">
+                                      <CardContent className="p-4">
+                                        <div className="flex items-center space-x-3">
+                                          <Avatar className="h-12 w-12">
+                                            <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                                              {getInitials(selectedFamily.user1_first_name, selectedFamily.user1_last_name)}
+                                            </AvatarFallback>
+                                          </Avatar>
+                                          <div>
+                                            <p className="font-semibold">{selectedFamily.user1_first_name} {selectedFamily.user1_last_name}</p>
+                                            <p className="text-sm text-muted-foreground">ID: {selectedFamily.user1_id.slice(0, 8)}...</p>
+                                          </div>
+                                        </div>
+                                      </CardContent>
+                                    </Card>
+                                    <Card className="glass border-white/10">
+                                      <CardContent className="p-4">
+                                        <div className="flex items-center space-x-3">
+                                          <Avatar className="h-12 w-12">
+                                            <AvatarFallback className="bg-gradient-to-r from-green-500 to-teal-500 text-white">
+                                              {getInitials(selectedFamily.user2_first_name, selectedFamily.user2_last_name)}
+                                            </AvatarFallback>
+                                          </Avatar>
+                                          <div>
+                                            <p className="font-semibold">{selectedFamily.user2_first_name} {selectedFamily.user2_last_name}</p>
+                                            <p className="text-sm text-muted-foreground">ID: {selectedFamily.user2_id.slice(0, 8)}...</p>
+                                          </div>
+                                        </div>
+                                      </CardContent>
+                                    </Card>
+                                  </div>
+                                </div>
+
+                                <Separator className="bg-white/10" />
+
+                                {/* Relationship & Status Section */}
+                                <div className="space-y-4">
+                                  <h3 className="text-lg font-semibold flex items-center space-x-2">
+                                    <Heart className="h-5 w-5 text-eparnova-green" />
+                                    <span>Relation & Statut</span>
+                                  </h3>
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="text-center">
+                                      <p className="text-sm text-muted-foreground mb-2">Relation</p>
+                                      <Badge variant={getRelationBadgeVariant(selectedFamily.relation) as any} className="text-sm px-3 py-1">
+                                        {selectedFamily.relation || 'Non défini'}
+                                      </Badge>
+                                    </div>
+                                    <div className="text-center">
+                                      <p className="text-sm text-muted-foreground mb-2">Statut de Liaison</p>
+                                      <Badge variant={selectedFamily.linked ? "default" : "outline"} className="text-sm px-3 py-1">
+                                        {selectedFamily.linked ? 'Liée' : 'Non liée'}
+                                      </Badge>
+                                    </div>
+                                    <div className="text-center">
+                                      <p className="text-sm text-muted-foreground mb-2">Invitations</p>
+                                      <div className="flex justify-center space-x-1">
+                                        <Badge variant="default" className="text-xs">
+                                          ✓ {selectedFamily.accepted_invitations}
+                                        </Badge>
+                                        {selectedFamily.pending_invitations > 0 && (
+                                          <Badge variant="destructive" className="text-xs">
+                                            ⏳ {selectedFamily.pending_invitations}
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <Separator className="bg-white/10" />
+
+                                {/* Financial Section */}
+                                <div className="space-y-4">
+                                  <h3 className="text-lg font-semibold flex items-center space-x-2">
+                                    <DollarSign className="h-5 w-5 text-eparnova-gold" />
+                                    <span>Informations Financières</span>
+                                  </h3>
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <Card className="glass border-white/10">
+                                      <CardContent className="p-4 text-center">
+                                        <p className="text-sm text-muted-foreground mb-2">Patrimoine Total</p>
+                                        <p className="text-xl font-bold text-blue-600">{formatCurrency(selectedFamily.family_total_assets)}</p>
+                                      </CardContent>
+                                    </Card>
+                                    <Card className="glass border-white/10">
+                                      <CardContent className="p-4 text-center">
+                                        <p className="text-sm text-muted-foreground mb-2">Patrimoine Net</p>
+                                        <p className={`text-xl font-bold ${
+                                          selectedFamily.family_net_worth >= 0 ? 'text-green-600' : 'text-red-600'
+                                        }`}>
+                                          {formatCurrency(selectedFamily.family_net_worth)}
+                                        </p>
+                                      </CardContent>
+                                    </Card>
+                                    <Card className="glass border-white/10">
+                                      <CardContent className="p-4 text-center">
+                                        <p className="text-sm text-muted-foreground mb-2">Catégorie</p>
+                                        <Badge variant={getWealthBadgeVariant(selectedFamily.wealth_category) as any} className="text-sm">
+                                          {selectedFamily.wealth_category || 'Non défini'}
+                                        </Badge>
+                                      </CardContent>
+                                    </Card>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </DialogContent>
+                        </Dialog>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </TableContainer>
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={filteredFamilies.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              labelRowsPerPage="Lignes par page:"
-              labelDisplayedRows={({ from, to, count }) => `${from}-${to} sur ${count}`}
-            />
-          </Paper>
-
-          {/* Family Details Dialog */}
-          <Dialog 
-            open={openDetails} 
-            onClose={handleCloseDetails}
-            maxWidth="md"
-            fullWidth
-          >
-            {selectedFamily && (
-              <>
-                <DialogTitle>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <FamilyIcon color="primary" sx={{ mr: 2 }} />
-                    Détails de la Famille
-                  </Box>
-                </DialogTitle>
-                <DialogContent dividers>
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="h6" gutterBottom>
-                        Membres de la Famille
-                      </Typography>
-                      <List>
-                        <ListItem>
-                          <ListItemIcon>
-                            <Avatar sx={{ bgcolor: 'primary.main' }}>
-                              {getInitials(selectedFamily.user1_first_name, selectedFamily.user1_last_name)}
-                            </Avatar>
-                          </ListItemIcon>
-                          <ListItemText 
-                            primary={`${selectedFamily.user1_first_name} ${selectedFamily.user1_last_name}`}
-                            secondary={`ID: ${selectedFamily.user1_id}`}
-                          />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemIcon>
-                            <Avatar sx={{ bgcolor: 'secondary.main' }}>
-                              {getInitials(selectedFamily.user2_first_name, selectedFamily.user2_last_name)}
-                            </Avatar>
-                          </ListItemIcon>
-                          <ListItemText 
-                            primary={`${selectedFamily.user2_first_name} ${selectedFamily.user2_last_name}`}
-                            secondary={`ID: ${selectedFamily.user2_id}`}
-                          />
-                        </ListItem>
-                      </List>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="h6" gutterBottom>
-                        Informations Générales
-                      </Typography>
-                      <List>
-                        <ListItem>
-                          <ListItemText 
-                            primary="Relation" 
-                            secondary={
-                              <Chip 
-                                label={selectedFamily.relation || 'Non défini'} 
-                                color={getRelationColor(selectedFamily.relation) as any}
-                                size="small"
-                                icon={<FavoriteIcon fontSize="small" />}
-                              />
-                            }
-                          />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText 
-                            primary="Statut de Liaison" 
-                            secondary={
-                              <Chip 
-                                label={selectedFamily.linked ? 'Liée' : 'Non liée'} 
-                                color={selectedFamily.linked ? 'success' : 'default'}
-                                size="small"
-                                icon={selectedFamily.linked ? <CheckCircleIcon fontSize="small" /> : <PendingIcon fontSize="small" />}
-                              />
-                            }
-                          />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText 
-                            primary="Invitations" 
-                            secondary={
-                              <Box sx={{ display: 'flex', gap: 1 }}>
-                                <Chip 
-                                  label={`${selectedFamily.accepted_invitations} acceptée(s)`} 
-                                  color="success"
-                                  size="small"
-                                  icon={<CheckCircleIcon fontSize="small" />}
-                                />
-                                {selectedFamily.pending_invitations > 0 && (
-                                  <Chip 
-                                    label={`${selectedFamily.pending_invitations} en attente`} 
-                                    color="warning"
-                                    size="small"
-                                    icon={<PendingIcon fontSize="small" />}
-                                  />
-                                )}
-                              </Box>
-                            }
-                          />
-                        </ListItem>
-                      </List>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Divider sx={{ my: 2 }} />
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="h6" gutterBottom>
-                        Patrimoine
-                      </Typography>
-                      <List>
-                        <ListItem>
-                          <ListItemText 
-                            primary="Patrimoine Total" 
-                            secondary={
-                              <Typography variant="body1" fontWeight="bold">
-                                {formatCurrency(selectedFamily.family_total_assets)}
-                              </Typography>
-                            }
-                          />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText 
-                            primary="Patrimoine Net" 
-                            secondary={
-                              <Typography 
-                                variant="body1" 
-                                fontWeight="bold"
-                                color={selectedFamily.family_net_worth >= 0 ? 'success.main' : 'error.main'}
-                              >
-                                {formatCurrency(selectedFamily.family_net_worth)}
-                              </Typography>
-                            }
-                          />
-                        </ListItem>
-                      </List>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="h6" gutterBottom>
-                        Catégorisation
-                      </Typography>
-                      <List>
-                        <ListItem>
-                          <ListItemText 
-                            primary="Catégorie de Patrimoine" 
-                            secondary={
-                              <Chip 
-                                label={selectedFamily.wealth_category || 'Non défini'} 
-                                color={getWealthColor(selectedFamily.wealth_category) as any}
-                              />
-                            }
-                          />
-                        </ListItem>
-                      </List>
-                    </Grid>
-                  </Grid>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleCloseDetails}>Fermer</Button>
-                </DialogActions>
-              </>
-            )}
-          </Dialog>
-        </>
-      )}
-    </Box>
+              
+              {filteredFamilies.length === 0 && !loading && (
+                <div className="text-center py-12">
+                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <p className="text-muted-foreground">Aucune famille trouvée</p>
+                  <p className="text-sm text-muted-foreground mt-1">Essayez de modifier vos critères de recherche</p>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
