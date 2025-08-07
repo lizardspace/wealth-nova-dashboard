@@ -78,6 +78,8 @@ import {
   Building,
   Calendar,
   Clock,
+  Grid3x3,
+  Table2,
 } from 'lucide-react';
 import { supabase } from './../../../lib/supabase';
 import { useToast } from '@/components/ui/use-toast';
