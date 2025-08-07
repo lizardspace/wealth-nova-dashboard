@@ -86,6 +86,7 @@ import {
   Table2
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/lib/supabase';
 import {
   ResponsiveContainer,
   PieChart as RechartsPie,
@@ -118,69 +119,29 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-// Simulation des données Supabase
-const mockInvestorProfiles = [
-  {
-    user_id: '1',
-    last_name: 'Dubois',
-    first_name: 'Marie',
-    risk_tolerance: 'Prudent',
-    reaction_to_drop: 'Vente immédiate',
-    profile_type: 'Conservateur',
-    risk_asset_percentage: 25,
-    investment_horizon: 3,
-    investment_horizon_category: 'Court terme',
-    risk_score: 3
-  },
-  {
-    user_id: '2',
-    last_name: 'Martin',
-    first_name: 'Pierre',
-    risk_tolerance: 'Équilibré',
-    reaction_to_drop: 'Maintien des positions',
-    profile_type: 'Modéré',
-    risk_asset_percentage: 60,
-    investment_horizon: 7,
-    investment_horizon_category: 'Moyen terme',
-    risk_score: 6
-  },
-  {
-    user_id: '3',
-    last_name: 'Leroy',
-    first_name: 'Sophie',
-    risk_tolerance: 'Dynamique',
-    reaction_to_drop: 'Renforcement',
-    profile_type: 'Agressif',
-    risk_asset_percentage: 85,
-    investment_horizon: 15,
-    investment_horizon_category: 'Long terme',
-    risk_score: 8
-  },
-  {
-    user_id: '4',
-    last_name: 'Bernard',
-    first_name: 'Jean',
-    risk_tolerance: 'Conservateur',
-    reaction_to_drop: 'Réduction partielle',
-    profile_type: 'Prudent',
-    risk_asset_percentage: 15,
-    investment_horizon: 2,
-    investment_horizon_category: 'Court terme',
-    risk_score: 2
-  },
-  {
-    user_id: '5',
-    last_name: 'Moreau',
-    first_name: 'Claire',
-    risk_tolerance: 'Dynamique',
-    reaction_to_drop: 'Opportunité d\'achat',
-    profile_type: 'Agressif',
-    risk_asset_percentage: 90,
-    investment_horizon: 20,
-    investment_horizon_category: 'Long terme',
-    risk_score: 9
-  }
-];
+// Types de données de la base de données
+interface DatabaseProfile {
+  user_id: string;
+  tolerance_risque?: string;
+  reaction_baisse?: string;
+  produits_complexes?: string;
+  score?: number;
+  profil?: string;
+}
+
+interface DatabaseUser {
+  id: string;
+  last_name?: string;
+  first_name?: string;
+  civilite?: string;
+  email?: string;
+}
+
+interface DatabasePatrimoineFinancier {
+  user_id: string;
+  repartition_activ_risque?: number;
+  horizon_investissement?: number;
+}
 
 interface InvestorProfile {
   user_id: string;
@@ -221,12 +182,71 @@ const InvestorProfiles: React.FC = () => {
   const [profileDetailOpen, setProfileDetailOpen] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<InvestorProfile | null>(null);
 
+  const getInvestmentHorizonCategory = (horizon: number | undefined): string => {
+    if (!horizon) return 'Non défini';
+    if (horizon <= 3) return 'Court terme';
+    if (horizon <= 10) return 'Moyen terme';
+    return 'Long terme';
+  };
+
   const fetchInvestorProfiles = async () => {
     setLoading(true);
     try {
-      // Simulation d'appel API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setInvestorProfiles(mockInvestorProfiles);
+      // Récupération des utilisateurs avec leurs profils investisseur et patrimoine financier
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select(`
+          id,
+          first_name,
+          last_name,
+          civilite,
+          email,
+          profileinvestisseur (
+            tolerance_risque,
+            reaction_baisse,
+            produits_complexes,
+            score,
+            profil
+          ),
+          patrimoinefinancier (
+            repartition_activ_risque,
+            horizon_investissement
+          )
+        `);
+
+      if (usersError) {
+        throw usersError;
+      }
+
+      // Transformation des données pour correspondre à l'interface InvestorProfile
+      const profiles: InvestorProfile[] = usersData
+        .filter(user => user.profileinvestisseur) // Uniquement les utilisateurs avec un profil investisseur
+        .map(user => {
+          const profile = user.profileinvestisseur;
+          const patrimoine = user.patrimoinefinancier;
+          const horizon = patrimoine?.horizon_investissement || 0;
+          
+          return {
+            user_id: user.id,
+            last_name: user.last_name || '',
+            first_name: user.first_name || '',
+            risk_tolerance: profile?.tolerance_risque || 'Non défini',
+            reaction_to_drop: profile?.reaction_baisse || 'Non défini',
+            profile_type: profile?.profil || 'Non défini',
+            risk_asset_percentage: patrimoine?.repartition_activ_risque || 0,
+            investment_horizon: horizon,
+            investment_horizon_category: getInvestmentHorizonCategory(horizon),
+            risk_score: profile?.score || 0
+          };
+        });
+
+      setInvestorProfiles(profiles);
+      
+      toast({
+        title: "Succès",
+        description: `${profiles.length} profils investisseurs chargés`
+      });
+
     } catch (error) {
       console.error('Error fetching investor profiles:', error);
       toast({
@@ -247,13 +267,10 @@ const InvestorProfiles: React.FC = () => {
   const getRiskToleranceVariant = (riskTolerance: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (riskTolerance?.toLowerCase()) {
       case 'prudent':
-      case 'conservateur':
         return 'secondary';
       case 'équilibré':
-      case 'modéré':
         return 'outline';
       case 'dynamique':
-      case 'agressif':
         return 'destructive';
       default:
         return 'default';
@@ -371,7 +388,7 @@ const InvestorProfiles: React.FC = () => {
       averageRiskScore,
       totalProfiles: investorProfiles.length,
       dynamicProfiles: Object.entries(riskToleranceStats).reduce((sum, [risk, count]) => {
-        return ['dynamique', 'agressif'].includes(risk.toLowerCase()) ? sum + count : sum;
+        return ['dynamique'].includes(risk.toLowerCase()) ? sum + count : sum;
       }, 0)
     };
   }, [investorProfiles]);
@@ -782,8 +799,9 @@ const InvestorProfiles: React.FC = () => {
     const riskToleranceData = Object.entries(stats.riskToleranceStats || {}).map(([risk, count]) => ({
       name: risk,
       value: count,
-      fill: risk.toLowerCase().includes('prudent') || risk.toLowerCase().includes('conservateur') ? '#10b981' :
-            risk.toLowerCase().includes('équilibré') || risk.toLowerCase().includes('modéré') ? '#f59e0b' : '#ef4444'
+      fill: risk.toLowerCase().includes('prudent') ? '#10b981' :
+            risk.toLowerCase().includes('équilibré') ? '#f59e0b' : 
+            risk.toLowerCase().includes('dynamique') ? '#ef4444' : '#6b7280'
     }));
 
     const riskScoreData = Object.entries(stats.riskScoreDistribution || {}).map(([range, count]) => ({
@@ -847,7 +865,7 @@ const InvestorProfiles: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="grid grid-cols-4 gap-4 text-center">
                 <div className="space-y-2">
                   <div className="text-2xl font-bold text-red-600">
                     {stats.horizonStats?.['Court terme'] || 0}
@@ -865,6 +883,12 @@ const InvestorProfiles: React.FC = () => {
                     {stats.horizonStats?.['Long terme'] || 0}
                   </div>
                   <Badge variant="secondary">Long terme</Badge>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-2xl font-bold text-gray-600">
+                    {stats.horizonStats?.['Non défini'] || 0}
+                  </div>
+                  <Badge variant="default">Non défini</Badge>
                 </div>
               </div>
               <div className="pt-4">
@@ -1002,11 +1026,9 @@ const InvestorProfiles: React.FC = () => {
               <SelectContent className="glass-card border-white/20">
                 <SelectItem value="all">Toutes</SelectItem>
                 <SelectItem value="Prudent">Prudent</SelectItem>
-                <SelectItem value="Conservateur">Conservateur</SelectItem>
                 <SelectItem value="Équilibré">Équilibré</SelectItem>
-                <SelectItem value="Modéré">Modéré</SelectItem>
                 <SelectItem value="Dynamique">Dynamique</SelectItem>
-                <SelectItem value="Agressif">Agressif</SelectItem>
+                <SelectItem value="Non défini">Non défini</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1022,6 +1044,7 @@ const InvestorProfiles: React.FC = () => {
                 <SelectItem value="Court terme">Court terme</SelectItem>
                 <SelectItem value="Moyen terme">Moyen terme</SelectItem>
                 <SelectItem value="Long terme">Long terme</SelectItem>
+                <SelectItem value="Non défini">Non défini</SelectItem>
               </SelectContent>
             </Select>
           </div>
