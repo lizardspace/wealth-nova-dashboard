@@ -1,108 +1,121 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Typography,
-  Paper,
-  TextField,
-  Grid,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
+  TableHeader,
   TableRow,
-  Chip,
-  Card,
-  CardContent,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Snackbar,
-  Alert,
-  IconButton,
-  Tooltip as MuiTooltip,
-  useTheme,
-  CircularProgress,
-  Avatar,
-  Badge,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Fab,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Checkbox,
-  FormControlLabel,
-  Switch,
-  Divider,
-  LinearProgress,
-  Slider,
-  ButtonGroup,
-  TablePagination,
-  Breadcrumbs,
-  Link
-} from '@mui/material';
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
 import {
-  Search as SearchIcon,
-  FilterAlt as FilterIcon,
-  Refresh as RefreshIcon,
-  Download as DownloadIcon,
-  BarChart as BarChartIcon,
-  PieChart as PieChartIcon,
-  CalendarToday as CalendarIcon,
-  Assessment as RiskAssessmentIcon,
-  TrendingUp as TrendingUpIcon,
-  ExpandMore as ExpandMoreIcon,
-  PersonAdd as PersonAddIcon,
-  Visibility as VisibilityIcon,
-  Edit as EditIcon,
-  Analytics as AnalyticsIcon,
-  TableChart as TableChartIcon,
-  GridView as GridViewIcon,
-  Sort as SortIcon,
-  FilterList as FilterListIcon,
-  Clear as ClearIcon,
-  InsertChart as InsertChartIcon,
-  Home as HomeIcon,
-  Business as BusinessIcon,
-  Security as SecurityIcon,
-  Star as StarIcon,
-  Warning as WarningIcon,
-  CheckCircle as CheckCircleIcon,
-  LocalAtm as LocalAtmIcon
-} from '@mui/icons-material';
-import { 
-  Chart as ChartJS, 
-  ArcElement, 
-  Tooltip, 
-  Legend, 
-  CategoryScale, 
-  LinearScale, 
-  BarElement,
-  Title,
-  PointElement,
-  LineElement,
-  RadialLinearScale
-} from 'chart.js';
-import { Pie, Bar, Radar, Doughnut } from 'react-chartjs-2';
-
-// Enregistrement des composants ChartJS
-ChartJS.register(
-  ArcElement,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
+import {
   Tooltip,
-  Legend,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  PointElement,
-  LineElement,
-  RadialLinearScale
-);
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
+  ChartContainer,
+  ChartConfig
+} from "@/components/ui/chart";
+import {
+  Users,
+  Search,
+  Filter,
+  RefreshCw,
+  Download,
+  BarChart3,
+  PieChart,
+  Calendar,
+  TrendingUp,
+  UserPlus,
+  Eye,
+  Edit,
+  MoreHorizontal,
+  Activity,
+  Shield,
+  Target,
+  Star,
+  AlertTriangle,
+  CheckCircle,
+  DollarSign,
+  Home as HomeIcon,
+  Building,
+  ArrowUpDown,
+  ChevronDown,
+  X as ClearIcon,
+  Grid3x3,
+  Table2
+} from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import {
+  ResponsiveContainer,
+  PieChart as RechartsPie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  Legend as RechartsLegend,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  Doughnut
+} from 'recharts';
+
+// Chart configuration for modern charts
+const chartConfig = {
+  riskScore: {
+    label: "Score de Risque",
+    color: "hsl(var(--primary))",
+  },
+  percentage: {
+    label: "Pourcentage",
+    color: "hsl(var(--primary))",
+  },
+} satisfies ChartConfig;
 
 // Simulation des données Supabase
 const mockInvestorProfiles = [
@@ -186,9 +199,11 @@ type SortField = 'name' | 'risk_score' | 'risk_asset_percentage' | 'investment_h
 type SortDirection = 'asc' | 'desc';
 
 const InvestorProfiles: React.FC = () => {
-  const theme = useTheme();
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const [investorProfiles, setInvestorProfiles] = useState<InvestorProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRiskTolerance, setFilterRiskTolerance] = useState<string>('');
   const [filterHorizonCategory, setFilterHorizonCategory] = useState<string>('');
@@ -203,11 +218,6 @@ const InvestorProfiles: React.FC = () => {
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [profileDetailOpen, setProfileDetailOpen] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<InvestorProfile | null>(null);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: '',
-    severity: 'success' as 'success' | 'error' | 'warning' | 'info'
-  });
 
   const fetchInvestorProfiles = async () => {
     setLoading(true);
@@ -217,10 +227,10 @@ const InvestorProfiles: React.FC = () => {
       setInvestorProfiles(mockInvestorProfiles);
     } catch (error) {
       console.error('Error fetching investor profiles:', error);
-      setSnackbar({
-        open: true,
-        message: 'Échec du chargement des profils investisseurs',
-        severity: 'error'
+      toast({
+        title: "Erreur",
+        description: "Échec du chargement des profils investisseurs",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -232,39 +242,45 @@ const InvestorProfiles: React.FC = () => {
   }, []);
 
   // Fonctions utilitaires
-  const getRiskToleranceColor = (riskTolerance: string) => {
+  const getRiskToleranceVariant = (riskTolerance: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (riskTolerance?.toLowerCase()) {
       case 'prudent':
       case 'conservateur':
-        return 'success';
+        return 'secondary';
       case 'équilibré':
       case 'modéré':
-        return 'warning';
+        return 'outline';
       case 'dynamique':
       case 'agressif':
-        return 'error';
+        return 'destructive';
       default:
         return 'default';
     }
   };
 
-  const getHorizonCategoryColor = (category: string) => {
+  const getHorizonCategoryVariant = (category: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (category) {
       case 'Court terme':
-        return 'error';
+        return 'destructive';
       case 'Moyen terme':
-        return 'warning';
+        return 'outline';
       case 'Long terme':
-        return 'success';
+        return 'secondary';
       default:
         return 'default';
     }
   };
 
   const getRiskScoreIcon = (score: number) => {
-    if (score <= 3) return <CheckCircleIcon color="success" />;
-    if (score <= 6) return <WarningIcon color="warning" />;
-    return <SecurityIcon color="error" />;
+    if (score <= 3) return <CheckCircle className="w-4 h-4 text-green-600" />;
+    if (score <= 6) return <AlertTriangle className="w-4 h-4 text-yellow-600" />;
+    return <Shield className="w-4 h-4 text-red-600" />;
+  };
+
+  const getRiskScoreColor = (score: number): string => {
+    if (score <= 3) return 'text-green-600';
+    if (score <= 6) return 'text-yellow-600';
+    return 'text-red-600';
   };
 
   // Filtrage et tri avancés
@@ -487,12 +503,13 @@ const InvestorProfiles: React.FC = () => {
     setFilterRiskScore([0, 10]);
   };
 
-  const handleRefresh = () => {
-    fetchInvestorProfiles();
-    setSnackbar({
-      open: true,
-      message: 'Données actualisées avec succès',
-      severity: 'success'
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchInvestorProfiles();
+    setRefreshing(false);
+    toast({
+      title: "Succès",
+      description: "Données actualisées avec succès"
     });
   };
 
@@ -521,10 +538,9 @@ const InvestorProfiles: React.FC = () => {
     a.click();
     URL.revokeObjectURL(url);
 
-    setSnackbar({
-      open: true,
-      message: 'Données exportées avec succès',
-      severity: 'success'
+    toast({
+      title: "Export réussi",
+      description: "Données exportées avec succès"
     });
   };
 
@@ -533,843 +549,819 @@ const InvestorProfiles: React.FC = () => {
     setProfileDetailOpen(true);
   };
 
+  const renderProfileDetailContent = () => {
+    if (!selectedProfile) return null;
+    
+    return (
+      <>
+        <DialogHeader>
+          <div className="flex items-center space-x-3">
+            <Avatar className="h-12 w-12">
+              <AvatarFallback className="bg-primary text-primary-foreground">
+                {selectedProfile.first_name.charAt(0)}{selectedProfile.last_name.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <DialogTitle className="text-xl">
+                {selectedProfile.first_name} {selectedProfile.last_name}
+              </DialogTitle>
+              <DialogDescription>
+                Profil {selectedProfile.profile_type} - Score de risque: {selectedProfile.risk_score}/10
+              </DialogDescription>
+            </div>
+          </div>
+        </DialogHeader>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-6">
+          <div className="space-y-6">
+            <div>
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Shield className="w-4 h-4" />
+                Évaluation du Risque
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm text-muted-foreground">Score de risque</Label>
+                  <div className="flex items-center space-x-3 mt-2">
+                    <Slider 
+                      value={[selectedProfile.risk_score]} 
+                      max={10} 
+                      step={1} 
+                      className="flex-1" 
+                      disabled 
+                    />
+                    <Badge variant={selectedProfile.risk_score >= 7 ? 'destructive' : selectedProfile.risk_score >= 4 ? 'outline' : 'secondary'}>
+                      {selectedProfile.risk_score}/10
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div>
+                  <Label className="text-sm text-muted-foreground">Pourcentage d'actifs risqués</Label>
+                  <div className="flex items-center space-x-3 mt-2">
+                    <Progress value={selectedProfile.risk_asset_percentage} className="flex-1" />
+                    <span className="text-sm font-medium">{selectedProfile.risk_asset_percentage}%</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <Label className="text-sm text-muted-foreground">Tolérance au risque</Label>
+                  <div className="mt-2">
+                    <Badge variant={getRiskToleranceVariant(selectedProfile.risk_tolerance)}>
+                      {selectedProfile.risk_tolerance}
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div>
+                  <Label className="text-sm text-muted-foreground">Réaction à une baisse de marché</Label>
+                  <p className="mt-2 text-sm">{selectedProfile.reaction_to_drop}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="space-y-6">
+            <div>
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Horizon d'Investissement
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm text-muted-foreground">Durée (années)</Label>
+                  <div className="flex items-center space-x-3 mt-2">
+                    <Slider 
+                      value={[selectedProfile.investment_horizon]} 
+                      max={30} 
+                      step={1} 
+                      className="flex-1" 
+                      disabled 
+                    />
+                    <Badge variant={getHorizonCategoryVariant(selectedProfile.investment_horizon_category)}>
+                      {selectedProfile.investment_horizon} ans
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div>
+                  <Label className="text-sm text-muted-foreground">Catégorie d'horizon</Label>
+                  <div className="mt-2">
+                    <Badge variant={getHorizonCategoryVariant(selectedProfile.investment_horizon_category)}>
+                      {selectedProfile.investment_horizon_category}
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div className="mt-6 p-4 rounded-lg bg-muted/50">
+                  <h4 className="font-semibold mb-2 flex items-center gap-2">
+                    <Target className="w-4 h-4" />
+                    Recommandations
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <p><span className="font-medium">Allocation suggérée:</span> {getSuggestedAllocation(selectedProfile)}</p>
+                    <p><span className="font-medium">Stratégie:</span> {getSuggestedStrategy(selectedProfile)}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <DialogFooter className="flex justify-between">
+          <Button variant="outline" onClick={() => setSelectedProfile(null)}>
+            Fermer
+          </Button>
+          <Button>
+            <Edit className="w-4 h-4 mr-2" />
+            Modifier
+          </Button>
+        </DialogFooter>
+      </>
+    );
+  };
+
   // Rendu des composants
   const renderStatsCards = () => (
-    <Grid container spacing={3} sx={{ mb: 3 }}>
-      <Grid item xs={12} sm={6} md={3}>
-        <Card sx={{ height: '100%', background: `linear-gradient(135deg, ${theme.palette.primary.main}15, ${theme.palette.primary.main}05)` }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Box>
-                <Typography color="textSecondary" gutterBottom variant="body2">
-                  Profils Totaux
-                </Typography>
-                <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
-                  {stats.totalProfiles || 0}
-                </Typography>
-                <Typography variant="caption" color="textSecondary">
-                  {filteredAndSortedProfiles.length !== stats.totalProfiles ? 
-                    `${filteredAndSortedProfiles.length} filtrés` : 'Tous affichés'}
-                </Typography>
-              </Box>
-              <Avatar sx={{ bgcolor: theme.palette.primary.main, width: 56, height: 56 }}>
-                <RiskAssessmentIcon fontSize="large" />
-              </Avatar>
-            </Box>
-          </CardContent>
-        </Card>
-      </Grid>
-      <Grid item xs={12} sm={6} md={3}>
-        <Card sx={{ height: '100%', background: `linear-gradient(135deg, ${theme.palette.success.main}15, ${theme.palette.success.main}05)` }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Box>
-                <Typography color="textSecondary" gutterBottom variant="body2">
-                  % Actifs Risqués Moyen
-                </Typography>
-                <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
-                  {(stats.averageRiskPercentage || 0).toFixed(1)}%
-                </Typography>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={stats.averageRiskPercentage || 0} 
-                  sx={{ mt: 1, height: 6, borderRadius: 3 }}
-                />
-              </Box>
-              <Avatar sx={{ bgcolor: theme.palette.success.main, width: 56, height: 56 }}>
-                <PieChartIcon fontSize="large" />
-              </Avatar>
-            </Box>
-          </CardContent>
-        </Card>
-      </Grid>
-      <Grid item xs={12} sm={6} md={3}>
-        <Card sx={{ height: '100%', background: `linear-gradient(135deg, ${theme.palette.warning.main}15, ${theme.palette.warning.main}05)` }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Box>
-                <Typography color="textSecondary" gutterBottom variant="body2">
-                  Horizon Moyen
-                </Typography>
-                <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
-                  {(stats.averageHorizon || 0).toFixed(1)} ans
-                </Typography>
-                <Typography variant="caption" color="textSecondary">
-                  Score: {(stats.averageRiskScore || 0).toFixed(1)}/10
-                </Typography>
-              </Box>
-              <Avatar sx={{ bgcolor: theme.palette.warning.main, width: 56, height: 56 }}>
-                <CalendarIcon fontSize="large" />
-              </Avatar>
-            </Box>
-          </CardContent>
-        </Card>
-      </Grid>
-      <Grid item xs={12} sm={6} md={3}>
-        <Card sx={{ height: '100%', background: `linear-gradient(135deg, ${theme.palette.error.main}15, ${theme.palette.error.main}05)` }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Box>
-                <Typography color="textSecondary" gutterBottom variant="body2">
-                  Profils Dynamiques
-                </Typography>
-                <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
-                  {stats.dynamicProfiles || 0}
-                </Typography>
-                <Typography variant="caption" color="textSecondary">
-                  {stats.totalProfiles > 0 ? Math.round(((stats.dynamicProfiles || 0) / stats.totalProfiles) * 100) : 0}% du total
-                </Typography>
-              </Box>
-              <Avatar sx={{ bgcolor: theme.palette.error.main, width: 56, height: 56 }}>
-                <TrendingUpIcon fontSize="large" />
-              </Avatar>
-            </Box>
-          </CardContent>
-        </Card>
-      </Grid>
-    </Grid>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <Card className="glass-card border-white/20 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+        <div className="absolute inset-0 gradient-primary opacity-5"></div>
+        <CardContent className="p-6 relative z-10">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground font-medium">
+                Profils Totaux
+              </p>
+              <p className="text-3xl font-bold tracking-tight">
+                {stats.totalProfiles || 0}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {filteredAndSortedProfiles.length !== stats.totalProfiles ? 
+                  `${filteredAndSortedProfiles.length} filtrés` : 'Tous affichés'}
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Users className="w-6 h-6 text-primary" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="glass-card border-white/20 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+        <div className="absolute inset-0 gradient-success opacity-5"></div>
+        <CardContent className="p-6 relative z-10">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2 flex-1">
+              <p className="text-sm text-muted-foreground font-medium">
+                % Actifs Risqués Moyen
+              </p>
+              <p className="text-3xl font-bold tracking-tight">
+                {(stats.averageRiskPercentage || 0).toFixed(1)}%
+              </p>
+              <Progress 
+                value={stats.averageRiskPercentage || 0} 
+                className="h-2 mt-2"
+              />
+            </div>
+            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center ml-4">
+              <PieChart className="w-6 h-6 text-green-600" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="glass-card border-white/20 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+        <div className="absolute inset-0 gradient-warning opacity-5"></div>
+        <CardContent className="p-6 relative z-10">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground font-medium">
+                Horizon Moyen
+              </p>
+              <p className="text-3xl font-bold tracking-tight">
+                {(stats.averageHorizon || 0).toFixed(1)} ans
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Score: {(stats.averageRiskScore || 0).toFixed(1)}/10
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
+              <Calendar className="w-6 h-6 text-yellow-600" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="glass-card border-white/20 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+        <div className="absolute inset-0 gradient-gold opacity-5"></div>
+        <CardContent className="p-6 relative z-10">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground font-medium">
+                Profils Dynamiques
+              </p>
+              <p className="text-3xl font-bold tracking-tight">
+                {stats.dynamicProfiles || 0}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {stats.totalProfiles > 0 ? Math.round(((stats.dynamicProfiles || 0) / stats.totalProfiles) * 100) : 0}% du total
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-orange-600" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 
-  const renderCharts = () => (
-    <Grid container spacing={3} sx={{ mb: 3 }}>
-      <Grid item xs={12} md={6}>
-        <Card sx={{ height: 400 }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <PieChartIcon color="primary" />
+  const renderCharts = () => {
+    const riskToleranceData = Object.entries(stats.riskToleranceStats || {}).map(([risk, count]) => ({
+      name: risk,
+      value: count,
+      fill: risk.toLowerCase().includes('prudent') || risk.toLowerCase().includes('conservateur') ? '#10b981' :
+            risk.toLowerCase().includes('équilibré') || risk.toLowerCase().includes('modéré') ? '#f59e0b' : '#ef4444'
+    }));
+
+    const riskScoreData = Object.entries(stats.riskScoreDistribution || {}).map(([range, count]) => ({
+      name: range,
+      value: count,
+      fill: range.includes('Faible') ? '#10b981' : range.includes('Modéré') ? '#f59e0b' : '#ef4444'
+    }));
+
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <Card className="glass-card border-white/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <PieChart className="w-5 h-5" />
               Répartition par Tolérance au Risque
-            </Typography>
-            <Box sx={{ height: 320 }}>
-              {chartData.riskToleranceChart && (
-                <Doughnut 
-                  data={chartData.riskToleranceChart} 
-                  options={{ 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        position: 'bottom'
-                      }
-                    }
-                  }} 
-                />
-              )}
-            </Box>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartsPie>
+                  <RechartsTooltip />
+                  <RechartsLegend />
+                  {riskToleranceData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </RechartsPie>
+              </ResponsiveContainer>
+            </ChartContainer>
           </CardContent>
         </Card>
-      </Grid>
-      <Grid item xs={12} md={6}>
-        <Card sx={{ height: 400 }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <BarChartIcon color="primary" />
+
+        <Card className="glass-card border-white/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
               Distribution des Scores de Risque
-            </Typography>
-            <Box sx={{ height: 320 }}>
-              {chartData.riskScoreChart && (
-                <Bar 
-                  data={chartData.riskScoreChart} 
-                  options={{ 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        display: false
-                      }
-                    }
-                  }} 
-                />
-              )}
-            </Box>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={riskScoreData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <RechartsTooltip />
+                  <Bar dataKey="value" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
           </CardContent>
         </Card>
-      </Grid>
-      <Grid item xs={12} md={6}>
-        <Card sx={{ height: 400 }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <CalendarIcon color="primary" />
+
+        <Card className="glass-card border-white/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
               Horizon d'Investissement
-            </Typography>
-            <Box sx={{ height: 320 }}>
-              {chartData.horizonChart && (
-                <Pie 
-                  data={chartData.horizonChart} 
-                  options={{ 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        position: 'bottom'
-                      }
-                    }
-                  }} 
-                />
-              )}
-            </Box>
-          </CardContent>
-        </Card>
-      </Grid>
-      <Grid item xs={12} md={6}>
-        <Card sx={{ height: 400 }}>
+            </CardTitle>
+          </CardHeader>
           <CardContent>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <AnalyticsIcon color="primary" />
-              Profil Radar Moyen
-            </Typography>
-            <Box sx={{ height: 320 }}>
-              {chartData.radarChart && (
-                <Radar 
-                  data={chartData.radarChart} 
-                  options={{ 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    scales: {
-                      r: {
-                        beginAtZero: true,
-                        max: 100
-                      }
-                    }
-                  }} 
-                />
-              )}
-            </Box>
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="space-y-2">
+                  <div className="text-2xl font-bold text-red-600">
+                    {stats.horizonStats?.['Court terme'] || 0}
+                  </div>
+                  <Badge variant="destructive">Court terme</Badge>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-2xl font-bold text-yellow-600">
+                    {stats.horizonStats?.['Moyen terme'] || 0}
+                  </div>
+                  <Badge variant="outline">Moyen terme</Badge>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-2xl font-bold text-green-600">
+                    {stats.horizonStats?.['Long terme'] || 0}
+                  </div>
+                  <Badge variant="secondary">Long terme</Badge>
+                </div>
+              </div>
+              <div className="pt-4">
+                <p className="text-sm text-muted-foreground text-center">
+                  Répartition des horizons d'investissement par client
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
-      </Grid>
-    </Grid>
-  );
+
+        <Card className="glass-card border-white/20 lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="w-5 h-5" />
+              Résumé des Métriques
+            </CardTitle>
+            <CardDescription>
+              Vue d'ensemble des principales métriques de profils d'investisseurs
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center p-4 rounded-lg bg-muted/50">
+                <div className="text-2xl font-bold text-primary">
+                  {(stats.averageRiskScore || 0).toFixed(1)}
+                </div>
+                <p className="text-sm text-muted-foreground">Score risque moyen</p>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-muted/50">
+                <div className="text-2xl font-bold text-green-600">
+                  {(stats.averageRiskPercentage || 0).toFixed(0)}%
+                </div>
+                <p className="text-sm text-muted-foreground">Actifs risqués moyen</p>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-muted/50">
+                <div className="text-2xl font-bold text-blue-600">
+                  {(stats.averageHorizon || 0).toFixed(1)}
+                </div>
+                <p className="text-sm text-muted-foreground">Horizon moyen (ans)</p>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-muted/50">
+                <div className="text-2xl font-bold text-orange-600">
+                  {stats.dynamicProfiles || 0}
+                </div>
+                <p className="text-sm text-muted-foreground">Profils dynamiques</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
 
   const renderFilters = () => (
-    <Card sx={{ mb: 3 }}>
-      <CardContent>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <FilterListIcon color="primary" />
-            Recherche et Filtres
-          </Typography>
-          <Box>
+    <Card className="glass-card border-white/20 mb-8">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Filter className="h-5 w-5 text-primary" />
+            <CardTitle className="text-lg">Recherche et Filtres</CardTitle>
+          </div>
+          <div className="flex gap-2">
             <Button
-              variant="outlined"
-              startIcon={<ClearIcon />}
+              variant="outline"
+              size="sm"
               onClick={clearFilters}
-              sx={{ mr: 1 }}
+              className="glass border-white/30 hover:glass-card"
             >
+              <ClearIcon className="w-4 h-4 mr-2" />
               Effacer
             </Button>
-            <Button
-              variant="outlined"
-              startIcon={<FilterIcon />}
-              onClick={() => setFilterDialogOpen(true)}
+            <Dialog open={filterDialogOpen} onOpenChange={setFilterDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="glass border-white/30 hover:glass-card">
+                  <Filter className="w-4 h-4 mr-2" />
+                  Filtres Avancés
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-card border-white/20">
+                <DialogHeader>
+                  <DialogTitle>Filtres Avancés</DialogTitle>
+                  <DialogDescription>
+                    Affinez votre recherche avec des critères spécifiques
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6 py-4">
+                  <div className="space-y-2">
+                    <Label>Score de Risque: {filterRiskScore[0]} - {filterRiskScore[1]}</Label>
+                    <Slider
+                      value={filterRiskScore}
+                      onValueChange={(value) => setFilterRiskScore(value as [number, number])}
+                      max={10}
+                      min={0}
+                      step={1}
+                      className="py-4"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setFilterDialogOpen(false)}>
+                    Annuler
+                  </Button>
+                  <Button onClick={() => { setFilterDialogOpen(false); setPage(0); }}>
+                    Appliquer
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+          <div className="md:col-span-4 space-y-2">
+            <Label htmlFor="search">Rechercher un investisseur</Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="search"
+                placeholder="Nom ou prénom..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 glass border-white/30 hover:border-white/50 focus:border-primary/50"
+              />
+            </div>
+          </div>
+          
+          <div className="md:col-span-3 space-y-2">
+            <Label>Tolérance au Risque</Label>
+            <Select value={filterRiskTolerance} onValueChange={setFilterRiskTolerance}>
+              <SelectTrigger className="glass border-white/30 hover:border-white/50">
+                <SelectValue placeholder="Toutes" />
+              </SelectTrigger>
+              <SelectContent className="glass-card border-white/20">
+                <SelectItem value="">Toutes</SelectItem>
+                <SelectItem value="Prudent">Prudent</SelectItem>
+                <SelectItem value="Conservateur">Conservateur</SelectItem>
+                <SelectItem value="Équilibré">Équilibré</SelectItem>
+                <SelectItem value="Modéré">Modéré</SelectItem>
+                <SelectItem value="Dynamique">Dynamique</SelectItem>
+                <SelectItem value="Agressif">Agressif</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="md:col-span-3 space-y-2">
+            <Label>Horizon d'Investissement</Label>
+            <Select value={filterHorizonCategory} onValueChange={setFilterHorizonCategory}>
+              <SelectTrigger className="glass border-white/30 hover:border-white/50">
+                <SelectValue placeholder="Tous" />
+              </SelectTrigger>
+              <SelectContent className="glass-card border-white/20">
+                <SelectItem value="">Tous</SelectItem>
+                <SelectItem value="Court terme">Court terme</SelectItem>
+                <SelectItem value="Moyen terme">Moyen terme</SelectItem>
+                <SelectItem value="Long terme">Long terme</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="md:col-span-2">
+            <Button 
+              onClick={handleRefresh} 
+              disabled={refreshing}
+              className="w-full"
             >
-              Filtres Avancés
+              {refreshing ? (
+                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+              ) : (
+                <RefreshCw className="w-4 h-4 mr-2" />
+              )}
+              Actualiser
             </Button>
-          </Box>
-        </Box>
-        
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={4}>
-            <TextField
-              fullWidth
-              variant="outlined"
-              placeholder="Rechercher un investisseur..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: <SearchIcon color="action" sx={{ mr: 1 }} />
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <FormControl fullWidth>
-              <InputLabel>Tolérance au Risque</InputLabel>
-              <Select
-                value={filterRiskTolerance}
-                onChange={(e) => setFilterRiskTolerance(e.target.value)}
-                label="Tolérance au Risque"
-              >
-                <MenuItem value="">Toutes</MenuItem>
-                <MenuItem value="Prudent">Prudent</MenuItem>
-                <MenuItem value="Conservateur">Conservateur</MenuItem>
-                <MenuItem value="Équilibré">Équilibré</MenuItem>
-                <MenuItem value="Modéré">Modéré</MenuItem>
-                <MenuItem value="Dynamique">Dynamique</MenuItem>
-                <MenuItem value="Agressif">Agressif</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <FormControl fullWidth>
-              <InputLabel>Horizon d'Investissement</InputLabel>
-              <Select
-                value={filterHorizonCategory}
-                onChange={(e) => setFilterHorizonCategory(e.target.value)}
-                label="Horizon d'Investissement"
-              >
-                <MenuItem value="">Tous</MenuItem>
-                                <MenuItem value="Court terme">Court terme</MenuItem>
-                <MenuItem value="Moyen terme">Moyen terme</MenuItem>
-                <MenuItem value="Long terme">Long terme</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={2}>
-            <Button
-              fullWidth
-              variant="contained"
-              color="primary"
-              startIcon={<SearchIcon />}
-              onClick={() => {}}
-            >
-              Rechercher
-            </Button>
-          </Grid>
-        </Grid>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
 
   const renderTable = () => (
-    <Card>
-      <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <TableChartIcon color="primary" />
-            Liste des Profils
-          </Typography>
-          <Box>
-            <ButtonGroup variant="outlined" sx={{ mr: 1 }}>
-              <Button 
-                startIcon={<GridViewIcon />} 
-                onClick={() => setViewMode('cards')}
-                disabled={viewMode === 'cards'}
-              >
-                Cartes
-              </Button>
-              <Button 
-                startIcon={<AnalyticsIcon />} 
-                onClick={() => setViewMode('analytics')}
-                disabled={viewMode === 'analytics'}
-              >
-                Analytics
-              </Button>
-            </ButtonGroup>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<DownloadIcon />}
-              onClick={handleExportData}
-            >
-              Exporter
-            </Button>
-          </Box>
-        </Box>
+    <Card className="glass-card border-white/20">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Table2 className="h-5 w-5 text-primary" />
+            <CardTitle>Liste des Profils ({filteredAndSortedProfiles.length})</CardTitle>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 text-sm text-muted-foreground">
+              <Checkbox 
+                checked={selectedProfiles.length === paginatedProfiles.length && paginatedProfiles.length > 0}
+                onCheckedChange={handleSelectAllProfiles}
+              />
+              <span>{selectedProfiles.length} sélectionné(s)</span>
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-0">
 
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    indeterminate={selectedProfiles.length > 0 && selectedProfiles.length < paginatedProfiles.length}
-                    checked={selectedProfiles.length === paginatedProfiles.length && paginatedProfiles.length > 0}
-                    onChange={handleSelectAllProfiles}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => handleSort('name')}>
-                    Investisseur
-                    {sortField === 'name' && (
-                      <SortIcon sx={{ 
-                        transform: sortDirection === 'desc' ? 'rotate(180deg)' : 'none',
-                        ml: 0.5 
-                      }} />
-                    )}
-                  </Box>
-                </TableCell>
-                <TableCell>Tolérance au Risque</TableCell>
-                <TableCell>Réaction à la Baisse</TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => handleSort('risk_score')}>
-                    Score Risque
-                    {sortField === 'risk_score' && (
-                      <SortIcon sx={{ 
-                        transform: sortDirection === 'desc' ? 'rotate(180deg)' : 'none',
-                        ml: 0.5 
-                      }} />
-                    )}
-                  </Box>
-                </TableCell>
-                <TableCell align="right">
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'pointer' }} onClick={() => handleSort('risk_asset_percentage')}>
-                    % Actifs Risqués
-                    {sortField === 'risk_asset_percentage' && (
-                      <SortIcon sx={{ 
-                        transform: sortDirection === 'desc' ? 'rotate(180deg)' : 'none',
-                        ml: 0.5 
-                      }} />
-                    )}
-                  </Box>
-                </TableCell>
-                <TableCell align="right">
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'pointer' }} onClick={() => handleSort('investment_horizon')}>
-                    Horizon (ans)
-                    {sortField === 'investment_horizon' && (
-                      <SortIcon sx={{ 
-                        transform: sortDirection === 'desc' ? 'rotate(180deg)' : 'none',
-                        ml: 0.5 
-                      }} />
-                    )}
-                  </Box>
-                </TableCell>
-                <TableCell>Catégorie Horizon</TableCell>
-                <TableCell align="center">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedProfiles.length > 0 ? (
-                paginatedProfiles.map((profile) => (
-                  <TableRow key={profile.user_id} hover>
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={selectedProfiles.includes(profile.user_id)}
-                        onChange={() => handleSelectProfile(profile.user_id)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Avatar sx={{ width: 32, height: 32, mr: 1.5, bgcolor: theme.palette.primary.main }}>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-12">
+                <Checkbox
+                  checked={selectedProfiles.length === paginatedProfiles.length && paginatedProfiles.length > 0}
+                  onCheckedChange={handleSelectAllProfiles}
+                />
+              </TableHead>
+              <TableHead>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => handleSort('name')}
+                  className="h-auto p-0 font-semibold hover:bg-transparent"
+                >
+                  Investisseur
+                  {sortField === 'name' && (
+                    <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
+                  )}
+                </Button>
+              </TableHead>
+              <TableHead>Tolérance au Risque</TableHead>
+              <TableHead>Réaction à la Baisse</TableHead>
+              <TableHead>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => handleSort('risk_score')}
+                  className="h-auto p-0 font-semibold hover:bg-transparent"
+                >
+                  Score Risque
+                  {sortField === 'risk_score' && (
+                    <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
+                  )}
+                </Button>
+              </TableHead>
+              <TableHead className="text-right">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => handleSort('risk_asset_percentage')}
+                  className="h-auto p-0 font-semibold hover:bg-transparent"
+                >
+                  % Actifs Risqués
+                  {sortField === 'risk_asset_percentage' && (
+                    <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
+                  )}
+                </Button>
+              </TableHead>
+              <TableHead className="text-right">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => handleSort('investment_horizon')}
+                  className="h-auto p-0 font-semibold hover:bg-transparent"
+                >
+                  Horizon (ans)
+                  {sortField === 'investment_horizon' && (
+                    <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
+                  )}
+                </Button>
+              </TableHead>
+              <TableHead>Catégorie Horizon</TableHead>
+              <TableHead className="text-center">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {paginatedProfiles.length > 0 ? (
+              paginatedProfiles.map((profile) => (
+                <TableRow key={profile.user_id} className="hover:bg-muted/50 transition-colors">
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedProfiles.includes(profile.user_id)}
+                      onCheckedChange={() => handleSelectProfile(profile.user_id)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-primary text-primary-foreground text-sm">
                           {profile.first_name.charAt(0)}{profile.last_name.charAt(0)}
-                        </Avatar>
-                        {profile.first_name} {profile.last_name}
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={profile.risk_tolerance} 
-                        color={getRiskToleranceColor(profile.risk_tolerance) as any}
-                        size="small"
-                        variant="outlined"
-                      />
-                    </TableCell>
-                    <TableCell>{profile.reaction_to_drop}</TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        {getRiskScoreIcon(profile.risk_score)}
-                        <Box sx={{ ml: 1 }}>{profile.risk_score}/10</Box>
-                      </Box>
-                    </TableCell>
-                    <TableCell align="right">
-                      <LinearProgress 
-                        variant="determinate" 
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{profile.first_name} {profile.last_name}</p>
+                        <p className="text-sm text-muted-foreground">{profile.profile_type}</p>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={getRiskToleranceVariant(profile.risk_tolerance)}>
+                      {profile.risk_tolerance}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-sm">{profile.reaction_to_drop}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-2">
+                      {getRiskScoreIcon(profile.risk_score)}
+                      <span className={`font-medium ${getRiskScoreColor(profile.risk_score)}`}>
+                        {profile.risk_score}/10
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="space-y-1">
+                      <Progress 
                         value={profile.risk_asset_percentage} 
-                        sx={{ height: 6, borderRadius: 3, mb: 0.5 }}
-                        color={
-                          profile.risk_asset_percentage >= 70 ? 'error' : 
-                          profile.risk_asset_percentage >= 40 ? 'warning' : 'success'
-                        }
+                        className="h-2"
                       />
-                      {profile.risk_asset_percentage}%
-                    </TableCell>
-                    <TableCell align="right">{profile.investment_horizon}</TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={profile.investment_horizon_category} 
-                        color={getHorizonCategoryColor(profile.investment_horizon_category) as any}
-                        size="small"
-                        variant="outlined"
-                      />
-                    </TableCell>
-                    <TableCell align="center">
-                      <IconButton onClick={() => openProfileDetail(profile)} color="primary">
-                        <VisibilityIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={9} align="center">
-                    Aucun profil ne correspond aux critères de recherche
+                      <span className="text-sm font-medium">{profile.risk_asset_percentage}%</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right font-medium">{profile.investment_horizon}</TableCell>
+                  <TableCell>
+                    <Badge variant={getHorizonCategoryVariant(profile.investment_horizon_category)}>
+                      {profile.investment_horizon_category}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => setSelectedProfile(profile)}
+                          className="hover:bg-primary/10"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="glass-card border-white/20 max-w-2xl">
+                        {renderProfileDetailContent()}
+                      </DialogContent>
+                    </Dialog>
                   </TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={filteredAndSortedProfiles.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={(_, newPage) => setPage(newPage)}
-          onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value, 10));
-            setPage(0);
-          }}
-          labelRowsPerPage="Lignes par page:"
-          labelDisplayedRows={({ from, to, count }) => `${from}-${to} sur ${count}`}
-        />
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                  <div className="flex flex-col items-center space-y-2">
+                    <Users className="w-8 h-8 text-muted-foreground/50" />
+                    <p>Aucun profil ne correspond aux critères de recherche</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+        
+        <div className="flex items-center justify-between px-6 py-4 border-t border-border">
+          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+            <span>Lignes par page:</span>
+            <Select
+              value={rowsPerPage.toString()}
+              onValueChange={(value) => {
+                setRowsPerPage(parseInt(value));
+                setPage(0);
+              }}
+            >
+              <SelectTrigger className="w-20 h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5">5</SelectItem>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="25">25</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+            <span>
+              {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, filteredAndSortedProfiles.length)} sur {filteredAndSortedProfiles.length}
+            </span>
+            <div className="flex items-center space-x-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(0)}
+                disabled={page === 0}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronDown className="w-4 h-4 rotate-90" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(page - 1)}
+                disabled={page === 0}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronDown className="w-4 h-4 rotate-90" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(page + 1)}
+                disabled={page >= Math.ceil(filteredAndSortedProfiles.length / rowsPerPage) - 1}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronDown className="w-4 h-4 -rotate-90" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(Math.ceil(filteredAndSortedProfiles.length / rowsPerPage) - 1)}
+                disabled={page >= Math.ceil(filteredAndSortedProfiles.length / rowsPerPage) - 1}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronDown className="w-4 h-4 -rotate-90" />
+              </Button>
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
 
   const renderProfileCards = () => (
-    <Grid container spacing={3}>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {paginatedProfiles.map((profile) => (
-        <Grid item xs={12} sm={6} md={4} key={profile.user_id}>
-          <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <CardContent sx={{ flexGrow: 1 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Avatar sx={{ width: 48, height: 48, mr: 2, bgcolor: theme.palette.primary.main }}>
+        <Card key={profile.user_id} className="glass-card border-white/20 hover:shadow-lg transition-all duration-300 relative overflow-hidden group">
+          <div className="absolute inset-0 gradient-primary opacity-5 group-hover:opacity-10 transition-opacity"></div>
+          <CardContent className="p-6 relative z-10">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback className="bg-primary text-primary-foreground">
                     {profile.first_name.charAt(0)}{profile.last_name.charAt(0)}
-                  </Avatar>
-                  <Box>
-                    <Typography variant="h6">{profile.first_name} {profile.last_name}</Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {profile.profile_type}
-                    </Typography>
-                  </Box>
-                </Box>
-                <Box>
-                  <IconButton onClick={() => openProfileDetail(profile)} color="primary">
-                    <VisibilityIcon />
-                  </IconButton>
-                </Box>
-              </Box>
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="font-semibold tracking-tight">{profile.first_name} {profile.last_name}</h3>
+                  <p className="text-sm text-muted-foreground">{profile.profile_type}</p>
+                </div>
+              </div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setSelectedProfile(profile)}
+                    className="hover:bg-primary/10 glass"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="glass-card border-white/20 max-w-2xl">
+                  {renderProfileDetailContent()}
+                </DialogContent>
+              </Dialog>
+            </div>
 
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Tolérance au risque
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Chip 
-                    label={profile.risk_tolerance} 
-                    color={getRiskToleranceColor(profile.risk_tolerance) as any}
-                    size="small"
-                  />
-                  <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center' }}>
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm text-muted-foreground">Tolérance au risque</Label>
+                <div className="flex items-center justify-between mt-2">
+                  <Badge variant={getRiskToleranceVariant(profile.risk_tolerance)}>
+                    {profile.risk_tolerance}
+                  </Badge>
+                  <div className="flex items-center space-x-1">
                     {getRiskScoreIcon(profile.risk_score)}
-                    <Typography variant="body2" sx={{ ml: 0.5 }}>
+                    <span className={`text-sm font-medium ${getRiskScoreColor(profile.risk_score)}`}>
                       {profile.risk_score}/10
-                    </Typography>
-                  </Box>
-                </Box>
-              </Box>
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-              <Grid container spacing={1} sx={{ mb: 2 }}>
-                <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    % Actifs risqués
-                  </Typography>
-                  <LinearProgress 
-                    variant="determinate" 
-                    value={profile.risk_asset_percentage} 
-                    sx={{ height: 8, borderRadius: 2, mb: 0.5 }}
-                    color={
-                      profile.risk_asset_percentage >= 70 ? 'error' : 
-                      profile.risk_asset_percentage >= 40 ? 'warning' : 'success'
-                    }
-                  />
-                  <Typography variant="body2">
-                    {profile.risk_asset_percentage}%
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Horizon
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Chip 
-                      label={profile.investment_horizon_category} 
-                      color={getHorizonCategoryColor(profile.investment_horizon_category) as any}
-                      size="small"
-                    />
-                    <Typography variant="body2" sx={{ ml: 'auto' }}>
-                      {profile.investment_horizon} ans
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm text-muted-foreground">% Actifs risqués</Label>
+                  <div className="mt-2 space-y-2">
+                    <Progress value={profile.risk_asset_percentage} className="h-2" />
+                    <span className="text-sm font-medium">{profile.risk_asset_percentage}%</span>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm text-muted-foreground">Horizon</Label>
+                  <div className="mt-2 space-y-2">
+                    <Badge variant={getHorizonCategoryVariant(profile.investment_horizon_category)}>
+                      {profile.investment_horizon_category}
+                    </Badge>
+                    <p className="text-sm font-medium">{profile.investment_horizon} ans</p>
+                  </div>
+                </div>
+              </div>
 
-              <Box>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Réaction à une baisse
-                </Typography>
-                <Typography variant="body2">
-                  {profile.reaction_to_drop}
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+              <div>
+                <Label className="text-sm text-muted-foreground">Réaction à une baisse</Label>
+                <p className="text-sm mt-1">{profile.reaction_to_drop}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       ))}
-    </Grid>
+    </div>
   );
 
-  const renderProfileDetail = () => (
-    <Dialog 
-      open={profileDetailOpen} 
-      onClose={() => setProfileDetailOpen(false)}
-      maxWidth="md"
-      fullWidth
-    >
-      <DialogTitle>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
-            {selectedProfile?.first_name.charAt(0)}{selectedProfile?.last_name.charAt(0)}
-          </Avatar>
-          <Box>
-            <Typography variant="h6">
-              {selectedProfile?.first_name} {selectedProfile?.last_name}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Profil {selectedProfile?.profile_type}
-            </Typography>
-          </Box>
-        </Box>
-      </DialogTitle>
-      <DialogContent dividers>
-        {selectedProfile && (
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <RiskAssessmentIcon color="primary" />
-                Évaluation du Risque
-              </Typography>
-              
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Score de risque
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Slider
-                    value={selectedProfile.risk_score}
-                    min={0}
-                    max={10}
-                    step={1}
-                    marks
-                    disabled
-                    sx={{ flexGrow: 1 }}
-                  />
-                  <Chip 
-                    label={`${selectedProfile.risk_score}/10`} 
-                    color={
-                      selectedProfile.risk_score >= 7 ? 'error' : 
-                      selectedProfile.risk_score >= 4 ? 'warning' : 'success'
-                    }
-                  />
-                </Box>
-              </Box>
 
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Pourcentage d'actifs risqués
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <LinearProgress 
-                    variant="determinate" 
-                    value={selectedProfile.risk_asset_percentage} 
-                    sx={{ height: 10, borderRadius: 5, flexGrow: 1 }}
-                    color={
-                      selectedProfile.risk_asset_percentage >= 70 ? 'error' : 
-                      selectedProfile.risk_asset_percentage >= 40 ? 'warning' : 'success'
-                    }
-                  />
-                  <Typography variant="body2">
-                    {selectedProfile.risk_asset_percentage}%
-                  </Typography>
-                </Box>
-              </Box>
-
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Tolérance au risque
-                </Typography>
-                <Chip 
-                  label={selectedProfile.risk_tolerance} 
-                  color={getRiskToleranceColor(selectedProfile.risk_tolerance) as any}
-                  sx={{ fontSize: '0.875rem' }}
-                />
-              </Box>
-
-              <Box>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Réaction à une baisse de marché
-                </Typography>
-                <Typography variant="body2">
-                  {selectedProfile.reaction_to_drop}
-                </Typography>
-              </Box>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <CalendarIcon color="primary" />
-                Horizon d'Investissement
-              </Typography>
-
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Durée (années)
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Slider
-                    value={selectedProfile.investment_horizon}
-                    min={0}
-                    max={30}
-                    step={1}
-                    marks={[{ value: 0, label: '0' }, { value: 30, label: '30' }]}
-                    disabled
-                    sx={{ flexGrow: 1 }}
-                  />
-                  <Chip 
-                    label={`${selectedProfile.investment_horizon} ans`} 
-                    color={getHorizonCategoryColor(selectedProfile.investment_horizon_category) as any}
-                  />
-                </Box>
-              </Box>
-
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Catégorie d'horizon
-                </Typography>
-                <Chip 
-                  label={selectedProfile.investment_horizon_category} 
-                  color={getHorizonCategoryColor(selectedProfile.investment_horizon_category) as any}
-                  sx={{ fontSize: '0.875rem' }}
-                />
-              </Box>
-
-              <Box>
-                <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <AnalyticsIcon color="primary" />
-                  Recommandations
-                </Typography>
-                <Box sx={{ 
-                  p: 2, 
-                  borderRadius: 1, 
-                  bgcolor: theme.palette.background.paper,
-                  border: `1px solid ${theme.palette.divider}`
-                }}>
-                  <Typography variant="body2" gutterBottom>
-                    <Box component="span" sx={{ fontWeight: 'bold' }}>Allocation suggérée:</Box> {getSuggestedAllocation(selectedProfile)}
-                  </Typography>
-                  <Typography variant="body2">
-                    <Box component="span" sx={{ fontWeight: 'bold' }}>Stratégie:</Box> {getSuggestedStrategy(selectedProfile)}
-                  </Typography>
-                </Box>
-              </Box>
-            </Grid>
-          </Grid>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => setProfileDetailOpen(false)}>Fermer</Button>
-        <Button 
-          variant="contained" 
-          startIcon={<EditIcon />}
-          onClick={() => {
-            setProfileDetailOpen(false);
-            // Navigation vers l'édition du profil
-          }}
-        >
-          Modifier
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-
-  const renderFilterDialog = () => (
-    <Dialog 
-      open={filterDialogOpen} 
-      onClose={() => setFilterDialogOpen(false)}
-      maxWidth="sm"
-      fullWidth
-    >
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <FilterIcon color="primary" />
-        Filtres Avancés
-      </DialogTitle>
-      <DialogContent dividers>
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle1" gutterBottom>
-            Score de Risque
-          </Typography>
-          <Box sx={{ px: 2 }}>
-            <Slider
-              value={filterRiskScore}
-              onChange={(_, newValue) => setFilterRiskScore(newValue as [number, number])}
-              valueLabelDisplay="auto"
-              min={0}
-              max={10}
-              step={1}
-              marks={[
-                { value: 0, label: '0' },
-                { value: 10, label: '10' }
-              ]}
-            />
-          </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography variant="body2" color="text.secondary">
-              Min: {filterRiskScore[0]}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Max: {filterRiskScore[1]}
-            </Typography>
-          </Box>
-        </Box>
-
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle1" gutterBottom>
-            Pourcentage d'Actifs Risqués
-          </Typography>
-          <Box sx={{ px: 2 }}>
-            <Slider
-              value={[0, 100]}
-              disabled
-              valueLabelDisplay="auto"
-              min={0}
-              max={100}
-            />
-          </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography variant="body2" color="text.secondary">
-              Min: 0%
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Max: 100%
-            </Typography>
-          </Box>
-        </Box>
-
-        <Box>
-          <Typography variant="subtitle1" gutterBottom>
-            Options Supplémentaires
-          </Typography>
-          <FormControlLabel
-            control={<Switch checked={showAdvancedFilters} onChange={(e) => setShowAdvancedFilters(e.target.checked)} />}
-            label="Afficher les filtres avancés"
-          />
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => setFilterDialogOpen(false)}>Annuler</Button>
-        <Button 
-          variant="contained" 
-          onClick={() => {
-            setFilterDialogOpen(false);
-            setPage(0);
-          }}
-        >
-          Appliquer
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
 
   // Fonctions utilitaires pour les recommandations
   const getSuggestedAllocation = (profile: InvestorProfile) => {
@@ -1385,79 +1377,108 @@ const InvestorProfiles: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ mb: 3 }}>
-        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
-          <Link underline="hover" color="inherit" href="/">
-            <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
-            Accueil
-          </Link>
-          <Link underline="hover" color="inherit" href="/clients">
-            Clients
-          </Link>
-          <Typography color="text.primary">
-            Profils Investisseurs
-          </Typography>
-        </Breadcrumbs>
+    <TooltipProvider>
+      <div className="space-y-8 animate-fade-in p-6">
+        {/* Enhanced Header */}
+        <div className="glass-card p-8 rounded-2xl relative overflow-hidden border-white/20">
+          <div className="absolute inset-0 gradient-primary opacity-5"></div>
+          <div className="relative z-10 flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 rounded-full gradient-eparnova flex items-center justify-center">
+                <Users className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight gradient-text bg-gradient-to-r from-eparnova-blue via-eparnova-green to-eparnova-gold bg-clip-text text-transparent">
+                  Analyse des Profils Investisseurs
+                </h1>
+                <p className="text-muted-foreground mt-1">
+                  Analysez et gérez les profils de risque de vos clients
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleRefresh}
+                    disabled={refreshing}
+                    className="glass border-white/30 hover:glass-card"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Actualiser les données</TooltipContent>
+              </Tooltip>
+              <Button 
+                onClick={() => {}} 
+                className="gradient-eparnova hover:opacity-90 text-white font-medium"
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                Nouveau Profil
+              </Button>
+            </div>
+          </div>
+        </div>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h4" component="h1" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <BusinessIcon fontSize="large" />
-            Analyse des Profils Investisseurs
-          </Typography>
-          <Box>
-            <MuiTooltip title="Actualiser les données">
-              <IconButton onClick={handleRefresh} color="primary" sx={{ mr: 1 }}>
-                <RefreshIcon />
-              </IconButton>
-            </MuiTooltip>
-            <Fab
-              variant="extended"
-              color="primary"
-              size="medium"
-              onClick={() => {}}
-              sx={{ boxShadow: 'none', textTransform: 'none' }}
+        {renderStatsCards()}
+        
+        <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)} className="space-y-6">
+          <div className="flex items-center justify-between">
+            <TabsList className="glass border-white/20">
+              <TabsTrigger value="table" className="flex items-center gap-2">
+                <Table2 className="w-4 h-4" />
+                Tableau
+              </TabsTrigger>
+              <TabsTrigger value="cards" className="flex items-center gap-2">
+                <Grid3x3 className="w-4 h-4" />
+                Cartes
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4" />
+                Analytics
+              </TabsTrigger>
+            </TabsList>
+            <Button 
+              variant="outline" 
+              onClick={handleExportData}
+              className="glass border-white/30 hover:glass-card"
             >
-              <PersonAddIcon sx={{ mr: 1 }} />
-              Nouveau Profil
-            </Fab>
-          </Box>
-        </Box>
-      </Box>
+              <Download className="w-4 h-4 mr-2" />
+              Exporter
+            </Button>
+          </div>
 
-      {renderStatsCards()}
-      {viewMode === 'analytics' && renderCharts()}
-      {renderFilters()}
+          {renderFilters()}
 
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <CircularProgress />
-        </Box>
-      ) : (
-        <>
-          {viewMode === 'table' && renderTable()}
-          {viewMode === 'cards' && renderProfileCards()}
-        </>
-      )}
+          {loading ? (
+            <Card className="glass-card border-white/20">
+              <CardContent className="flex items-center justify-center py-16">
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="w-8 h-8 border-4 border-current border-t-transparent rounded-full animate-spin" />
+                  <p className="text-muted-foreground">Chargement des profils...</p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <TabsContent value="table" className="space-y-4">
+                {renderTable()}
+              </TabsContent>
+              <TabsContent value="cards" className="space-y-4">
+                {renderProfileCards()}
+              </TabsContent>
+              <TabsContent value="analytics" className="space-y-4">
+                {renderCharts()}
+              </TabsContent>
+            </>
+          )}
+        </Tabs>
 
-      {renderProfileDetail()}
-      {renderFilterDialog()}
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+        {renderProfileDetail()}
+      </div>
+    </TooltipProvider>
   );
 };
 
