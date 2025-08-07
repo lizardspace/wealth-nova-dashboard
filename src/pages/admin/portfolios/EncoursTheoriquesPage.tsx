@@ -39,6 +39,7 @@ const EncoursTheoriquesPage = () => {
   const [sortColumn, setSortColumn] = useState("total");
   const [sortDirection, setSortDirection] = useState("desc");
   const [opportunitesTab, setOpportunitesTab] = useState("potentiel");
+  const [debugMode, setDebugMode] = useState(false);
 
   const [historicData, setHistoricData] = useState([]);
   const [repartitionData, setRepartitionData] = useState([]);
@@ -54,101 +55,145 @@ const EncoursTheoriquesPage = () => {
         const { data: users, error: usersError } = await supabase.from('users').select('id, first_name, last_name');
         if (usersError) throw usersError;
 
-        // 2. Fetch all assets for all users
+        // 2. Fetch all assets for all users with management status
         const [
           { data: immobilierData, error: immobilierError },
           { data: assuranceVieData, error: assuranceVieError },
           { data: perData, error: perError },
           { data: epargneData, error: epargneError },
           { data: autreData, error: autreError },
+          { data: entrepriseData, error: entrepriseError },
         ] = await Promise.all([
-          supabase.from('bienimmobilier').select('user_id, value, contrat_gere'),
-          supabase.from('assurancevie').select('user_id, value, contrat_gere'),
-          supabase.from('contratcapitalisation').select('user_id, value, contrat_gere'),
-          supabase.from('comptebancaire').select('user_id, value, contrat_gere'),
-          supabase.from('autrepatrimoine').select('user_id, value, contrat_gere'),
+          supabase.from('bienimmobilier').select('user_id, value, contrat_gere, libelle, date_acquisition'),
+          supabase.from('assurancevie').select('user_id, value, contrat_gere, libelle, date_acquisition'),
+          supabase.from('contratcapitalisation').select('user_id, value, contrat_gere, libelle, date_acquisition'),
+          supabase.from('comptebancaire').select('user_id, value, contrat_gere, libelle, date_acquisition'),
+          supabase.from('autrepatrimoine').select('user_id, value, libelle, date_acquisition'),
+          supabase.from('entrepriseparticipation').select('user_id, value, libelle, date_acquisition'),
         ]);
 
-        if (immobilierError || assuranceVieError || perError || epargneError || autreError) {
-          console.error('Error fetching asset data:', immobilierError || assuranceVieError || perError || epargneError || autreError);
-          return;
+        // Gestion des erreurs
+        const errors = [immobilierError, assuranceVieError, perError, epargneError, autreError, entrepriseError].filter(Boolean);
+        if (errors.length > 0) {
+          console.error('Error fetching asset data:', errors);
+          throw new Error('Erreur lors de la récupération des données patrimoniales');
         }
 
+        // Organisation des données par type d'actif
         const assetData = {
-          immobilier: immobilierData,
-          assuranceVie: assuranceVieData,
-          per: perData,
-          epargne: epargneData,
-          autre: autreData,
+          immobilier: immobilierData || [],
+          assuranceVie: assuranceVieData || [],
+          per: perData || [],
+          epargne: epargneData || [],
+          autre: autreData || [],
+          entreprise: entrepriseData || [],
         };
 
         const clientsMap = new Map();
 
+        // Initialisation des clients
         users.forEach(user => {
           clientsMap.set(user.id, {
             id: user.id,
-            nom: user.last_name,
-            prenom: user.first_name,
-            immobilier: 0,
-            assuranceVie: 0,
-            per: 0,
-            epargne: 0,
-            autre: 0,
-            total: 0,
-            encoursReel: 0,
-            dernierContact: "N/A", // This needs a real source
+            nom: user.last_name || 'N/A',
+            prenom: user.first_name || 'N/A',
+            immobilier: 0,           // Encours théorique (non géré)
+            assuranceVie: 0,        // Encours théorique (non géré)
+            per: 0,                 // Encours théorique (non géré)
+            epargne: 0,             // Encours théorique (non géré)
+            autre: 0,               // Encours théorique (non géré)
+            entreprise: 0,          // Encours théorique (toujours non géré)
+            total: 0,               // Total des encours théoriques
+            encoursReel: 0,         // Encours géré par Eparnova
+            dernierContact: "N/A",  
             produits: new Set(),
+            detailActifs: [],       // Pour le debugging et les détails
           });
         });
 
+        // Traitement des actifs par type
         for (const [assetType, data] of Object.entries(assetData)) {
+          if (!data) continue;
+          
           data.forEach(item => {
             const client = clientsMap.get(item.user_id);
-            if (client) {
-              const value = item.value || 0;
-              if (item.contrat_gere) {
-                client.encoursReel += value;
+            if (!client) return;
+            
+            const value = parseFloat(item.value) || 0;
+            const isManaged = item.contrat_gere === true;
+            
+            // Debug info
+            client.detailActifs.push({
+              type: assetType,
+              libelle: item.libelle || 'Sans libellé',
+              value,
+              isManaged,
+              date: item.date_acquisition
+            });
+            
+            if (isManaged) {
+              // Si géré par Eparnova = encours réel
+              client.encoursReel += value;
+            } else {
+              // Si non géré = encours théorique (potentiel de conversion)
+              if (assetType === 'autre' || assetType === 'entreprise') {
+                // Ces types sont toujours considérés comme non gérés
+                client[assetType] += value;
               } else {
                 client[assetType] += value;
-                client.produits.add(assetType);
               }
+              client.produits.add(assetType);
             }
           });
         }
 
-        const processedClients = Array.from(clientsMap.values()).map(client => ({
-          ...client,
-          total: client.immobilier + client.assuranceVie + client.per + client.epargne + client.autre,
-          produits: Array.from(client.produits).join(', '),
-        }));
+        // Calcul final des données clients
+        const processedClients = Array.from(clientsMap.values()).map(client => {
+          const totalTheorique = client.immobilier + client.assuranceVie + client.per + client.epargne + client.autre + client.entreprise;
+          const totalPatrimoine = totalTheorique + client.encoursReel;
+          
+          return {
+            ...client,
+            total: totalTheorique,                    // Total encours théorique (non géré)
+            produits: Array.from(client.produits).join(', '),
+            encoursTheorique: totalTheorique,         // Encours théorique
+            potentiel: totalTheorique,                // Potentiel = tout le théorique peut être converti
+            tauxConversion: totalPatrimoine > 0 ? Math.round((client.encoursReel / totalPatrimoine) * 100) : 0,
+            patrimoineTotal: totalPatrimoine,         // Patrimoine total (théorique + réel)
+          };
+        });
 
-        const finalClientsData = processedClients.map(c => ({
-          ...c,
-          encoursTheorique: c.total,
-          potentiel: c.total - c.encoursReel,
-          tauxConversion: c.total > 0 ? Math.round((c.encoursReel / c.total) * 100) : 0,
-        }));
+        const finalClientsData = processedClients;
 
         setClientsData(finalClientsData);
         setOpportunitesData(finalClientsData);
 
-        // 3. Aggregate for repartition data
+        // 3. Aggregate for repartition data (only non-managed assets = theoretical)
         const repartition = finalClientsData.reduce((acc, client) => {
           acc.Immobilier += client.immobilier;
           acc['Assurance Vie'] += client.assuranceVie;
           acc.PER += client.per;
           acc.Épargne += client.epargne;
           acc.Autre += client.autre;
+          acc.Entreprise += client.entreprise;
           return acc;
-        }, { 'Immobilier': 0, 'Assurance Vie': 0, 'PER': 0, 'Épargne': 0, 'Autre': 0 });
+        }, { 
+          'Immobilier': 0, 
+          'Assurance Vie': 0, 
+          'PER': 0, 
+          'Épargne': 0, 
+          'Autre': 0,
+          'Entreprise': 0
+        });
 
         setRepartitionData([
             { name: 'Immobilier', value: repartition.Immobilier, color: '#8B5CF6' },
             { name: 'Assurance Vie', value: repartition['Assurance Vie'], color: '#D946EF' },
             { name: 'PER', value: repartition.PER, color: '#F97316' },
             { name: 'Épargne', value: repartition.Épargne, color: '#0EA5E9' },
-            { name: 'Autre', value: repartition.Autre, color: '#22D3EE' },
-        ]);
+            { name: 'Entreprise', value: repartition.Entreprise, color: '#22D3EE' },
+            { name: 'Autre', value: repartition.Autre, color: '#10B981' },
+        ].filter(item => item.value > 0));
 
         // 4. Generate historical data based on current data (since no historical tracking exists in DB)
         const currentTotals = {
@@ -156,7 +201,8 @@ const EncoursTheoriquesPage = () => {
           assuranceVie: repartition['Assurance Vie'],
           per: repartition.PER,
           epargne: repartition.Épargne,
-          autre: repartition.Autre
+          autre: repartition.Autre,
+          entreprise: repartition.Entreprise
         };
 
         // Generate 6 months of historical data with realistic growth patterns
@@ -169,7 +215,8 @@ const EncoursTheoriquesPage = () => {
             assuranceVie: Math.round(currentTotals.assuranceVie * growthFactor),
             per: Math.round(currentTotals.per * growthFactor),
             epargne: Math.round(currentTotals.epargne * growthFactor),
-            autre: Math.round(currentTotals.autre * growthFactor)
+            autre: Math.round(currentTotals.autre * growthFactor),
+            entreprise: Math.round(currentTotals.entreprise * growthFactor)
           };
         });
 
@@ -252,6 +299,13 @@ const EncoursTheoriquesPage = () => {
             <FileDown className="mr-2 h-4 w-4" />
             Exporter
           </Button>
+          <Button 
+            variant={debugMode ? "default" : "outline"}
+            onClick={() => setDebugMode(!debugMode)}
+            size="sm"
+          >
+            Mode Debug
+          </Button>
         </div>
       </div>
 
@@ -302,12 +356,14 @@ const EncoursTheoriquesPage = () => {
         
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Clients avec encours</CardDescription>
-            <CardTitle className="text-2xl">342</CardTitle>
+            <CardDescription>Clients avec encours théoriques</CardDescription>
+            <CardTitle className="text-2xl">
+              {opportunitesData.filter(client => client.encoursTheorique > 0).length}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-sm text-muted-foreground">
-              +21 depuis le dernier trimestre
+              Clients ayant des actifs non gérés
             </div>
           </CardContent>
         </Card>
@@ -343,7 +399,8 @@ const EncoursTheoriquesPage = () => {
                   <Line type="monotone" dataKey="assuranceVie" name="Assurance Vie" stroke="#D946EF" strokeWidth={2} />
                   <Line type="monotone" dataKey="per" name="PER" stroke="#F97316" strokeWidth={2} />
                   <Line type="monotone" dataKey="epargne" name="Épargne" stroke="#0EA5E9" strokeWidth={2} />
-                  <Line type="monotone" dataKey="autre" name="Autre" stroke="#22D3EE" strokeWidth={2} />
+                  <Line type="monotone" dataKey="entreprise" name="Entreprise" stroke="#22D3EE" strokeWidth={2} />
+                  <Line type="monotone" dataKey="autre" name="Autre" stroke="#10B981" strokeWidth={2} />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
@@ -561,6 +618,15 @@ const EncoursTheoriquesPage = () => {
                       </th>
                       <th 
                         className="text-right py-3 px-4 cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleSort('entreprise')}
+                      >
+                        <div className="flex items-center justify-end">
+                          Entreprise
+                          <ArrowUpDown className="ml-1 h-3 w-3" />
+                        </div>
+                      </th>
+                      <th 
+                        className="text-right py-3 px-4 cursor-pointer hover:bg-muted/50"
                         onClick={() => handleSort('autre')}
                       >
                         <div className="flex items-center justify-end">
@@ -603,6 +669,11 @@ const EncoursTheoriquesPage = () => {
                         <td className="text-right py-3 px-4">
                           {client.epargne > 0 
                             ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(client.epargne)
+                            : "—"}
+                        </td>
+                        <td className="text-right py-3 px-4">
+                          {client.entreprise > 0 
+                            ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(client.entreprise)
                             : "—"}
                         </td>
                         <td className="text-right py-3 px-4">
