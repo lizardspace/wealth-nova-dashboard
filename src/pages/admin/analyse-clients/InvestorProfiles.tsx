@@ -1478,7 +1478,11 @@ const InvestorProfiles: React.FC = () => {
           )}
         </Tabs>
 
-        {renderProfileDetail()}
+        <Dialog open={profileDetailOpen} onOpenChange={setProfileDetailOpen}>
+          <DialogContent className="glass-card border-white/20 max-w-2xl">
+            {renderProfileDetailContent()}
+          </DialogContent>
+        </Dialog>
       </div>
     </TooltipProvider>
   );
