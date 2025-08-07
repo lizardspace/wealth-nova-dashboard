@@ -207,8 +207,8 @@ const InvestorProfiles: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterRiskTolerance, setFilterRiskTolerance] = useState<string>('');
-  const [filterHorizonCategory, setFilterHorizonCategory] = useState<string>('');
+  const [filterRiskTolerance, setFilterRiskTolerance] = useState<string>('all');
+  const [filterHorizonCategory, setFilterHorizonCategory] = useState<string>('all');
   const [filterRiskScore, setFilterRiskScore] = useState<[number, number]>([0, 10]);
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [sortField, setSortField] = useState<SortField>('name');
@@ -289,8 +289,8 @@ const InvestorProfiles: React.FC = () => {
   const filteredAndSortedProfiles = useMemo(() => {
     let filtered = investorProfiles.filter(profile => {
       const nameMatch = `${profile.first_name} ${profile.last_name}`.toLowerCase().includes(searchTerm.toLowerCase());
-      const riskMatch = !filterRiskTolerance || profile.risk_tolerance === filterRiskTolerance;
-      const horizonMatch = !filterHorizonCategory || profile.investment_horizon_category === filterHorizonCategory;
+      const riskMatch = filterRiskTolerance === 'all' || profile.risk_tolerance === filterRiskTolerance;
+      const horizonMatch = filterHorizonCategory === 'all' || profile.investment_horizon_category === filterHorizonCategory;
       const scoreMatch = profile.risk_score >= filterRiskScore[0] && profile.risk_score <= filterRiskScore[1];
       
       return nameMatch && riskMatch && horizonMatch && scoreMatch;
@@ -500,8 +500,8 @@ const InvestorProfiles: React.FC = () => {
 
   const clearFilters = () => {
     setSearchTerm('');
-    setFilterRiskTolerance('');
-    setFilterHorizonCategory('');
+    setFilterRiskTolerance('all');
+    setFilterHorizonCategory('all');
     setFilterRiskScore([0, 10]);
   };
 
@@ -1000,7 +1000,7 @@ const InvestorProfiles: React.FC = () => {
                 <SelectValue placeholder="Toutes" />
               </SelectTrigger>
               <SelectContent className="glass-card border-white/20">
-                <SelectItem value="">Toutes</SelectItem>
+                <SelectItem value="all">Toutes</SelectItem>
                 <SelectItem value="Prudent">Prudent</SelectItem>
                 <SelectItem value="Conservateur">Conservateur</SelectItem>
                 <SelectItem value="Équilibré">Équilibré</SelectItem>
@@ -1018,7 +1018,7 @@ const InvestorProfiles: React.FC = () => {
                 <SelectValue placeholder="Tous" />
               </SelectTrigger>
               <SelectContent className="glass-card border-white/20">
-                <SelectItem value="">Tous</SelectItem>
+                <SelectItem value="all">Tous</SelectItem>
                 <SelectItem value="Court terme">Court terme</SelectItem>
                 <SelectItem value="Moyen terme">Moyen terme</SelectItem>
                 <SelectItem value="Long terme">Long terme</SelectItem>

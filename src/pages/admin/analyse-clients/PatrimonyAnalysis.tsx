@@ -120,40 +120,42 @@ const ClientCard: React.FC<{ client: PatrimonySummary; onSelect: (id: string) =>
   
   return (
     <div 
-      className={`bg-white rounded-xl border-2 p-6 cursor-pointer transition-all duration-200 hover:shadow-lg ${
-        isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+      className={`group relative glass-card border cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:glass-card-hover ${
+        isSelected ? 'border-blue-400/50 bg-gradient-to-br from-blue-50/80 to-indigo-50/80 shadow-lg' : 'border-white/20 hover:border-white/30'
       }`}
       onClick={() => onSelect(client.user_id)}
     >
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">
-            {client.civilite} {client.first_name} {client.last_name}
-          </h3>
-          <p className="text-sm text-gray-600">{client.email}</p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${category.color}`}>
-            {category.label}
-          </span>
-          <div className={`flex items-center ${risk.color}`}>
-            {risk.icon}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="relative z-10 p-6">
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h3 className="text-lg font-semibold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+              {client.civilite} {client.first_name} {client.last_name}
+            </h3>
+            <p className="text-sm text-slate-600">{client.email}</p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <span className={`px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm border border-white/20 ${category.color}`}>
+              {category.label}
+            </span>
+            <div className={`flex items-center p-1.5 rounded-lg backdrop-blur-sm border border-white/20 ${risk.color}`}>
+              {risk.icon}
+            </div>
           </div>
         </div>
-      </div>
       
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <p className="text-xs text-gray-500 uppercase tracking-wide">Total Actifs</p>
-          <p className="text-lg font-bold text-gray-900">{formatCurrency(client.total_assets)}</p>
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="p-3 bg-gradient-to-br from-slate-50/80 to-slate-100/80 rounded-lg backdrop-blur-sm border border-white/20">
+            <p className="text-xs text-slate-500 uppercase tracking-wide font-medium mb-1">Total Actifs</p>
+            <p className="text-lg font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">{formatCurrency(client.total_assets)}</p>
+          </div>
+          <div className="p-3 bg-gradient-to-br from-slate-50/80 to-slate-100/80 rounded-lg backdrop-blur-sm border border-white/20">
+            <p className="text-xs text-slate-500 uppercase tracking-wide font-medium mb-1">Patrimoine Net</p>
+            <p className={`text-lg font-bold ${client.net_worth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              {formatCurrency(client.net_worth)}
+            </p>
+          </div>
         </div>
-        <div>
-          <p className="text-xs text-gray-500 uppercase tracking-wide">Patrimoine Net</p>
-          <p className={`text-lg font-bold ${client.net_worth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {formatCurrency(client.net_worth)}
-          </p>
-        </div>
-      </div>
       
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
@@ -181,6 +183,7 @@ const ClientCard: React.FC<{ client: PatrimonySummary; onSelect: (id: string) =>
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
