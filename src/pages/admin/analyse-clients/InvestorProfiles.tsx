@@ -104,6 +104,7 @@ import {
   Radar,
   Doughnut
 } from 'recharts';
+import { useTheme } from '@mui/material';
 
 // Chart configuration for modern charts
 const chartConfig = {
@@ -201,6 +202,7 @@ type SortDirection = 'asc' | 'desc';
 const InvestorProfiles: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const theme = useTheme();
   const [investorProfiles, setInvestorProfiles] = useState<InvestorProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
