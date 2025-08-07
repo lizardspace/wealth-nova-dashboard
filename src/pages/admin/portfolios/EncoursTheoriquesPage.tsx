@@ -50,12 +50,20 @@ const EncoursTheoriquesPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      console.log('🚀 Début du fetch des données pour les encours théoriques');
+      
       try {
         // 1. Fetch all users
+        console.log('📊 Récupération des utilisateurs...');
         const { data: users, error: usersError } = await supabase.from('users').select('id, first_name, last_name');
-        if (usersError) throw usersError;
+        console.log('👥 Utilisateurs récupérés:', users?.length || 0, 'utilisateurs', users);
+        if (usersError) {
+          console.error('❌ Erreur lors de la récupération des utilisateurs:', usersError);
+          throw usersError;
+        }
 
         // 2. Fetch all assets for all users with management status
+        console.log('🏦 Récupération des actifs...');
         const [
           { data: immobilierData, error: immobilierError },
           { data: assuranceVieData, error: assuranceVieError },
@@ -71,11 +79,18 @@ const EncoursTheoriquesPage = () => {
           supabase.from('autrepatrimoine').select('user_id, value, libelle, date_acquisition'),
           supabase.from('entrepriseparticipation').select('user_id, value, libelle, date_acquisition'),
         ]);
+        
+        console.log('🏠 Immobilier:', immobilierData?.length || 0, 'éléments', immobilierData);
+        console.log('🛡️ Assurance vie:', assuranceVieData?.length || 0, 'éléments', assuranceVieData);
+        console.log('📊 PER:', perData?.length || 0, 'éléments', perData);
+        console.log('💰 Épargne:', epargneData?.length || 0, 'éléments', epargneData);
+        console.log('📦 Autre:', autreData?.length || 0, 'éléments', autreData);
+        console.log('🏢 Entreprise:', entrepriseData?.length || 0, 'éléments', entrepriseData);
 
         // Gestion des erreurs
         const errors = [immobilierError, assuranceVieError, perError, epargneError, autreError, entrepriseError].filter(Boolean);
         if (errors.length > 0) {
-          console.error('Error fetching asset data:', errors);
+          console.error('❌ Erreurs lors de la récupération des données patrimoniales:', errors);
           throw new Error('Erreur lors de la récupération des données patrimoniales');
         }
 
@@ -92,6 +107,7 @@ const EncoursTheoriquesPage = () => {
         const clientsMap = new Map();
 
         // Initialisation des clients
+        console.log('👥 Initialisation des clients...');
         users.forEach(user => {
           clientsMap.set(user.id, {
             id: user.id,
@@ -110,17 +126,33 @@ const EncoursTheoriquesPage = () => {
             detailActifs: [],       // Pour le debugging et les détails
           });
         });
+        console.log('✅ Clients initialisés:', clientsMap.size, 'clients');
 
         // Traitement des actifs par type
+        console.log('🔄 Traitement des actifs par type...');
+        let totalActifsTraites = 0;
+        let totalEncoursTh = 0;
+        let totalEncoursReel = 0;
+        
         for (const [assetType, data] of Object.entries(assetData)) {
           if (!data) continue;
+          console.log(`📋 Traitement de ${assetType}: ${data.length} éléments`);
           
           data.forEach(item => {
             const client = clientsMap.get(item.user_id);
-            if (!client) return;
+            if (!client) {
+              console.warn(`⚠️ Client non trouvé pour user_id: ${item.user_id}`);
+              return;
+            }
             
             const value = parseFloat(item.value) || 0;
-            const isManaged = item.contrat_gere === true;
+            // Les tables 'autrepatrimoine' et 'entrepriseparticipation' n'ont pas de champ contrat_gere
+            const isManaged = (assetType === 'autre' || assetType === 'entreprise') 
+              ? false  // Ces types sont toujours considérés comme non gérés
+              : item.contrat_gere === true;
+            totalActifsTraites++;
+            
+            console.log(`  💼 ${assetType} - ${client.prenom} ${client.nom}: ${value}€ (géré: ${isManaged})`);
             
             // Debug info
             client.detailActifs.push({
@@ -134,23 +166,29 @@ const EncoursTheoriquesPage = () => {
             if (isManaged) {
               // Si géré par Eparnova = encours réel
               client.encoursReel += value;
+              totalEncoursReel += value;
             } else {
               // Si non géré = encours théorique (potentiel de conversion)
-              if (assetType === 'autre' || assetType === 'entreprise') {
-                // Ces types sont toujours considérés comme non gérés
-                client[assetType] += value;
-              } else {
-                client[assetType] += value;
-              }
+              client[assetType] += value;
               client.produits.add(assetType);
+              totalEncoursTh += value;
             }
           });
         }
+        
+        console.log(`✅ Actifs traités: ${totalActifsTraites} actifs`);
+        console.log(`💰 Total encours théoriques: ${totalEncoursTh}€`);
+        console.log(`🏦 Total encours réels: ${totalEncoursReel}€`);
 
         // Calcul final des données clients
+        console.log('📊 Calcul final des données clients...');
         const processedClients = Array.from(clientsMap.values()).map(client => {
           const totalTheorique = client.immobilier + client.assuranceVie + client.per + client.epargne + client.autre + client.entreprise;
           const totalPatrimoine = totalTheorique + client.encoursReel;
+          
+          if (totalTheorique > 0 || client.encoursReel > 0) {
+            console.log(`👤 ${client.prenom} ${client.nom}: Théorique=${totalTheorique}€, Réel=${client.encoursReel}€`);
+          }
           
           return {
             ...client,
@@ -164,11 +202,13 @@ const EncoursTheoriquesPage = () => {
         });
 
         const finalClientsData = processedClients;
+        console.log('📋 Clients avec données financières:', finalClientsData.filter(c => c.total > 0 || c.encoursReel > 0).length);
 
         setClientsData(finalClientsData);
         setOpportunitesData(finalClientsData);
 
         // 3. Aggregate for repartition data (only non-managed assets = theoretical)
+        console.log('📈 Calcul de la répartition des encours théoriques...');
         const repartition = finalClientsData.reduce((acc, client) => {
           acc.Immobilier += client.immobilier;
           acc['Assurance Vie'] += client.assuranceVie;
@@ -185,6 +225,8 @@ const EncoursTheoriquesPage = () => {
           'Autre': 0,
           'Entreprise': 0
         });
+        
+        console.log('📊 Répartition calculée:', repartition);
 
         setRepartitionData([
             { name: 'Immobilier', value: repartition.Immobilier, color: '#8B5CF6' },
@@ -223,9 +265,11 @@ const EncoursTheoriquesPage = () => {
         setHistoricData(historicalData);
 
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('❌ Erreur générale lors du fetch des données:', error);
+        console.error('Stack trace:', error.stack);
       } finally {
         setLoading(false);
+        console.log('🏁 Fin du chargement des données');
       }
     };
 
@@ -431,7 +475,7 @@ const EncoursTheoriquesPage = () => {
                         fill="#8884d8"
                         dataKey="value"
                       >
-                        {repartitionData.map((entry, index) => (
+                        {repartitionData.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
