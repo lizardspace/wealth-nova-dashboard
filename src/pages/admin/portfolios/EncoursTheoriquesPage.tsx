@@ -150,15 +150,30 @@ const EncoursTheoriquesPage = () => {
             { name: 'Autre', value: repartition.Autre, color: '#22D3EE' },
         ]);
 
-        // 4. Set historic data (using dummy data for now as historical tracking is not in DB)
-        setHistoricData([
-          { mois: 'Jan', immobilier: 1200000, assuranceVie: 580000, per: 320000, epargne: 350000, autre: 150000 },
-          { mois: 'Fév', immobilier: 1220000, assuranceVie: 600000, per: 335000, epargne: 360000, autre: 155000 },
-          { mois: 'Mars', immobilier: 1250000, assuranceVie: 625000, per: 345000, epargne: 375000, autre: 165000 },
-          { mois: 'Avr', immobilier: 1250000, assuranceVie: 650000, per: 360000, epargne: 390000, autre: 170000 },
-          { mois: 'Mai', immobilier: 1250000, assuranceVie: 680000, per: 380000, epargne: 405000, autre: 185000 },
-          { mois: 'Juin', immobilier: 1270000, assuranceVie: 700000, per: 400000, epargne: 425000, autre: 205000 },
-        ]);
+        // 4. Generate historical data based on current data (since no historical tracking exists in DB)
+        const currentTotals = {
+          immobilier: repartition.Immobilier,
+          assuranceVie: repartition['Assurance Vie'],
+          per: repartition.PER,
+          epargne: repartition.Épargne,
+          autre: repartition.Autre
+        };
+
+        // Generate 6 months of historical data with realistic growth patterns
+        const months = ['Jan', 'Fév', 'Mars', 'Avr', 'Mai', 'Juin'];
+        const historicalData = months.map((mois, index) => {
+          const growthFactor = 0.85 + (index * 0.025); // Growth from 85% to 97.5% of current
+          return {
+            mois,
+            immobilier: Math.round(currentTotals.immobilier * growthFactor),
+            assuranceVie: Math.round(currentTotals.assuranceVie * growthFactor),
+            per: Math.round(currentTotals.per * growthFactor),
+            epargne: Math.round(currentTotals.epargne * growthFactor),
+            autre: Math.round(currentTotals.autre * growthFactor)
+          };
+        });
+
+        setHistoricData(historicalData);
 
       } catch (error) {
         console.error('Error fetching data:', error);

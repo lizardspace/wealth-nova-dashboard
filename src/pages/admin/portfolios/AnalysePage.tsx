@@ -68,10 +68,17 @@ const AnalysePage: React.FC = () => {
     try {
       setLoading(true);
 
-      // Récupération des utilisateurs avec leurs informations personnelles
-      const { data: users, error: usersError } = await supabase
-        .from('users')
-        .select(`
+      // Récupération optimisée - toutes les données en parallèle
+      const [
+        { data: users, error: usersError },
+        { data: immobilierData, error: immobilierError },
+        { data: bancaireData, error: bancaireError },
+        { data: assuranceVieData, error: assuranceVieError },
+        { data: entrepriseData, error: entrepriseError },
+        { data: autresData, error: autresError },
+        { data: creditsData, error: creditsError }
+      ] = await Promise.all([
+        supabase.from('users').select(`
           id,
           first_name,
           last_name,
@@ -83,11 +90,82 @@ const AnalysePage: React.FC = () => {
             revenu_annuel,
             situation_matrimoniale
           )
-        `);
+        `),
+        supabase.from('bienimmobilier').select('user_id, value'),
+        supabase.from('comptebancaire').select('user_id, value'),
+        supabase.from('assurancevie').select('user_id, value'),
+        supabase.from('entrepriseparticipation').select('user_id, value'),
+        supabase.from('autrepatrimoine').select('user_id, value'),
+        supabase.from('credit').select('user_id, capital_restant_du')
+      ]);
 
-      if (usersError) throw usersError;
+      // Gestion des erreurs
+      const errors = [usersError, immobilierError, bancaireError, assuranceVieError, entrepriseError, autresError, creditsError].filter(Boolean);
+      if (errors.length > 0) {
+        console.error('Erreurs lors de la récupération des données:', errors);
+        throw new Error('Erreur lors du chargement des données patrimoniales');
+      }
 
-      // Pour chaque utilisateur, calculer son patrimoine total
+      // Création des maps pour un accès O(1)
+      const userAssetsMap = new Map();
+      
+      // Initialisation des utilisateurs
+      users?.forEach(user => {
+        userAssetsMap.set(user.id, {
+          user,
+          immobilier: 0,
+          bancaire: 0,
+          assuranceVie: 0,
+          entreprise: 0,
+          autres: 0,
+          credits: 0
+        });
+      });
+
+      // Agrégation des données par type d'actif
+      immobilierData?.forEach(item => {
+        const userAssets = userAssetsMap.get(item.user_id);
+        if (userAssets) {
+          userAssets.immobilier += item.value || 0;
+        }
+      });
+
+      bancaireData?.forEach(item => {
+        const userAssets = userAssetsMap.get(item.user_id);
+        if (userAssets) {
+          userAssets.bancaire += item.value || 0;
+        }
+      });
+
+      assuranceVieData?.forEach(item => {
+        const userAssets = userAssetsMap.get(item.user_id);
+        if (userAssets) {
+          userAssets.assuranceVie += item.value || 0;
+        }
+      });
+
+      entrepriseData?.forEach(item => {
+        const userAssets = userAssetsMap.get(item.user_id);
+        if (userAssets) {
+          userAssets.entreprise += item.value || 0;
+        }
+      });
+
+      autresData?.forEach(item => {
+        const userAssets = userAssetsMap.get(item.user_id);
+        if (userAssets) {
+          userAssets.autres += item.value || 0;
+        }
+      });
+
+      creditsData?.forEach(item => {
+        const userAssets = userAssetsMap.get(item.user_id);
+        if (userAssets) {
+          userAssets.credits += item.capital_restant_du || 0;
+        }
+      });
+
+      // Calcul des statistiques et création des données finales
       const portfoliosData: UserPortfolio[] = [];
       let totalPatrimoineGlobal = 0;
       let totalUsers = 0;
@@ -100,51 +178,8 @@ const AnalysePage: React.FC = () => {
         autres: 0
       };
 
-      for (const user of users || []) {
-        // Biens immobiliers
-        const { data: immobilier } = await supabase
-          .from('bienimmobilier')
-          .select('value')
-          .eq('user_id', user.id);
-
-        // Comptes bancaires
-        const { data: bancaire } = await supabase
-          .from('comptebancaire')
-          .select('value')
-          .eq('user_id', user.id);
-
-        // Assurance vie
-        const { data: assuranceVie } = await supabase
-          .from('assurancevie')
-          .select('value')
-          .eq('user_id', user.id);
-
-        // Entreprises
-        const { data: entreprise } = await supabase
-          .from('entrepriseparticipation')
-          .select('value')
-          .eq('user_id', user.id);
-
-        // Autres patrimoines
-        const { data: autres } = await supabase
-          .from('autrepatrimoine')
-          .select('value')
-          .eq('user_id', user.id);
-
-        // Crédits (passif)
-        const { data: credits } = await supabase
-          .from('credit')
-          .select('capital_restant_du')
-          .eq('user_id', user.id);
-
-        const immobilierTotal = immobilier?.reduce((sum, item) => sum + (item.value || 0), 0) || 0;
-        const bancaireTotal = bancaire?.reduce((sum, item) => sum + (item.value || 0), 0) || 0;
-        const assuranceVieTotal = assuranceVie?.reduce((sum, item) => sum + (item.value || 0), 0) || 0;
-        const entrepriseTotal = entreprise?.reduce((sum, item) => sum + (item.value || 0), 0) || 0;
-        const autresTotal = autres?.reduce((sum, item) => sum + (item.value || 0), 0) || 0;
-        const creditsTotal = credits?.reduce((sum, item) => sum + (item.capital_restant_du || 0), 0) || 0;
-
-        const totalPatrimoine = immobilierTotal + bancaireTotal + assuranceVieTotal + entrepriseTotal + autresTotal - creditsTotal;
+      userAssetsMap.forEach(({ user, immobilier, bancaire, assuranceVie, entreprise, autres, credits }) => {
+        const totalPatrimoine = immobilier + bancaire + assuranceVie + entreprise + autres - credits;
 
         portfoliosData.push({
           id: user.id,
@@ -154,12 +189,12 @@ const AnalysePage: React.FC = () => {
           created_at: user.created_at,
           last_login: user.last_login || '',
           totalPatrimoine,
-          immobilier: immobilierTotal,
-          bancaire: bancaireTotal,
-          assuranceVie: assuranceVieTotal,
-          entreprise: entrepriseTotal,
-          autres: autresTotal,
-          credits: creditsTotal,
+          immobilier,
+          bancaire,
+          assuranceVie,
+          entreprise,
+          autres,
+          credits,
           revenu_annuel: user.personalinfo?.[0]?.revenu_annuel || 0,
           age: user.personalinfo?.[0]?.age || 0,
           situation_matrimoniale: user.personalinfo?.[0]?.situation_matrimoniale || ''
@@ -172,12 +207,12 @@ const AnalysePage: React.FC = () => {
           totalAge += user.personalinfo[0].age;
         }
 
-        repartitionTypes.immobilier += immobilierTotal;
-        repartitionTypes.bancaire += bancaireTotal;
-        repartitionTypes.assuranceVie += assuranceVieTotal;
-        repartitionTypes.entreprise += entrepriseTotal;
-        repartitionTypes.autres += autresTotal;
-      }
+        repartitionTypes.immobilier += immobilier;
+        repartitionTypes.bancaire += bancaire;
+        repartitionTypes.assuranceVie += assuranceVie;
+        repartitionTypes.entreprise += entreprise;
+        repartitionTypes.autres += autres;
+      });
 
       setPortfolios(portfoliosData);
       setStats({

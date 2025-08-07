@@ -60,15 +60,89 @@ const VueGlobalePage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      // Récupérer les données des utilisateurs avec leur patrimoine
-      const { data: users, error: usersError } = await supabase
-        .from('users')
-        .select('id, first_name, last_name, email, created_at');
+      // Récupération optimisée - toutes les données en parallèle
+      const [
+        { data: users, error: usersError },
+        { data: immobilierData, error: immobilierError },
+        { data: bancaireData, error: bancaireError },
+        { data: assuranceVieData, error: assuranceVieError },
+        { data: entrepriseData, error: entrepriseError },
+        { data: autresData, error: autresError }
+      ] = await Promise.all([
+        supabase.from('users').select('id, first_name, last_name, email, created_at'),
+        supabase.from('bienimmobilier').select('user_id, value'),
+        supabase.from('comptebancaire').select('user_id, value'),
+        supabase.from('assurancevie').select('user_id, value'),
+        supabase.from('entrepriseparticipation').select('user_id, value'),
+        supabase.from('autrepatrimoine').select('user_id, value')
+      ]);
 
-      if (usersError) throw usersError;
+      // Gestion des erreurs
+      const errors = [usersError, immobilierError, bancaireError, assuranceVieError, entrepriseError, autresError].filter(Boolean);
+      if (errors.length > 0) {
+        console.error('Erreurs lors de la récupération des données:', errors);
+        throw new Error('Erreur lors du chargement des données patrimoniales');
+      }
 
+      // Création des maps pour agrégation O(1)
+      const userAssetsMap = new Map();
+      
+      // Initialisation des utilisateurs
+      users?.forEach(user => {
+        userAssetsMap.set(user.id, {
+          user,
+          immobilier: { total: 0, count: 0 },
+          bancaire: { total: 0, count: 0 },
+          assuranceVie: { total: 0, count: 0 },
+          entreprise: { total: 0, count: 0 },
+          autres: { total: 0, count: 0 }
+        });
+      });
+
+      // Agrégation des données par type d'actif
+      immobilierData?.forEach(item => {
+        const userAssets = userAssetsMap.get(item.user_id);
+        if (userAssets) {
+          userAssets.immobilier.total += item.value || 0;
+          userAssets.immobilier.count++;
+        }
+      });
+
+      bancaireData?.forEach(item => {
+        const userAssets = userAssetsMap.get(item.user_id);
+        if (userAssets) {
+          userAssets.bancaire.total += item.value || 0;
+          userAssets.bancaire.count++;
+        }
+      });
+
+      assuranceVieData?.forEach(item => {
+        const userAssets = userAssetsMap.get(item.user_id);
+        if (userAssets) {
+          userAssets.assuranceVie.total += item.value || 0;
+          userAssets.assuranceVie.count++;
+        }
+      });
+
+      entrepriseData?.forEach(item => {
+        const userAssets = userAssetsMap.get(item.user_id);
+        if (userAssets) {
+          userAssets.entreprise.total += item.value || 0;
+          userAssets.entreprise.count++;
+        }
+      });
+
+      autresData?.forEach(item => {
+        const userAssets = userAssetsMap.get(item.user_id);
+        if (userAssets) {
+          userAssets.autres.total += item.value || 0;
+          userAssets.autres.count++;
+        }
+      });
+
+      // Calcul des statistiques et création des données finales
       const patrimoineData: UserPatrimoine[] = [];
-      let totalStats = {
+      const totalStats = {
         total_users: users?.length || 0,
         total_patrimoine: 0,
         total_immobilier: 0,
@@ -79,68 +153,33 @@ const VueGlobalePage: React.FC = () => {
         moyenne_patrimoine: 0
       };
 
-      for (const user of users || []) {
-        // Patrimoine immobilier
-        const { data: immobilier } = await supabase
-          .from('bienimmobilier')
-          .select('value')
-          .eq('user_id', user.id);
-
-        // Comptes bancaires
-        const { data: bancaire } = await supabase
-          .from('comptebancaire')
-          .select('value')
-          .eq('user_id', user.id);
-
-        // Assurance vie
-        const { data: assuranceVie } = await supabase
-          .from('assurancevie')
-          .select('value')
-          .eq('user_id', user.id);
-
-        // Entreprises
-        const { data: entreprise } = await supabase
-          .from('entrepriseparticipation')
-          .select('value')
-          .eq('user_id', user.id);
-
-        // Autres patrimoines
-        const { data: autres } = await supabase
-          .from('autrepatrimoine')
-          .select('value')
-          .eq('user_id', user.id);
-
-        const totalImmobilier = immobilier?.reduce((sum, item) => sum + (item.value || 0), 0) || 0;
-        const totalBancaire = bancaire?.reduce((sum, item) => sum + (item.value || 0), 0) || 0;
-        const totalAssuranceVie = assuranceVie?.reduce((sum, item) => sum + (item.value || 0), 0) || 0;
-        const totalEntreprise = entreprise?.reduce((sum, item) => sum + (item.value || 0), 0) || 0;
-        const totalAutres = autres?.reduce((sum, item) => sum + (item.value || 0), 0) || 0;
-        const totalGeneral = totalImmobilier + totalBancaire + totalAssuranceVie + totalEntreprise + totalAutres;
+      userAssetsMap.forEach(({ user, immobilier, bancaire, assuranceVie, entreprise, autres }) => {
+        const totalGeneral = immobilier.total + bancaire.total + assuranceVie.total + entreprise.total + autres.total;
 
         patrimoineData.push({
           user_id: user.id,
           user_name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'N/A',
           user_email: user.email || 'N/A',
-          total_immobilier: totalImmobilier,
-          total_bancaire: totalBancaire,
-          total_assurance_vie: totalAssuranceVie,
-          total_entreprise: totalEntreprise,
-          total_autres: totalAutres,
+          total_immobilier: immobilier.total,
+          total_bancaire: bancaire.total,
+          total_assurance_vie: assuranceVie.total,
+          total_entreprise: entreprise.total,
+          total_autres: autres.total,
           total_general: totalGeneral,
-          nb_biens_immobiliers: immobilier?.length || 0,
-          nb_comptes_bancaires: bancaire?.length || 0,
-          nb_contrats_assurance: assuranceVie?.length || 0,
+          nb_biens_immobiliers: immobilier.count,
+          nb_comptes_bancaires: bancaire.count,
+          nb_contrats_assurance: assuranceVie.count,
           derniere_maj: user.created_at || ''
         });
 
         // Mise à jour des statistiques globales
         totalStats.total_patrimoine += totalGeneral;
-        totalStats.total_immobilier += totalImmobilier;
-        totalStats.total_bancaire += totalBancaire;
-        totalStats.total_assurance_vie += totalAssuranceVie;
-        totalStats.total_entreprise += totalEntreprise;
-        totalStats.total_autres += totalAutres;
-      }
+        totalStats.total_immobilier += immobilier.total;
+        totalStats.total_bancaire += bancaire.total;
+        totalStats.total_assurance_vie += assuranceVie.total;
+        totalStats.total_entreprise += entreprise.total;
+        totalStats.total_autres += autres.total;
+      });
 
       totalStats.moyenne_patrimoine = totalStats.total_users > 0 
         ? totalStats.total_patrimoine / totalStats.total_users 
