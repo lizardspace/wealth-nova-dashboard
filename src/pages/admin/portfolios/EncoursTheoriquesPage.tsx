@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import {
   Card,
@@ -13,7 +13,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import {
   LineChart,
   Line,
@@ -72,7 +71,7 @@ const EncoursTheoriquesPage = () => {
           { data: autreData, error: autreError },
           { data: entrepriseData, error: entrepriseError },
         ] = await Promise.all([
-          supabase.from('bienimmobilier').select('user_id, value, contrat_gere, libelle, date_acquisition'),
+          supabase.from('bienimmobilier').select('user_id, value, libelle, date_acquisition'),
           supabase.from('assurancevie').select('user_id, value, contrat_gere, libelle, date_acquisition'),
           supabase.from('contratcapitalisation').select('user_id, value, contrat_gere, libelle, date_acquisition'),
           supabase.from('comptebancaire').select('user_id, value, contrat_gere, libelle, date_acquisition'),
@@ -146,10 +145,9 @@ const EncoursTheoriquesPage = () => {
             }
             
             const value = parseFloat(item.value) || 0;
-            // Les tables 'autrepatrimoine' et 'entrepriseparticipation' n'ont pas de champ contrat_gere
-            const isManaged = (assetType === 'autre' || assetType === 'entreprise') 
-              ? false  // Ces types sont toujours considérés comme non gérés
-              : item.contrat_gere === true;
+            // Seules certaines tables ont le champ contrat_gere
+            const hasContratGereField = ['assuranceVie', 'per', 'epargne'].includes(assetType);
+            const isManaged = hasContratGereField ? (item as any).contrat_gere === true : false;
             totalActifsTraites++;
             
             console.log(`  💼 ${assetType} - ${client.prenom} ${client.nom}: ${value}€ (géré: ${isManaged})`);
